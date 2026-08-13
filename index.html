@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منصة DrNotes التعليمية</title>
+  
+  <!-- مكتبات Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f7f9fc;
+      direction: rtl;
+      text-align: right;
+    }
+    header {
+      background-color: #0b7bff;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .auth-buttons button {
+      padding: 8px 16px;
+      margin-right: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: white;
+      color: #0b7bff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #user-profile {
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    #user-profile button {
+      padding: 6px 12px;
+      border: 1px solid white;
+      border-radius: 5px;
+      background: transparent;
+      color: white;
+      cursor: pointer;
+    }
+    main {
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 10px;
+      background-color: #0b7bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn-google {
+      background-color: #db4437;
+    }
+    .divider {
+      text-align: center;
+      margin: 15px 0;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">منصة DrNotes التعليمية</div>
+    
+    <!-- زرار للوصول لنموذج التسجيل لو الشاشة كبيرة -->
+    <div class="auth-buttons" id="auth-buttons">
+      <button onclick="scrollToAuth()">تسجيل الدخول / حساب جديد</button>
+    </div>
+
+    <!-- معلومات المستخدم (تظهر فور تسجيل الدخول وتخفي أزرار الدخول) -->
+    <div id="user-profile">
+      <span id="user-name"></span>
+      <button onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- قسم تسجيل الدخول وإنشاء الحساب (يختفي فوراً بعد التسجيل) -->
+    <div id="booking-section" class="card">
+      <h2>تسجيل الدخول / حساب جديد</h2>
+      
+      <div class="form-group">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="auth-email" placeholder="example@mail.com">
+      </div>
+
+      <div class="form-group">
+        <label>رقم الهاتف (اختياري للتواصل)</label>
+        <input type="tel" id="auth-phone" placeholder="010XXXXXXXX">
+      </div>
+      
+      <div class="form-group">
+        <label>كلمة السر</label>
+        <input type="password" id="auth-password" placeholder="******">
+      </div>
+
+      <button class="btn-submit" onclick="loginWithEmail()">تسجيل الدخول</button>
+      <button class="btn-submit" style="background-color: #28a745;" onclick="registerWithEmail()">إنشاء حساب جديد</button>
+      
+      <div class="divider">أو</div>
+
+      <button class="btn-submit btn-google" onclick="loginWithGoogle()">التسجيل بواسطة Google</button>
+    </div>
+
+    <!-- قسم خصائص الكورس والمحتوى (يظهر فقط بعد تسجيل الدخول) -->
+    <div id="course-features" class="card" style="display: none;">
+      <h2>خصائص الكورس والمحتوى التعليمي</h2>
+      <p>أهلاً بك! يمكنك الآن الاستفادة من جميع تلاوات ومذكرات منصة DrNotes التعليمية.</p>
+    </div>
+  </main>
+
+  <script>
+    // تهيئة Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmjD404cVW5hPcsA6I9cXyNkCdCJ4uUK",
+      authDomain: "drnotes-18a5b.firebaseapp.com",
+      projectId: "drnotes-18a5b",
+      storageBucket: "drnotes-18a5b.firebaseapp.com",
+      messagingSenderId: "945944053945",
+      appId: "1:945944053945:web:26fda357413a57585d3368",
+      measurementId: "G-8J357Y3Q12"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    // متابعة حالة تسجيل الدخول تلقائياً
+    firebase.auth().onAuthStateChanged((user) => {
+      const authButtons = document.getElementById('auth-buttons');
+      const userProfile = document.getElementById('user-profile');
+      const userName = document.getElementById('user-name');
+      const bookingSection = document.getElementById('booking-section');
+      const courseFeatures = document.getElementById('course-features');
+
+      if (user) {
+        // إذا كان المستخدم مسجلاً لدخوله
+        authButtons.style.display = 'none';
+        userName.textContent = `مرحباً، ${user.displayName || user.email}`;
+        userProfile.style.display = 'flex';
+        
+        // إخفاء نموذج التسجيل والحجز وإظهار خصائص الكورس
+        if (bookingSection) bookingSection.style.display = 'none';
+        if (courseFeatures) courseFeatures.style.display = 'block';
+      } else {
+        // إذا لم يكن مسجلاً لدخوله
+        authButtons.style.display = 'block';
+        userProfile.style.display = 'none';
+        
+        // إظهار نموذج التسجيل وإخفاء خصائص الكورس
+        if (bookingSection) bookingSection.style.display = 'block';
+        if (courseFeatures) courseFeatures.style.display = 'none';
+      }
+    });
+
+    // 1. تسجيل الدخول بواسطة Google
+    function loginWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider).catch((error) => {
+        alert("خطأ أثناء تسجيل الدخول بجوجل: " + error.message);
+      });
+    }
+
+    // 2. تسجيل الدخول بالبريد وكلمة السر
+    function loginWithEmail() {
+      const email = document.getElementById('auth-email').value;
+      const password = document.getElementById('auth-password').value;
+
+      if (!email || !password) {
+        alert("يرجى إدخال البريد الإلكتروني وكلمة السر");
+        return;
+      }
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .catch((error) => {
+          alert("خطأ في تسجيل الدخول: " + error.message);
+        });
+    }
+
+    // 3. إنشاء حساب جديد بالبريد وكلمة السر
+    function registerWithEmail() {
+      const email = document.getElementById('auth-email').value;
+      const password = document.getElementById('auth-password').value;
+
+      if (!email || !password) {
+        alert("يرجى إدخال البريد الإلكتروني وكلمة السر لإنشاء الحساب");
+        return;
+      }
+
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          alert("تم إنشاء الحساب بنجاح!");
+        })
+        .catch((error) => {
+          alert("خطأ في إنشاء الحساب: " + error.message);
+        });
+    }
+
+    // دالة تسجيل الخروج
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.reload();
+      });
+    }
+
+    function scrollToAuth() {
+      document.getElementById('booking-section').scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+
+</body>
+</html>
