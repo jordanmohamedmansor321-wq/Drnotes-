@@ -3,297 +3,2405 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>منصة DrNotes التعليمية</title>
-  
-  <!-- خط Cairo الأنيق من Google Fonts -->
+
+  <title>DrNotes | منصة الثانوية العامة في ليبيا</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <!-- مكتبة FontAwesome للأيقونات -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  >
 
   <style>
     :root {
-      --primary-blue: #0b3954;
-      --secondary-blue: #087e8b;
-      --accent-color: #ff9f1c;
-      --light-bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text-dark: #1e293b;
-      --text-muted: #64748b;
+      --primary: #0b3954;
+      --primary-light: #087e8b;
+      --accent: #ff9f1c;
+      --success: #16a34a;
+      --danger: #dc2626;
+
+      --bg: #f5f7fa;
+      --card: #ffffff;
+
+      --text: #172033;
+      --muted: #64748b;
+
+      --border: #e5e7eb;
+
+      --radius: 16px;
     }
 
     * {
-      box-sizing: border-box;
-      font-family: 'Cairo', sans-serif;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+      font-family: "Cairo", sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
-      background-color: var(--light-bg);
-      color: var(--text-dark);
+      background: var(--bg);
+      color: var(--text);
       direction: rtl;
     }
 
-    /* الهيدر العلوي */
+    button,
+    input,
+    select {
+      font-family: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
     header {
-      background-color: var(--card-bg);
-      padding: 15px 8%;
+      height: 74px;
+      background: rgba(255,255,255,.96);
+      border-bottom: 1px solid var(--border);
+
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      justify-content: space-between;
+
+      padding: 0 6%;
+
       position: sticky;
       top: 0;
       z-index: 1000;
+
+      backdrop-filter: blur(10px);
     }
 
     .logo {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--primary-blue);
       display: flex;
       align-items: center;
       gap: 10px;
+
+      font-size: 23px;
+      font-weight: 900;
+
+      color: var(--primary);
     }
 
     .logo i {
-      color: var(--secondary-blue);
+      color: var(--primary-light);
     }
 
     nav ul {
       display: flex;
       list-style: none;
-      gap: 25px;
+      gap: 28px;
     }
 
     nav a {
-      text-decoration: none;
-      color: var(--text-dark);
+      color: var(--text);
       font-weight: 600;
-      font-size: 16px;
-      transition: color 0.3s;
+      transition: .2s;
     }
 
     nav a:hover {
-      color: var(--secondary-blue);
+      color: var(--primary-light);
     }
 
-    /* قسم الهيرو (Hero Section) */
-    .hero {
-      background: linear-gradient(135deg, #0b3954 0%, #087e8b 100%);
-      color: white;
-      padding: 80px 8%;
-      text-align: center;
-      position: relative;
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
 
-    .hero h1 {
-      font-size: 38px;
-      font-weight: 900;
-      margin-bottom: 15px;
-      line-height: 1.4;
-    }
-
-    .hero p {
-      font-size: 19px;
-      max-width: 800px;
-      margin: 0 auto 30px auto;
-      opacity: 0.9;
-      line-height: 1.7;
-    }
-
-    .hero-btn {
-      display: inline-block;
-      background-color: var(--accent-color);
-      color: white;
-      padding: 14px 32px;
-      border-radius: 8px;
-      text-decoration: none;
+    .btn {
+      border: none;
+      padding: 11px 18px;
+      border-radius: 10px;
       font-weight: 700;
-      font-size: 18px;
-      box-shadow: 0 4px 15px rgba(255, 159, 28, 0.4);
-      transition: transform 0.2s;
+      transition: .2s;
     }
 
-    .hero-btn:hover {
-      transform: translateY(-2px);
+    .btn-primary {
+      background: var(--primary);
+      color: white;
     }
 
-    /* الأقسام والمحتوى */
-    .container {
-      max-width: 1200px;
-      margin: 50px auto;
-      padding: 0 20px;
+    .btn-primary:hover {
+      background: var(--primary-light);
+      transform: translateY(-1px);
     }
 
-    .section-title {
-      text-align: center;
-      margin-bottom: 40px;
+    .btn-outline {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--primary);
     }
 
-    .section-title h2 {
-      font-size: 28px;
-      color: var(--primary-blue);
-      font-weight: 800;
+    .btn-outline:hover {
+      border-color: var(--primary-light);
     }
 
-    .section-title p {
-      color: var(--text-muted);
-      font-size: 16px;
-      margin-top: 5px;
+    .menu-btn {
+      display: none;
+      border: none;
+      background: none;
+      font-size: 24px;
+      color: var(--primary);
     }
 
-    /* كروت الكورسات والمواد */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 25px;
-    }
+    /* =========================
+       HERO
+    ========================= */
 
-    .card {
-      background-color: var(--card-bg);
-      border-radius: 12px;
+    .hero {
+      position: relative;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e2e8f0;
-      transition: transform 0.3s, box-shadow 0.3s;
+
+      background:
+        radial-gradient(circle at 10% 20%, rgba(255,159,28,.18), transparent 30%),
+        linear-gradient(135deg, #0b3954, #087e8b);
+
+      color: white;
+      padding: 90px 7%;
     }
 
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    .hero-container {
+      max-width: 1200px;
+      margin: auto;
+
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 50px;
+      align-items: center;
     }
 
-    .card-header {
-      background-color: #e0f2fe;
-      color: var(--primary-blue);
-      padding: 25px;
-      text-align: center;
-      font-size: 40px;
-    }
-
-    .card-body {
-      padding: 20px;
-    }
-
-    .card-body h3 {
-      font-size: 20px;
-      color: var(--primary-blue);
-      margin-bottom: 10px;
-    }
-
-    .card-body p {
-      color: var(--text-muted);
-      font-size: 15px;
-      line-height: 1.6;
+    .hero-content h1 {
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.35;
+      font-weight: 900;
       margin-bottom: 20px;
     }
 
-    .card-btn {
-      display: block;
-      width: 100%;
-      text-align: center;
-      padding: 10px;
-      background-color: var(--primary-blue);
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-weight: 700;
-      transition: background 0.3s;
+    .hero-content h1 span {
+      color: #ffd166;
     }
 
-    .card-btn:hover {
-      background-color: var(--secondary-blue);
+    .hero-content p {
+      max-width: 720px;
+      font-size: 18px;
+      line-height: 2;
+      opacity: .92;
+      margin-bottom: 30px;
     }
 
-    /* الفوتر (Footer) */
-    footer {
-      background-color: var(--primary-blue);
+    .hero-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hero-btn {
+      padding: 14px 24px;
+      border-radius: 11px;
+      font-weight: 800;
+      border: none;
+      background: var(--accent);
       color: white;
+    }
+
+    .hero-btn.secondary {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.3);
+    }
+
+    .hero-card {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      padding: 30px;
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-card-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 18px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: rgba(255,255,255,.14);
+      font-size: 30px;
+      margin-bottom: 20px;
+    }
+
+    .hero-card h3 {
+      font-size: 23px;
+      margin-bottom: 10px;
+    }
+
+    .hero-card p {
+      line-height: 1.9;
+      opacity: .85;
+    }
+
+    /* =========================
+       GENERAL
+    ========================= */
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 75px 20px;
+    }
+
+    .section-title {
+      margin-bottom: 35px;
+    }
+
+    .section-title.center {
       text-align: center;
+    }
+
+    .section-title h2 {
+      color: var(--primary);
+      font-size: 30px;
+      font-weight: 900;
+      margin-bottom: 7px;
+    }
+
+    .section-title p {
+      color: var(--muted);
+    }
+
+    /* =========================
+       FEATURES
+    ========================= */
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .feature {
+      background: var(--card);
       padding: 25px;
-      margin-top: 60px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      transition: .25s;
+    }
+
+    .feature:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0,0,0,.07);
+    }
+
+    .feature-icon {
+      width: 55px;
+      height: 55px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 14px;
+
+      background: #e0f2fe;
+      color: var(--primary-light);
+
+      font-size: 23px;
+      margin-bottom: 18px;
+    }
+
+    .feature h3 {
+      margin-bottom: 8px;
+      color: var(--primary);
+    }
+
+    .feature p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    /* =========================
+       SUBJECTS
+    ========================= */
+
+    .subjects {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .subject-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: .25s;
+    }
+
+    .subject-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,.08);
+    }
+
+    .subject-top {
+      padding: 30px;
+      background: linear-gradient(
+        135deg,
+        #e0f2fe,
+        #ecfeff
+      );
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 50px;
+      color: var(--primary-light);
+    }
+
+    .subject-body {
+      padding: 22px;
+    }
+
+    .subject-body h3 {
+      color: var(--primary);
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .subject-body p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 18px;
+    }
+
+    .subject-info {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 15px;
+    }
+
+    .progress {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        var(--primary-light),
+        var(--primary)
+      );
+      border-radius: inherit;
+    }
+
+    .subject-btn {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 9px;
+
+      background: var(--primary);
+      color: white;
+
+      font-weight: 700;
+    }
+
+    /* =========================
+       HOW IT WORKS
+    ========================= */
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 20px;
+    }
+
+    .step {
+      text-align: center;
+      background: white;
+      border: 1px solid var(--border);
+      padding: 25px;
+      border-radius: var(--radius);
+    }
+
+    .step-number {
+      width: 55px;
+      height: 55px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      margin: 0 auto 15px;
+
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .step h3 {
+      color: var(--primary);
+      margin-bottom: 7px;
+    }
+
+    .step p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* =========================
+       AUTH MODAL
+    ========================= */
+
+    .modal {
+      position: fixed;
+      inset: 0;
+
+      background: rgba(15,23,42,.65);
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      padding: 20px;
+
+      z-index: 3000;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 450px;
+
+      background: white;
+      border-radius: 20px;
+
+      padding: 30px;
+
+      position: relative;
+
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+
+      border: none;
+      background: #f1f5f9;
+
+      width: 35px;
+      height: 35px;
+
+      border-radius: 50%;
+      font-size: 18px;
+    }
+
+    .modal-title {
+      color: var(--primary);
+      margin-bottom: 5px;
+      font-size: 25px;
+      font-weight: 900;
+    }
+
+    .modal-subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 17px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+
+      padding: 12px 14px;
+
+      border: 1px solid var(--border);
+      border-radius: 9px;
+
+      outline: none;
+      font-size: 14px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(8,126,139,.1);
+    }
+
+    .form-submit {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 10px;
+
+      background: var(--primary);
+      color: white;
+
+      font-weight: 800;
       font-size: 15px;
+    }
+
+    .switch-auth {
+      text-align: center;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .switch-auth button {
+      border: none;
+      background: none;
+      color: var(--primary-light);
+      font-weight: 800;
+    }
+
+    /* =========================
+       DASHBOARD
+    ========================= */
+
+    #dashboard {
+      display: none;
+    }
+
+    .dashboard-header {
+      background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-light)
+      );
+
+      color: white;
+      padding: 35px;
+      border-radius: 20px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      margin-bottom: 25px;
+    }
+
+    .dashboard-header h2 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .dashboard-header p {
+      opacity: .85;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 18px;
+      margin-bottom: 25px;
+    }
+
+    .stat {
+      background: white;
+      padding: 22px;
+      border-radius: 15px;
+      border: 1px solid var(--border);
+    }
+
+    .stat-icon {
+      color: var(--primary-light);
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .stat h3 {
+      font-size: 27px;
+      color: var(--primary);
+    }
+
+    .stat p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* =========================
+       SEARCH
+    ========================= */
+
+    .search-box {
+      max-width: 600px;
+      margin: 0 auto 35px;
+
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 15px 50px 15px 18px;
+
+      border: 1px solid var(--border);
+      border-radius: 12px;
+
+      background: white;
+      outline: none;
+    }
+
+    .search-box i {
+      position: absolute;
+      right: 18px;
+      top: 17px;
+      color: var(--muted);
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+      background: var(--primary);
+      color: white;
+
+      padding: 45px 20px 25px;
+      margin-top: 50px;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: auto;
+
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 40px;
+    }
+
+    .footer-content h3 {
+      margin-bottom: 12px;
+    }
+
+    .footer-content p {
+      opacity: .75;
+      line-height: 1.9;
+      font-size: 14px;
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 8px;
+      opacity: .8;
+    }
+
+    .copyright {
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,.15);
+      margin-top: 30px;
+      padding-top: 20px;
+      opacity: .7;
+      font-size: 13px;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 900px) {
+
+      nav {
+        display: none;
+      }
+
+      .menu-btn {
+        display: block;
+      }
+
+      .hero-container {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .hero-buttons {
+        justify-content: center;
+      }
+
+      .features {
+        grid-template-columns: repeat(2,1fr);
+      }
+
+      .subjects {
+        grid-template-columns: repeat(2,1fr);
+      }
+
+      .steps {
+        grid-template-columns: repeat(2,1fr);
+      }
+
+      .stats {
+        grid-template-columns: repeat(2,1fr);
+      }
+
+      .footer-content {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+
+      header {
+        padding: 0 18px;
+      }
+
+      .logo {
+        font-size: 19px;
+      }
+
+      .header-actions .btn-outline {
+        display: none;
+      }
+
+      .hero {
+        padding: 60px 20px;
+      }
+
+      .hero-content h1 {
+        font-size: 31px;
+      }
+
+      .hero-content p {
+        font-size: 15px;
+      }
+
+      .container {
+        padding: 50px 16px;
+      }
+
+      .features,
+      .subjects,
+      .steps,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+      }
+
+      .footer-content {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
+
 <body>
 
-  <!-- Navigation Bar -->
-  <header>
-    <div class="logo">
-      <i class="fa-solid fa-user-doctor"></i>
-      منصة DrNotes
-    </div>
-    <nav>
-      <ul>
-        <li><a href="#courses">المواد الدراسية</a></li>
-        <li><a href="#about">عن المنصة</a></li>
-        <li><a href="#contact">التواصل</a></li>
-      </ul>
-    </nav>
-  </header>
+<!-- =========================
+     HEADER
+========================= -->
 
-  <!-- Hero Banner -->
-  <section class="hero">
-    <h1>تضمن التميز والامتياز بإذن الله في كليتك الطبية</h1>
-    <p>شروحات مبسطة ومذكرات شاملة لمساعدتك على استيعاب المواد الطبية وتحقيق أعلى الدرجات بكل سهولة.</p>
-    <a href="#courses" class="hero-btn">استكشف الكورسات والمذكرات</a>
-  </section>
+<header>
 
-  <!-- Courses & Subjects Section -->
-  <div class="container" id="courses">
-    <div class="section-title">
-      <h2>المواد والكورسات المتاحة</h2>
-      <p>اختر المادة للوصول إلى الشروحات والمذكرات الخاصة بها</p>
-    </div>
+  <a href="#" class="logo">
+    <i class="fa-solid fa-graduation-cap"></i>
+    DrNotes
+  </a>
 
-    <div class="grid">
-      <!-- Card 1 -->
-      <div class="card">
-        <div class="card-header">
-          <i class="fa-solid fa-notes-medical"></i>
-        </div>
-        <div class="card-body">
-          <h3>علم التشريح (Anatomy)</h3>
-          <p>شرح كامل لأساسيات علم التشريح مع مذكرات ورسومات توضيحية مبسطة.</p>
-          <a href="#" class="card-btn">عرض المحتوى</a>
-        </div>
-      </div>
+  <nav>
+    <ul>
+      <li><a href="#home">الرئيسية</a></li>
+      <li><a href="#subjects">المواد</a></li>
+      <li><a href="#how">كيف تعمل؟</a></li>
+      <li><a href="#about">عن المنصة</a></li>
+    </ul>
+  </nav>
 
-      <!-- Card 2 -->
-      <div class="card">
-        <div class="card-header">
-          <i class="fa-solid fa-heart-pulse"></i>
-        </div>
-        <div class="card-body">
-          <h3>علم وظائف الأعضاء (Physiology)</h3>
-          <p>فهم آليات عمل أعضاء الجسم المختلفة بأسهل الطرق وأعلى جودة.</p>
-          <a href="#" class="card-btn">عرض المحتوى</a>
-        </div>
-      </div>
+  <div class="header-actions">
 
-      <!-- Card 3 -->
-      <div class="card">
-        <div class="card-header">
-          <i class="fa-solid fa-flask-vial"></i>
-        </div>
-        <div class="card-body">
-          <h3>الكيمياء الحيوية (Biochemistry)</h3>
-          <p>ملخصات ومخططات لجميع الممرات الكيميائية والدورات الحيوية.</p>
-          <a href="#" class="card-btn">عرض المحتوى</a>
-        </div>
-      </div>
-    </div>
+    <button
+      class="btn btn-outline"
+      onclick="openLogin()"
+    >
+      تسجيل الدخول
+    </button>
+
+    <button
+      class="btn btn-primary"
+      onclick="openRegister()"
+    >
+      إنشاء حساب
+    </button>
+
   </div>
 
-  <!-- Footer -->
-  <footer>
-    <p>جميع الحقوق محفوظة © 2026 - منصة DrNotes التعليمية</p>
-  </footer>
+  <button class="menu-btn">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+
+</header>
+
+
+<!-- =========================
+     HERO
+========================= -->
+
+<section class="hero" id="home">
+
+  <div class="hero-container">
+
+    <div class="hero-content">
+
+      <h1>
+        منصتك للتفوق في
+        <span>الثانوية العامة في ليبيا 🇱🇾</span>
+      </h1>
+
+      <p>
+        شرح مبسط، ملخصات منظمة، اختبارات وأسئلة تساعدك على فهم
+        المواد ومراجعتها والاستعداد للامتحانات في مكان واحد.
+      </p>
+
+      <div class="hero-buttons">
+
+        <button
+          class="hero-btn"
+          onclick="openRegister()"
+        >
+          ابدأ التعلم الآن
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+
+        <a
+          href="#subjects"
+          class="hero-btn secondary"
+        >
+          استكشف المواد
+        </a>
+
+      </div>
+
+    </div>
+
+    <div class="hero-card">
+
+      <div class="hero-card-icon">
+        <i class="fa-solid fa-book-open-reader"></i>
+      </div>
+
+      <h3>
+        كل دراستك في مكان واحد
+      </h3>
+
+      <p>
+        تابع دروسك، اختبر نفسك، احفظ الدروس المهمة
+        واعرف مستوى تقدمك خطوة بخطوة.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     FEATURES
+========================= -->
+
+<section class="container">
+
+  <div class="section-title center">
+
+    <h2>
+      كل ما تحتاجه للدراسة
+    </h2>
+
+    <p>
+      أدوات تعليمية تساعدك على تنظيم ومتابعة مذاكرتك
+    </p>
+
+  </div>
+
+  <div class="features">
+
+    <div class="feature">
+
+      <div class="feature-icon">
+        <i class="fa-solid fa-book-open"></i>
+      </div>
+
+      <h3>
+        شرح الدروس
+      </h3>
+
+      <p>
+        دروس منظمة ومبسطة تساعدك على فهم المنهج.
+      </p>
+
+    </div>
+
+
+    <div class="feature">
+
+      <div class="feature-icon">
+        <i class="fa-solid fa-pen-to-square"></i>
+      </div>
+
+      <h3>
+        اختبارات MCQ
+      </h3>
+
+      <p>
+        اختبر فهمك من خلال أسئلة واختبارات متنوعة.
+      </p>
+
+    </div>
+
+
+    <div class="feature">
+
+      <div class="feature-icon">
+        <i class="fa-solid fa-chart-line"></i>
+      </div>
+
+      <h3>
+        متابعة تقدمك
+      </h3>
+
+      <p>
+        اعرف الدروس التي أنجزتها ونسبة تقدمك في كل مادة.
+      </p>
+
+    </div>
+
+
+    <div class="feature">
+
+      <div class="feature-icon">
+        <i class="fa-solid fa-bullseye"></i>
+      </div>
+
+      <h3>
+        الاستعداد للامتحان
+      </h3>
+
+      <p>
+        راجع أهم النقاط وحل اختبارات تجريبية قبل الامتحان.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     SUBJECTS
+========================= -->
+
+<section class="container" id="subjects">
+
+  <div class="section-title center">
+
+    <h2>
+      المواد الدراسية
+    </h2>
+
+    <p>
+      اختر المادة وابدأ رحلة التعلم
+    </p>
+
+  </div>
+
+  <div class="search-box">
+
+    <i class="fa-solid fa-magnifying-glass"></i>
+
+    <input
+      type="text"
+      id="subjectSearch"
+      placeholder="ابحث عن مادة..."
+      oninput="searchSubjects()"
+    >
+
+  </div>
+
+
+  <div class="subjects" id="subjectsContainer">
+
+    <!-- Biology -->
+
+    <div class="subject-card" data-name="الأحياء">
+
+      <div class="subject-top">
+        <i class="fa-solid fa-dna"></i>
+      </div>
+
+      <div class="subject-body">
+
+        <h3>
+          الأحياء
+        </h3>
+
+        <p>
+          شرح ومراجعة موضوعات الأحياء بطريقة منظمة
+          مع أسئلة واختبارات.
+        </p>
+
+        <div class="subject-info">
+          <span>
+            <i class="fa-solid fa-book"></i>
+            20 درس
+          </span>
+
+          <span>
+            8 اختبارات
+          </span>
+        </div>
+
+        <div class="progress">
+          <div
+            class="progress-bar"
+            style="width: 0%"
+          ></div>
+        </div>
+
+        <button
+          class="subject-btn"
+          onclick="openLogin()"
+        >
+          ابدأ المادة
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- Chemistry -->
+
+    <div class="subject-card" data-name="الكيمياء">
+
+      <div class="subject-top">
+        <i class="fa-solid fa-flask"></i>
+      </div>
+
+      <div class="subject-body">
+
+        <h3>
+          الكيمياء
+        </h3>
+
+        <p>
+          شرح المفاهيم والقوانين والتفاعلات
+          مع تدريبات وأسئلة اختيار من متعدد.
+        </p>
+
+        <div class="subject-info">
+          <span>
+            <i class="fa-solid fa-book"></i>
+            18 درس
+          </span>
+
+          <span>
+            7 اختبارات
+          </span>
+        </div>
+
+        <div class="progress">
+          <div
+            class="progress-bar"
+            style="width: 0%"
+          ></div>
+        </div>
+
+        <button
+          class="subject-btn"
+          onclick="openLogin()"
+        >
+          ابدأ المادة
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- Physics -->
+
+    <div class="subject-card" data-name="الفيزياء">
+
+      <div class="subject-top">
+        <i class="fa-solid fa-atom"></i>
+      </div>
+
+      <div class="subject-body">
+
+        <h3>
+          الفيزياء
+        </h3>
+
+        <p>
+          شرح القوانين والمفاهيم الفيزيائية
+          مع مسائل وتدريبات امتحانية.
+        </p>
+
+        <div class="subject-info">
+          <span>
+            <i class="fa-solid fa-book"></i>
+            22 درس
+          </span>
+
+          <span>
+            9 اختبارات
+          </span>
+        </div>
+
+        <div class="progress">
+          <div
+            class="progress-bar"
+            style="width: 0%"
+          ></div>
+        </div>
+
+        <button
+          class="subject-btn"
+          onclick="openLogin()"
+        >
+          ابدأ المادة
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- Mathematics -->
+
+    <div class="subject-card" data-name="الرياضيات">
+
+      <div class="subject-top">
+        <i class="fa-solid fa-square-root-variable"></i>
+      </div>
+
+      <div class="subject-body">
+
+        <h3>
+          الرياضيات
+        </h3>
+
+        <p>
+          شرح القوانين والأفكار مع أمثلة
+          وتدريبات تساعدك على إتقان الحل.
+        </p>
+
+        <div class="subject-info">
+          <span>
+            <i class="fa-solid fa-book"></i>
+            25 درس
+          </span>
+
+          <span>
+            10 اختبارات
+          </span>
+        </div>
+
+        <div class="progress">
+          <div
+            class="progress-bar"
+            style="width: 0%"
+          ></div>
+        </div>
+
+        <button
+          class="subject-btn"
+          onclick="openLogin()"
+        >
+          ابدأ المادة
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- English -->
+
+    <div class="subject-card" data-name="اللغة الإنجليزية">
+
+      <div class="subject-top">
+        <i class="fa-solid fa-language"></i>
+      </div>
+
+      <div class="subject-body">
+
+        <h3>
+          اللغة الإنجليزية
+        </h3>
+
+        <p>
+          Grammar وVocabulary وReading
+          مع تدريبات واختبارات.
+        </p>
+
+        <div class="subject-info">
+          <span>
+            <i class="fa-solid fa-book"></i>
+            16 درس
+          </span>
+
+          <span>
+            6 اختبارات
+          </span>
+        </div>
+
+        <div class="progress">
+          <div
+            class="progress-bar"
+            style="width: 0%"
+          ></div>
+        </div>
+
+        <button
+          class="subject-btn"
+          onclick="openLogin()"
+        >
+          ابدأ المادة
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- Computer -->
+
+    <div class="subject-card" data-name="الحاسوب">
+
+      <div class="subject-top">
+        <i class="fa-solid fa-computer"></i>
+      </div>
+
+      <div class="subject-body">
+
+        <h3>
+          الحاسوب
+        </h3>
+
+        <p>
+          شرح أساسيات الحاسوب والموضوعات
+          المطلوبة بطريقة سهلة ومنظمة.
+        </p>
+
+        <div class="subject-info">
+          <span>
+            <i class="fa-solid fa-book"></i>
+            14 درس
+          </span>
+
+          <span>
+            5 اختبارات
+          </span>
+        </div>
+
+        <div class="progress">
+          <div
+            class="progress-bar"
+            style="width: 0%"
+          ></div>
+        </div>
+
+        <button
+          class="subject-btn"
+          onclick="openLogin()"
+        >
+          ابدأ المادة
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     HOW IT WORKS
+========================= -->
+
+<section class="container" id="how">
+
+  <div class="section-title center">
+
+    <h2>
+      كيف تعمل المنصة؟
+    </h2>
+
+    <p>
+      ابدأ الدراسة في أربع خطوات بسيطة
+    </p>
+
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+
+      <div class="step-number">
+        1
+      </div>
+
+      <h3>
+        أنشئ حسابك
+      </h3>
+
+      <p>
+        سجل حسابك واختر صفك الدراسي.
+      </p>
+
+    </div>
+
+
+    <div class="step">
+
+      <div class="step-number">
+        2
+      </div>
+
+      <h3>
+        اختر المادة
+      </h3>
+
+      <p>
+        اختر المادة التي تريد دراستها.
+      </p>
+
+    </div>
+
+
+    <div class="step">
+
+      <div class="step-number">
+        3
+      </div>
+
+      <h3>
+        ابدأ التعلم
+      </h3>
+
+      <p>
+        شاهد الشرح وراجع الملخصات وحل الأسئلة.
+      </p>
+
+    </div>
+
+
+    <div class="step">
+
+      <div class="step-number">
+        4
+      </div>
+
+      <h3>
+        تابع تقدمك
+      </h3>
+
+      <p>
+        اعرف مستواك ونتائج اختباراتك باستمرار.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     DASHBOARD
+========================= -->
+
+<section
+  class="container"
+  id="dashboard"
+>
+
+  <div class="dashboard-header">
+
+    <div>
+
+      <h2 id="welcomeUser">
+        مرحبًا 👋
+      </h2>
+
+      <p>
+        مستعد تكمل رحلتك التعليمية؟
+      </p>
+
+    </div>
+
+    <button
+      class="btn"
+      style="background:white;color:#0b3954"
+      onclick="logout()"
+    >
+      تسجيل الخروج
+    </button>
+
+  </div>
+
+
+  <div class="stats">
+
+    <div class="stat">
+
+      <div class="stat-icon">
+        <i class="fa-solid fa-book-open"></i>
+      </div>
+
+      <h3 id="completedLessons">
+        0
+      </h3>
+
+      <p>
+        دروس مكتملة
+      </p>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="stat-icon">
+        <i class="fa-solid fa-chart-line"></i>
+      </div>
+
+      <h3 id="overallProgress">
+        0%
+      </h3>
+
+      <p>
+        نسبة التقدم
+      </p>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="stat-icon">
+        <i class="fa-solid fa-pen-to-square"></i>
+      </div>
+
+      <h3 id="quizCount">
+        0
+      </h3>
+
+      <p>
+        اختبارات مكتملة
+      </p>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="stat-icon">
+        <i class="fa-solid fa-star"></i>
+      </div>
+
+      <h3 id="favoriteCount">
+        0
+      </h3>
+
+      <p>
+        دروس مفضلة
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="section-title">
+
+    <h2>
+      أكمل التعلم
+    </h2>
+
+    <p>
+      آخر درس وصلت إليه
+    </p>
+
+  </div>
+
+  <div class="subject-card">
+
+    <div class="subject-body">
+
+      <h3>
+        لا يوجد درس حاليًا
+      </h3>
+
+      <p>
+        ابدأ دراسة أحد المواد وسيظهر آخر درس لك هنا.
+      </p>
+
+      <button
+        class="subject-btn"
+        onclick="document.getElementById('subjects').scrollIntoView()"
+      >
+        استكشف المواد
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     ABOUT
+========================= -->
+
+<section
+  class="container"
+  id="about"
+>
+
+  <div class="section-title center">
+
+    <h2>
+      عن DrNotes
+    </h2>
+
+    <p>
+      منصة تعليمية تهدف إلى جعل المذاكرة أكثر تنظيمًا وسهولة.
+    </p>
+
+  </div>
+
+  <div
+    style="
+      max-width:850px;
+      margin:auto;
+      background:white;
+      border:1px solid var(--border);
+      padding:30px;
+      border-radius:18px;
+      text-align:center;
+      line-height:2;
+      color:var(--muted);
+    "
+  >
+
+    DrNotes هي منصة تعليمية موجهة لطلاب الثانوية العامة
+    في ليبيا، تجمع الشروحات والملخصات والاختبارات
+    ومتابعة مستوى الطالب في مكان واحد.
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+  <div class="footer-content">
+
+    <div>
+
+      <h3>
+        <i class="fa-solid fa-graduation-cap"></i>
+        DrNotes
+      </h3>
+
+      <p>
+        منصتك التعليمية للاستعداد للثانوية العامة
+        في ليبيا بطريقة منظمة وذكية.
+      </p>
+
+    </div>
+
+
+    <div>
+
+      <h3>
+        روابط
+      </h3>
+
+      <ul class="footer-links">
+
+        <li>
+          <a href="#home">الرئيسية</a>
+        </li>
+
+        <li>
+          <a href="#subjects">المواد</a>
+        </li>
+
+        <li>
+          <a href="#how">كيف تعمل؟</a>
+        </li>
+
+      </ul>
+
+    </div>
+
+
+    <div id="contact">
+
+      <h3>
+        تواصل معنا
+      </h3>
+
+      <ul class="footer-links">
+
+        <li>
+          <i class="fa-brands fa-telegram"></i>
+          Telegram
+        </li>
+
+        <li>
+          <i class="fa-solid fa-envelope"></i>
+          Email
+        </li>
+
+      </ul>
+
+    </div>
+
+  </div>
+
+
+  <div class="copyright">
+
+    جميع الحقوق محفوظة © 2026 - منصة DrNotes التعليمية
+
+  </div>
+
+</footer>
+
+
+<!-- =========================
+     AUTH MODAL
+========================= -->
+
+<div
+  class="modal"
+  id="authModal"
+>
+
+  <div class="modal-box">
+
+    <button
+      class="close-modal"
+      onclick="closeModal()"
+    >
+      ×
+    </button>
+
+
+    <!-- LOGIN -->
+
+    <div id="loginForm">
+
+      <h2 class="modal-title">
+        تسجيل الدخول
+      </h2>
+
+      <p class="modal-subtitle">
+        ادخل إلى حسابك لمتابعة دراستك.
+      </p>
+
+
+      <form onsubmit="login(event)">
+
+        <div class="form-group">
+
+          <label>
+            البريد الإلكتروني
+          </label>
+
+          <input
+            type="email"
+            id="loginEmail"
+            placeholder="example@email.com"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            كلمة المرور
+          </label>
+
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="كلمة المرور"
+            required
+          >
+
+        </div>
+
+
+        <button
+          class="form-submit"
+          type="submit"
+        >
+          تسجيل الدخول
+        </button>
+
+      </form>
+
+
+      <div class="switch-auth">
+
+        ليس لديك حساب؟
+
+        <button onclick="showRegister()">
+          إنشاء حساب
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- REGISTER -->
+
+    <div
+      id="registerForm"
+      style="display:none"
+    >
+
+      <h2 class="modal-title">
+        إنشاء حساب
+      </h2>
+
+      <p class="modal-subtitle">
+        أنشئ حسابك وابدأ رحلة التعلم.
+      </p>
+
+
+      <form onsubmit="register(event)">
+
+        <div class="form-group">
+
+          <label>
+            الاسم الكامل
+          </label>
+
+          <input
+            type="text"
+            id="registerName"
+            placeholder="اكتب اسمك"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            البريد الإلكتروني
+          </label>
+
+          <input
+            type="email"
+            id="registerEmail"
+            placeholder="example@email.com"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            الصف الدراسي
+          </label>
+
+          <select
+            id="registerGrade"
+            required
+          >
+
+            <option value="">
+              اختر الصف
+            </option>
+
+            <option value="الأول الثانوي">
+              الأول الثانوي
+            </option>
+
+            <option value="الثاني الثانوي">
+              الثاني الثانوي
+            </option>
+
+            <option value="الثالث الثانوي">
+              الثالث الثانوي
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            كلمة المرور
+          </label>
+
+          <input
+            type="password"
+            id="registerPassword"
+            placeholder="كلمة المرور"
+            minlength="6"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            تأكيد كلمة المرور
+          </label>
+
+          <input
+            type="password"
+            id="registerConfirm"
+            placeholder="أعد كتابة كلمة المرور"
+            required
+          >
+
+        </div>
+
+
+        <button
+          class="form-submit"
+          type="submit"
+        >
+          إنشاء الحساب
+        </button>
+
+      </form>
+
+
+      <div class="switch-auth">
+
+        لديك حساب بالفعل؟
+
+        <button onclick="showLogin()">
+          تسجيل الدخول
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  /*
+   * ======================================
+   * API CONFIGURATION
+   * ======================================
+   *
+   * بعد إنشاء Backend على Render
+   * غيّر هذا الرابط إلى رابط الـ API.
+   *
+   * مثال:
+   *
+   * const API_URL =
+   * "https://drnotes-api.onrender.com/api";
+   *
+   */
+
+  const API_URL = "/api";
+
+
+  /*
+   * ======================================
+   * MODAL
+   * ======================================
+   */
+
+  const authModal =
+    document.getElementById("authModal");
+
+  function openLogin() {
+
+    authModal.classList.add("active");
+
+    showLogin();
+
+  }
+
+
+  function openRegister() {
+
+    authModal.classList.add("active");
+
+    showRegister();
+
+  }
+
+
+  function closeModal() {
+
+    authModal.classList.remove("active");
+
+  }
+
+
+  function showLogin() {
+
+    document.getElementById("loginForm")
+      .style.display = "block";
+
+    document.getElementById("registerForm")
+      .style.display = "none";
+
+  }
+
+
+  function showRegister() {
+
+    document.getElementById("loginForm")
+      .style.display = "none";
+
+    document.getElementById("registerForm")
+      .style.display = "block";
+
+  }
+
+
+  /*
+   * ======================================
+   * REGISTER
+   * ======================================
+   */
+
+  async function register(event) {
+
+    event.preventDefault();
+
+    const name =
+      document.getElementById("registerName").value.trim();
+
+    const email =
+      document.getElementById("registerEmail").value.trim();
+
+    const grade =
+      document.getElementById("registerGrade").value;
+
+    const password =
+      document.getElementById("registerPassword").value;
+
+    const confirm =
+      document.getElementById("registerConfirm").value;
+
+
+    if (password !== confirm) {
+
+      alert("كلمتا المرور غير متطابقتين.");
+
+      return;
+
+    }
+
+
+    /*
+     * في المرحلة الحالية:
+     * نحفظ بيانات تجريبية محليًا.
+     *
+     * بعد ربط Backend:
+     * استبدل هذا الجزء بطلب POST إلى:
+     *
+     * POST /api/auth/register
+     */
+
+    const user = {
+
+      name,
+      email,
+      grade,
+
+      createdAt:
+        new Date().toISOString()
+
+    };
+
+
+    localStorage.setItem(
+      "drnotes_user",
+      JSON.stringify(user)
+    );
+
+
+    alert(
+      "تم إنشاء الحساب بنجاح! 🎉"
+    );
+
+
+    closeModal();
+
+    showDashboard(user);
+
+  }
+
+
+  /*
+   * ======================================
+   * LOGIN
+   * ======================================
+   */
+
+  async function login(event) {
+
+    event.preventDefault();
+
+    const email =
+      document.getElementById("loginEmail").value.trim();
+
+    /*
+     * في النسخة النهائية:
+     *
+     * POST /api/auth/login
+     *
+     * ولا يجب أبدًا التحقق من كلمة المرور
+     * داخل Frontend.
+     */
+
+
+    const savedUser =
+      localStorage.getItem("drnotes_user");
+
+
+    if (!savedUser) {
+
+      alert(
+        "الحساب غير موجود. قم بإنشاء حساب أولًا."
+      );
+
+      return;
+
+    }
+
+
+    const user =
+      JSON.parse(savedUser);
+
+
+    if (user.email !== email) {
+
+      alert(
+        "البريد الإلكتروني غير موجود."
+      );
+
+      return;
+
+    }
+
+
+    alert(
+      "تم تسجيل الدخول بنجاح."
+    );
+
+
+    closeModal();
+
+    showDashboard(user);
+
+  }
+
+
+  /*
+   * ======================================
+   * DASHBOARD
+   * ======================================
+   */
+
+  function showDashboard(user) {
+
+    document.getElementById("dashboard")
+      .style.display = "block";
+
+
+    document.getElementById("welcomeUser")
+      .textContent =
+      `مرحبًا ${user.name} 👋`;
+
+
+    document.getElementById("dashboard")
+      .scrollIntoView({
+        behavior: "smooth"
+      });
+
+
+    updateDashboard();
+
+  }
+
+
+  function updateDashboard() {
+
+    const completed =
+      JSON.parse(
+        localStorage.getItem("completed_lessons") || "[]"
+      );
+
+    const favorites =
+      JSON.parse(
+        localStorage.getItem("favorites") || "[]"
+      );
+
+    const quizzes =
+      JSON.parse(
+        localStorage.getItem("quiz_results") || "[]"
+      );
+
+
+    document.getElementById(
+      "completedLessons"
+    ).textContent = completed.length;
+
+
+    document.getElementById(
+      "favoriteCount"
+    ).textContent = favorites.length;
+
+
+    document.getElementById(
+      "quizCount"
+    ).textContent = quizzes.length;
+
+
+    /*
+     * مؤقتًا.
+     * سيتم حسابه من Database لاحقًا.
+     */
+
+    const progress =
+      completed.length === 0
+      ? 0
+      : Math.min(
+          completed.length * 5,
+          100
+        );
+
+
+    document.getElementById(
+      "overallProgress"
+    ).textContent =
+      progress + "%";
+
+  }
+
+
+  /*
+   * ======================================
+   * LOGOUT
+   * ======================================
+   */
+
+  function logout() {
+
+    localStorage.removeItem(
+      "drnotes_user"
+    );
+
+    document.getElementById(
+      "dashboard"
+    ).style.display = "none";
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+    alert(
+      "تم تسجيل الخروج."
+    );
+
+  }
+
+
+  /*
+   * ======================================
+   * SEARCH
+   * ======================================
+   */
+
+  function searchSubjects() {
+
+    const search =
+      document.getElementById(
+        "subjectSearch"
+      ).value
+      .toLowerCase()
+      .trim();
+
+
+    const cards =
+      document.querySelectorAll(
+        ".subject-card"
+      );
+
+
+    cards.forEach(card => {
+
+      const name =
+        card.dataset.name
+        .toLowerCase();
+
+
+      if (
+        name.includes(search)
+      ) {
+
+        card.style.display = "";
+
+      } else {
+
+        card.style.display = "none";
+
+      }
+
+    });
+
+  }
+
+
+  /*
+   * ======================================
+   * RESTORE SESSION
+   * ======================================
+   */
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+      const savedUser =
+        localStorage.getItem(
+          "drnotes_user"
+        );
+
+
+      if (savedUser) {
+
+        try {
+
+          const user =
+            JSON.parse(savedUser);
+
+          showDashboard(user);
+
+        } catch (error) {
+
+          localStorage.removeItem(
+            "drnotes_user"
+          );
+
+        }
+
+      }
+
+    }
+  );
+
+
+  /*
+   * إغلاق الـ Modal عند الضغط خارجه
+   */
+
+  authModal.addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target === authModal
+      ) {
+
+        closeModal();
+
+      }
+
+    }
+  );
+
+</script>
 
 </body>
-</html>
+  </html>
