@@ -35,6 +35,8 @@ app.use(express.urlencoded({ extended: true }));
 
 async function initializeDatabase() {
   try {
+
+    // USERS
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -46,7 +48,188 @@ async function initializeDatabase() {
       );
     `);
 
-    console.log("Users table is ready.");
+    // =====================================================
+    // SUBJECTS
+    // =====================================================
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS subjects (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // =====================================================
+    // UNITS
+    // =====================================================
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS units (
+        id SERIAL PRIMARY KEY,
+        subject_id INTEGER NOT NULL
+          REFERENCES subjects(id)
+          ON DELETE CASCADE,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        unit_order INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // =====================================================
+    // LESSONS
+    // =====================================================
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS lessons (
+        id SERIAL PRIMARY KEY,
+        unit_id INTEGER NOT NULL
+          REFERENCES units(id)
+          ON DELETE CASCADE,
+        name VARCHAR(200) NOT NULL,
+        description TEXT,
+        lesson_order INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // =====================================================
+    // LESSON CONTENT
+    // =====================================================
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS lesson_content (
+        id SERIAL PRIMARY KEY,
+        lesson_id INTEGER UNIQUE NOT NULL
+          REFERENCES lessons(id)
+          ON DELETE CASCADE,
+        video_url TEXT,
+        pdf_url TEXT,
+        explanation TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // =====================================================
+    // QUIZZES
+    // =====================================================
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS quizzes (
+        id SERIAL PRIMARY KEY,
+        lesson_id INTEGER UNIQUE NOT NULL
+          REFERENCES lessons(id)
+          ON DELETE CASCADE,
+        title VARCHAR(200) NOT NULL,
+        description TEXT,
+        passing_percentage INTEGER DEFAULT 50,
+        questions_per_page INTEGER DEFAULT 10,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // =====================================================
+    // QUIZ QUESTIONS
+    // =====================================================
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS quiz_questions (
+        id SERIAL PRIMARY KEY,
+        quiz_id INTEGER NOT NULL
+          REFERENCES quizzes(id)
+          ON DELETE CASCADE,
+
+        question_text TEXT NOT NULL,
+
+        option_a TEXT NOT NULL,
+        option_b TEXT NOT NULL,
+        option_c TEXT NOT NULL,
+        option_d TEXT NOT NULL,
+
+        correct_answer VARCHAR(1) NOT NULL
+          CHECK (
+            correct_answer IN ('A', 'B', 'C', 'D')
+          ),
+
+        explanation TEXT,
+
+        question_order INTEGER DEFAULT 0,
+
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // =====================================================
+    // QUIZ ATTEMPTS
+    // =====================================================
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS quiz_attempts (
+        id SERIAL PRIMARY KEY,
+
+        user_id INTEGER NOT NULL
+          REFERENCES users(id)
+          ON DELETE CASCADE,
+
+        quiz_id INTEGER NOT NULL
+          REFERENCES quizzes(id)
+          ON DELETE CASCADE,
+
+        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+        finished_at TIMESTAMP,
+
+        score INTEGER,
+
+        total_questions INTEGER,
+
+        percentage NUMERIC(5,2),
+
+        passed BOOLEAN,
+
+        status VARCHAR(20) DEFAULT 'started'
+          CHECK (
+            status IN (
+              'started',
+              'finished',
+              'abandoned'
+            )
+          ),
+
+        UNIQUE(user_id, quiz_id)
+      );
+    `);
+
+    // =====================================================
+    // QUIZ ANSWERS
+    // =====================================================
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS quiz_answers (
+        id SERIAL PRIMARY KEY,
+
+        attempt_id INTEGER NOT NULL
+          REFERENCES quiz_attempts(id)
+          ON DELETE CASCADE,
+
+        question_id INTEGER NOT NULL
+          REFERENCES quiz_questions(id)
+          ON DELETE CASCADE,
+
+        selected_answer VARCHAR(1),
+
+        is_correct BOOLEAN,
+
+        answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+        UNIQUE(attempt_id, question_id)
+      );
+    `);
+
+    console.log("Database tables are ready.");
 
   } catch (error) {
 
@@ -54,6 +237,7 @@ async function initializeDatabase() {
       "Database initialization failed:",
       error.message
     );
+
   }
 }
 
@@ -76,7 +260,6 @@ function createUserToken(user) {
   );
 
 }
-
 
 function createAdminToken() {
 
@@ -209,7 +392,7 @@ function requireUser(req, res, next) {
 }
 
 // =========================================================
-// HEALTH CHECK
+// HEALTH
 // =========================================================
 
 app.get(
@@ -224,12 +407,18 @@ app.get(
         );
 
       res.json({
+
         success: true,
+
         message:
           "DrNotes API is working 🚀",
-        database: "connected",
+
+        database:
+          "connected",
+
         time:
           result.rows[0].now
+
       });
 
     } catch (error) {
@@ -240,9 +429,12 @@ app.get(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           "Database connection failed"
+
       });
 
     }
@@ -275,9 +467,12 @@ app.post(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "جميع البيانات مطلوبة."
+
         });
 
       }
@@ -285,9 +480,12 @@ app.post(
       if (password.length < 6) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "كلمة المرور يجب أن تكون 6 أحرف على الأقل."
+
         });
 
       }
@@ -306,9 +504,12 @@ app.post(
       ) {
 
         return res.status(409).json({
+
           success: false,
+
           message:
             "هذا البريد الإلكتروني مستخدم بالفعل."
+
         });
 
       }
@@ -323,8 +524,14 @@ app.post(
         await pool.query(
           `
           INSERT INTO users
-          (name, email, grade, password_hash)
+          (
+            name,
+            email,
+            grade,
+            password_hash
+          )
           VALUES ($1, $2, $3, $4)
+
           RETURNING
             id,
             name,
@@ -367,9 +574,12 @@ app.post(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           "حدث خطأ أثناء إنشاء الحساب."
+
       });
 
     }
@@ -398,9 +608,12 @@ app.post(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "البريد الإلكتروني وكلمة المرور مطلوبان."
+
         });
 
       }
@@ -419,9 +632,12 @@ app.post(
       ) {
 
         return res.status(401).json({
+
           success: false,
+
           message:
             "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+
         });
 
       }
@@ -438,9 +654,12 @@ app.post(
       if (!passwordMatch) {
 
         return res.status(401).json({
+
           success: false,
+
           message:
             "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+
         });
 
       }
@@ -482,9 +701,12 @@ app.post(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           "حدث خطأ أثناء تسجيل الدخول."
+
       });
 
     }
@@ -523,21 +745,22 @@ app.get(
       ) {
 
         return res.status(404).json({
+
           success: false,
+
           message:
             "المستخدم غير موجود."
+
         });
 
       }
-
-      const user =
-        result.rows[0];
 
       res.json({
 
         success: true,
 
-        user
+        user:
+          result.rows[0]
 
       });
 
@@ -549,9 +772,12 @@ app.get(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           "تعذر التحقق من الحساب."
+
       });
 
     }
@@ -580,9 +806,12 @@ app.post(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "البريد الإلكتروني وكلمة المرور مطلوبان."
+
         });
 
       }
@@ -598,14 +827,13 @@ app.post(
         !adminPassword
       ) {
 
-        console.error(
-          "ADMIN_EMAIL or ADMIN_PASSWORD is missing."
-        );
-
         return res.status(500).json({
+
           success: false,
+
           message:
             "إعدادات المدير غير مكتملة على الخادم."
+
         });
 
       }
@@ -616,9 +844,12 @@ app.post(
       ) {
 
         return res.status(401).json({
+
           success: false,
+
           message:
             "بيانات المدير غير صحيحة."
+
         });
 
       }
@@ -628,9 +859,12 @@ app.post(
       ) {
 
         return res.status(401).json({
+
           success: false,
+
           message:
             "بيانات المدير غير صحيحة."
+
         });
 
       }
@@ -657,9 +891,12 @@ app.post(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           "حدث خطأ أثناء تسجيل دخول المدير."
+
       });
 
     }
@@ -707,9 +944,12 @@ app.get(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           "تعذر تحميل المستخدمين."
+
       });
 
     }
@@ -754,9 +994,12 @@ app.get(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           "تعذر الحصول على عدد المستخدمين."
+
       });
 
     }
@@ -787,9 +1030,12 @@ app.post(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "معرف المستخدم غير صحيح."
+
         });
 
       }
@@ -800,9 +1046,12 @@ app.post(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل."
+
         });
 
       }
@@ -817,8 +1066,11 @@ app.post(
         await pool.query(
           `
           UPDATE users
+
           SET password_hash = $1
+
           WHERE id = $2
+
           RETURNING
             id,
             name,
@@ -835,9 +1087,12 @@ app.post(
       ) {
 
         return res.status(404).json({
+
           success: false,
+
           message:
             "المستخدم غير موجود."
+
         });
 
       }
@@ -862,9 +1117,12 @@ app.post(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           "تعذر تغيير كلمة المرور."
+
       });
 
     }
@@ -891,9 +1149,12 @@ app.delete(
       ) {
 
         return res.status(400).json({
+
           success: false,
+
           message:
             "معرف المستخدم غير صحيح."
+
         });
 
       }
@@ -902,7 +1163,9 @@ app.delete(
         await pool.query(
           `
           DELETE FROM users
+
           WHERE id = $1
+
           RETURNING
             id,
             name,
@@ -916,9 +1179,12 @@ app.delete(
       ) {
 
         return res.status(404).json({
+
           success: false,
+
           message:
             "المستخدم غير موجود."
+
         });
 
       }
@@ -943,9 +1209,12 @@ app.delete(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           "تعذر حذف المستخدم."
+
       });
 
     }
@@ -954,43 +1223,1169 @@ app.delete(
 );
 
 // =========================================================
-// STATIC WEBSITE
+// SUBJECTS
 // =========================================================
 
-app.use(
-  express.static(
-    path.join(__dirname)
-  )
-);
-
+// GET ALL SUBJECTS
 app.get(
-  "/",
-  (req, res) => {
+  "/api/subjects",
+  async (req, res) => {
 
-    res.sendFile(
-      path.join(
-        __dirname,
-        "index.html"
-      )
-    );
+    try {
+
+      const result =
+        await pool.query(`
+          SELECT
+            id,
+            name,
+            description,
+            image_url,
+            created_at
+          FROM subjects
+          ORDER BY id ASC
+        `);
+
+      res.json({
+
+        success: true,
+
+        subjects:
+          result.rows
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get subjects error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل المواد."
+
+      });
+
+    }
+
+  }
+);
+
+// ADMIN ADD SUBJECT
+app.post(
+  "/api/admin/subjects",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const {
+        name,
+        description,
+        image_url
+      } = req.body;
+
+      if (!name) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "اسم المادة مطلوب."
+
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO subjects
+          (
+            name,
+            description,
+            image_url
+          )
+          VALUES ($1, $2, $3)
+
+          RETURNING *
+          `,
+          [
+            name.trim(),
+            description || null,
+            image_url || null
+          ]
+        );
+
+      res.status(201).json({
+
+        success: true,
+
+        subject:
+          result.rows[0]
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Create subject error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر إنشاء المادة."
+
+      });
+
+    }
 
   }
 );
 
 // =========================================================
-// START SERVER
+// UNITS
 // =========================================================
 
-app.listen(
-  PORT,
-  "0.0.0.0",
-  async () => {
+// GET UNITS BY SUBJECT
+app.get(
+  "/api/subjects/:subjectId/units",
+  async (req, res) => {
 
-    console.log(
-      `DrNotes server running on port ${PORT}`
-    );
+    try {
 
-    await initializeDatabase();
+      const subjectId =
+        Number(req.params.subjectId);
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            id,
+            subject_id,
+            name,
+            description,
+            unit_order,
+            created_at
+
+          FROM units
+
+          WHERE subject_id = $1
+
+          ORDER BY unit_order ASC, id ASC
+          `,
+          [subjectId]
+        );
+
+      res.json({
+
+        success: true,
+
+        units:
+          result.rows
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get units error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل الوحدات."
+
+      });
+
+    }
 
   }
 );
+
+// ADMIN ADD UNIT
+app.post(
+  "/api/admin/units",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const {
+        subject_id,
+        name,
+        description,
+        unit_order
+      } = req.body;
+
+      if (
+        !subject_id ||
+        !name
+      ) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "المادة واسم الوحدة مطلوبان."
+
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO units
+          (
+            subject_id,
+            name,
+            description,
+            unit_order
+          )
+
+          VALUES ($1, $2, $3, $4)
+
+          RETURNING *
+          `,
+          [
+            subject_id,
+            name.trim(),
+            description || null,
+            Number(unit_order) || 0
+          ]
+        );
+
+      res.status(201).json({
+
+        success: true,
+
+        unit:
+          result.rows[0]
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Create unit error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر إنشاء الوحدة."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// LESSONS
+// =========================================================
+
+// GET LESSONS BY UNIT
+app.get(
+  "/api/units/:unitId/lessons",
+  async (req, res) => {
+
+    try {
+
+      const unitId =
+        Number(req.params.unitId);
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            id,
+            unit_id,
+            name,
+            description,
+            lesson_order,
+            created_at
+
+          FROM lessons
+
+          WHERE unit_id = $1
+
+          ORDER BY lesson_order ASC, id ASC
+          `,
+          [unitId]
+        );
+
+      res.json({
+
+        success: true,
+
+        lessons:
+          result.rows
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get lessons error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل الدروس."
+
+      });
+
+    }
+
+  }
+);
+
+// GET COMPLETE LESSON
+app.get(
+  "/api/lessons/:lessonId",
+  async (req, res) => {
+
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      const lessonResult =
+        await pool.query(
+          `
+          SELECT
+            l.id,
+            l.unit_id,
+            l.name,
+            l.description,
+            l.lesson_order,
+
+            lc.video_url,
+            lc.pdf_url,
+            lc.explanation
+
+          FROM lessons l
+
+          LEFT JOIN lesson_content lc
+            ON lc.lesson_id = l.id
+
+          WHERE l.id = $1
+          `,
+          [lessonId]
+        );
+
+      if (
+        lessonResult.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "الدرس غير موجود."
+
+        });
+
+      }
+
+      const quizResult =
+        await pool.query(
+          `
+          SELECT
+            id,
+            title,
+            description,
+            passing_percentage,
+            questions_per_page
+
+          FROM quizzes
+
+          WHERE lesson_id = $1
+          `,
+          [lessonId]
+        );
+
+      res.json({
+
+        success: true,
+
+        lesson:
+          lessonResult.rows[0],
+
+        quiz:
+          quizResult.rows[0] || null
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get lesson error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل الدرس."
+
+      });
+
+    }
+
+  }
+);
+
+// ADMIN ADD LESSON
+app.post(
+  "/api/admin/lessons",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const {
+        unit_id,
+        name,
+        description,
+        lesson_order
+      } = req.body;
+
+      if (
+        !unit_id ||
+        !name
+      ) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "الوحدة واسم الدرس مطلوبان."
+
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO lessons
+          (
+            unit_id,
+            name,
+            description,
+            lesson_order
+          )
+
+          VALUES ($1, $2, $3, $4)
+
+          RETURNING *
+          `,
+          [
+            unit_id,
+            name.trim(),
+            description || null,
+            Number(lesson_order) || 0
+          ]
+        );
+
+      res.status(201).json({
+
+        success: true,
+
+        lesson:
+          result.rows[0]
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Create lesson error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر إنشاء الدرس."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// LESSON CONTENT
+// =========================================================
+
+// ADMIN ADD / UPDATE VIDEO + PDF
+app.post(
+  "/api/admin/lessons/:lessonId/content",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      const {
+        video_url,
+        pdf_url,
+        explanation
+      } = req.body;
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO lesson_content
+          (
+            lesson_id,
+            video_url,
+            pdf_url,
+            explanation
+          )
+
+          VALUES ($1, $2, $3, $4)
+
+          ON CONFLICT (lesson_id)
+
+          DO UPDATE SET
+            video_url = EXCLUDED.video_url,
+            pdf_url = EXCLUDED.pdf_url,
+            explanation = EXCLUDED.explanation,
+            updated_at = CURRENT_TIMESTAMP
+
+          RETURNING *
+          `,
+          [
+            lessonId,
+            video_url || null,
+            pdf_url || null,
+            explanation || null
+          ]
+        );
+
+      res.json({
+
+        success: true,
+
+        content:
+          result.rows[0]
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Lesson content error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر حفظ محتوى الدرس."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// QUIZ
+// =========================================================
+
+// ADMIN CREATE QUIZ
+app.post(
+  "/api/admin/quizzes",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const {
+        lesson_id,
+        title,
+        description,
+        passing_percentage,
+        questions_per_page
+      } = req.body;
+
+      if (
+        !lesson_id ||
+        !title
+      ) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "الدرس واسم الاختبار مطلوبان."
+
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO quizzes
+          (
+            lesson_id,
+            title,
+            description,
+            passing_percentage,
+            questions_per_page
+          )
+
+          VALUES ($1, $2, $3, $4, $5)
+
+          ON CONFLICT (lesson_id)
+
+          DO UPDATE SET
+            title = EXCLUDED.title,
+            description = EXCLUDED.description,
+            passing_percentage =
+              EXCLUDED.passing_percentage,
+            questions_per_page =
+              EXCLUDED.questions_per_page
+
+          RETURNING *
+          `,
+          [
+            lesson_id,
+            title.trim(),
+            description || null,
+            Number(passing_percentage) || 50,
+            Number(questions_per_page) || 10
+          ]
+        );
+
+      res.status(201).json({
+
+        success: true,
+
+        quiz:
+          result.rows[0]
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Create quiz error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر إنشاء الاختبار."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN ADD QUESTION
+// =========================================================
+
+app.post(
+  "/api/admin/quizzes/:quizId/questions",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const quizId =
+        Number(req.params.quizId);
+
+      const {
+        question_text,
+        option_a,
+        option_b,
+        option_c,
+        option_d,
+        correct_answer,
+        explanation,
+        question_order
+      } = req.body;
+
+      if (
+        !question_text ||
+        !option_a ||
+        !option_b ||
+        !option_c ||
+        !option_d ||
+        !["A", "B", "C", "D"].includes(
+          String(correct_answer).toUpperCase()
+        )
+      ) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "بيانات السؤال غير مكتملة."
+
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO quiz_questions
+          (
+            quiz_id,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            correct_answer,
+            explanation,
+            question_order
+          )
+
+          VALUES
+          ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+
+          RETURNING *
+          `,
+          [
+            quizId,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            String(correct_answer).toUpperCase(),
+            explanation || null,
+            Number(question_order) || 0
+          ]
+        );
+
+      res.status(201).json({
+
+        success: true,
+
+        question:
+          result.rows[0]
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Create question error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر إضافة السؤال."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// START QUIZ
+// =========================================================
+
+app.post(
+  "/api/quizzes/:quizId/start",
+  requireUser,
+  async (req, res) => {
+
+    const client =
+      await pool.connect();
+
+    try {
+
+      const quizId =
+        Number(req.params.quizId);
+
+      await client.query(
+        "BEGIN"
+      );
+
+      // Check quiz
+      const quizResult =
+        await client.query(
+          `
+          SELECT
+            id,
+            title,
+            description,
+            passing_percentage,
+            questions_per_page
+
+          FROM quizzes
+
+          WHERE id = $1
+          `,
+          [quizId]
+        );
+
+      if (
+        quizResult.rows.length === 0
+      ) {
+
+        await client.query("ROLLBACK");
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "الاختبار غير موجود."
+
+        });
+
+      }
+
+      // IMPORTANT:
+      // الطالب لديه محاولة واحدة فقط
+      const existingAttempt =
+        await client.query(
+          `
+          SELECT *
+          FROM quiz_attempts
+
+          WHERE user_id = $1
+          AND quiz_id = $2
+          `,
+          [
+            req.user.id,
+            quizId
+          ]
+        );
+
+      if (
+        existingAttempt.rows.length > 0
+      ) {
+
+        await client.query("ROLLBACK");
+
+        const attempt =
+          existingAttempt.rows[0];
+
+        return res.status(409).json({
+
+          success: false,
+
+          already_attempted: true,
+
+          message:
+            "لقد بدأت أو أنهيت هذا الاختبار من قبل، ولا يمكن فتحه مرة أخرى.",
+
+          attempt: {
+
+            id: attempt.id,
+
+            status:
+              attempt.status,
+
+            score:
+              attempt.score,
+
+            total_questions:
+              attempt.total_questions,
+
+            percentage:
+              attempt.percentage,
+
+            passed:
+              attempt.passed
+
+          }
+
+        });
+
+      }
+
+      const questionsResult =
+        await client.query(
+          `
+          SELECT
+            id,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            question_order
+
+          FROM quiz_questions
+
+          WHERE quiz_id = $1
+
+          ORDER BY question_order ASC, id ASC
+          `,
+          [quizId]
+        );
+
+      if (
+        questionsResult.rows.length === 0
+      ) {
+
+        await client.query("ROLLBACK");
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "لا توجد أسئلة في هذا الاختبار."
+
+        });
+
+      }
+
+      const attemptResult =
+        await client.query(
+          `
+          INSERT INTO quiz_attempts
+          (
+            user_id,
+            quiz_id,
+            total_questions,
+            status
+          )
+
+          VALUES
+          ($1, $2, $3, 'started')
+
+          RETURNING *
+          `,
+          [
+            req.user.id,
+            quizId,
+            questionsResult.rows.length
+          ]
+        );
+
+      const attempt =
+        attemptResult.rows[0];
+
+      await client.query(
+        "COMMIT"
+      );
+
+      res.status(201).json({
+
+        success: true,
+
+        message:
+          "تم بدء الاختبار.",
+
+        attempt: {
+
+          id:
+            attempt.id,
+
+          quiz_id:
+            quizId,
+
+          started_at:
+            attempt.started_at,
+
+          status:
+            attempt.status
+
+        },
+
+        quiz:
+          quizResult.rows[0],
+
+        questions:
+          questionsResult.rows
+
+      });
+
+    } catch (error) {
+
+      await client.query(
+        "ROLLBACK"
+      );
+
+      console.error(
+        "Start quiz error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر بدء الاختبار."
+
+      });
+
+    } finally {
+
+      client.release();
+
+    }
+
+  }
+);
+
+// =========================================================
+// SUBMIT ANSWERS
+// =========================================================
+
+app.post(
+  "/api/quizzes/attempts/:attemptId/submit",
+  requireUser,
+  async (req, res) => {
+
+    const client =
+      await pool.connect();
+
+    try {
+
+      const attemptId =
+        Number(req.params.attemptId);
+
+      const answers =
+        Array.isArray(req.body.answers)
+          ? req.body.answers
+          : [];
+
+      await client.query(
+        "BEGIN"
+      );
+
+      const attemptResult =
+        await client.query(
+          `
+          SELECT
+            a.*,
+            q.passing_percentage
+
+          FROM quiz_attempts a
+
+          JOIN quizzes q
+            ON q.id = a.quiz_id
+
+          WHERE a.id = $1
+
+          AND a.user_id = $2
+
+          FOR UPDATE
+          `,
+          [
+            attemptId,
+            req.user.id
+          ]
+        );
+
+      if (
+        attemptResult.rows.length === 0
+      ) {
+
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "المحاولة غير موجودة."
+
+        });
+
+      }
+
+      const attempt =
+        attemptResult.rows[0];
+
+      if (
+        attempt.status !== "started"
+      ) {
+
+        await client.query(
+          "ROLLBACK"
+        );
+
+        return res.status(409).json({
+
+          success: false,
+
+          message:
+            "هذه المحاولة تم التعامل معها بالفعل."
+
+        });
+
+      }
+
+      const questionsResult =
+        await client.query(
+          `
+          SELECT
+            id,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            correct_answer,
+            explanation,
+           
