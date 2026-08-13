@@ -3133,4 +3133,4 @@ app.listen(
 
     await initializeDatabase();
 
-  }
+}
