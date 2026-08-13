@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>DrNotes - لوحة الإدارة</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Tahoma, sans-serif;
+      background: #f5f7fa;
+      color: #1f2937;
+      min-height: 100vh;
+    }
+
+    button,
+    input {
+      font-family: inherit;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* =========================
+       LOGIN
+    ========================= */
+
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(
+        135deg,
+        #eef6ff,
+        #f8fafc
+      );
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 430px;
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow:
+        0 15px 45px rgba(0, 0, 0, 0.08);
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 800;
+      color: #1769aa;
+      margin-bottom: 8px;
+    }
+
+    .login-title {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 25px;
+      line-height: 1.7;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .form-group input {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 13px 14px;
+      font-size: 15px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: #1769aa;
+      box-shadow:
+        0 0 0 3px rgba(23, 105, 170, 0.1);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 13px 18px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: #1769aa;
+      color: white;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error-message {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+
+    /* =========================
+       ADMIN APP
+    ========================= */
+
+    .admin-app {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      font-size: 24px;
+      font-weight: 800;
+      color: #1769aa;
+    }
+
+    .admin-label {
+      color: #6b7280;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .logout-btn {
+      background: #fee2e2;
+      color: #991b1b;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1250px;
+      margin: auto;
+      padding: 25px 20px 50px;
+    }
+
+    /* =========================
+       STATS
+    ========================= */
+
+    .stats {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 25px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-title {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: 800;
+      color: #1769aa;
+    }
+
+    /* =========================
+       USERS
+    ========================= */
+
+    .users-card {
+      background: white;
+      border-radius: 18px;
+      box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .users-header {
+      padding: 20px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .users-header h2 {
+      margin-bottom: 15px;
+    }
+
+    .search-box {
+      width: 100%;
+      max-width: 500px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .search-box:focus {
+      border-color: #1769aa;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+
+    th,
+    td {
+      padding: 15px;
+      text-align: right;
+      border-bottom: 1px solid #eef0f3;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    tr:hover td {
+      background: #fafafa;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      border: none;
+      border-radius: 8px;
+      padding: 8px 11px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .reset-btn {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .delete-btn {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .empty {
+      padding: 35px;
+      text-align: center;
+      color: #6b7280;
+    }
+
+    /* =========================
+       MODAL
+    ========================= */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 430px;
+      background: white;
+      border-radius: 18px;
+      padding: 25px;
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h3 {
+      margin-bottom: 10px;
+    }
+
+    .modal p {
+      color: #6b7280;
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+    }
+
+    .cancel-btn {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .confirm-btn {
+      background: #1769aa;
+      color: white;
+    }
+
+    /* =========================
+       TOAST
+    ========================= */
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      max-width: 450px;
+      margin: auto;
+      padding: 14px 18px;
+      border-radius: 12px;
+      color: white;
+      text-align: center;
+      z-index: 200;
+      display: none;
+      line-height: 1.6;
+    }
+
+    #toast.success {
+      background: #15803d;
+    }
+
+    #toast.error {
+      background: #b91c1c;
+    }
+
+    #toast.warning {
+      background: #b45309;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 700px) {
+
+      .topbar {
+        padding: 14px 15px;
+      }
+
+      .brand {
+        font-size: 20px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .container {
+        padding: 18px 12px 40px;
+      }
+
+      .login-card {
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =====================================================
+       ADMIN LOGIN
+  ====================================================== -->
+
+  <section id="login-page" class="login-page">
+
+    <div class="login-card">
+
+      <div class="logo">
+        DrNotes 🇱🇾
+      </div>
+
+      <h1 class="login-title">
+        لوحة الإدارة
+      </h1>
+
+      <p class="login-subtitle">
+        تسجيل دخول المدير لإدارة الطلاب والحسابات.
+      </p>
+
+      <div
+        id="login-error"
+        class="error-message hidden"
+      ></div>
+
+      <form id="admin-login-form">
+
+        <div class="form-group">
+
+          <label for="admin-email">
+            البريد الإلكتروني
+          </label>
+
+          <input
+            id="admin-email"
+            type="email"
+            placeholder="admin@example.com"
+            autocomplete="username"
+            required
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="admin-password">
+            كلمة مرور المدير
+          </label>
+
+          <input
+            id="admin-password"
+            type="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          >
+
+        </div>
+
+        <button
+          id="login-button"
+          class="btn btn-primary"
+          type="submit"
+        >
+          تسجيل الدخول
+        </button>
+
+      </form>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       ADMIN APP
+  ====================================================== -->
+
+  <section
+    id="admin-app"
+    class="admin-app hidden"
+  >
+
+    <header class="topbar">
+
+      <div>
+        <div class="brand">
+          DrNotes 🇱🇾
+        </div>
+
+        <div class="admin-label">
+          لوحة تحكم المدير
+        </div>
+      </div>
+
+      <button
+        class="logout-btn"
+        onclick="adminLogout()"
+      >
+        تسجيل الخروج
+      </button>
+
+    </header>
+
+
+    <main class="container">
+
+      <!-- STATS -->
+
+      <div class="stats">
+
+        <div class="stat-card">
+
+          <div class="stat-title">
+            إجمالي الطلاب
+          </div>
+
+          <div
+            id="users-count"
+            class="stat-value"
+          >
+            0
+          </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <div class="stat-title">
+            حالة قاعدة البيانات
+          </div>
+
+          <div
+            id="database-status"
+            class="stat-value"
+            style="font-size:20px;"
+          >
+            جارٍ التحقق...
+          </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <div class="stat-title">
+            لوحة الإدارة
+          </div>
+
+          <div
+            class="stat-value"
+            style="font-size:20px;"
+          >
+            آمنة 🔐
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- USERS -->
+
+      <section class="users-card">
+
+        <div class="users-header">
+
+          <h2>
+            الطلاب المسجلون
+          </h2>
+
+          <input
+            id="search-input"
+            class="search-box"
+            type="search"
+            placeholder="ابحث بالاسم أو البريد الإلكتروني أو الصف..."
+            oninput="filterUsers()"
+          >
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  #
+                </th>
+
+                <th>
+                  الاسم
+                </th>
+
+                <th>
+                  البريد الإلكتروني
+                </th>
+
+                <th>
+                  الصف
+                </th>
+
+                <th>
+                  تاريخ التسجيل
+                </th>
+
+                <th>
+                  الإجراءات
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="users-table-body">
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </section>
+
+
+  <!-- =====================================================
+       RESET PASSWORD MODAL
+  ====================================================== -->
+
+  <div
+    id="reset-modal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal">
+
+      <h3>
+        إعادة تعيين كلمة المرور
+      </h3>
+
+      <p id="reset-user-info">
+        تغيير كلمة مرور الطالب.
+      </p>
+
+      <div class="form-group">
+
+        <label for="new-password">
+          كلمة المرور الجديدة
+        </label>
+
+        <input
+          id="new-password"
+          type="password"
+          placeholder="6 أحرف على الأقل"
+          minlength="6"
+        >
+
+      </div>
+
+      <div class="modal-actions">
+
+        <button
+          class="btn cancel-btn"
+          onclick="closeResetModal()"
+        >
+          إلغاء
+        </button>
+
+        <button
+          id="reset-confirm-button"
+          class="btn confirm-btn"
+          onclick="confirmResetPassword()"
+        >
+          تغيير كلمة المرور
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       DELETE MODAL
+  ====================================================== -->
+
+  <div
+    id="delete-modal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal">
+
+      <h3>
+        حذف الحساب
+      </h3>
+
+      <p id="delete-user-info">
+        هل أنت متأكد من حذف هذا الحساب؟
+      </p>
+
+      <div class="modal-actions">
+
+        <button
+          class="btn cancel-btn"
+          onclick="closeDeleteModal()"
+        >
+          إلغاء
+        </button>
+
+        <button
+          id="delete-confirm-button"
+          class="btn delete-btn"
+          onclick="confirmDeleteUser()"
+        >
+          حذف الحساب
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div id="toast"></div>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ====================================================== -->
+
+  <script>
+
+    /*
+     * إذا كانت admin.html تُفتح من نفس خدمة Render
+     * نستخدم /api.
+     *
+     * وإذا فتحتها من مكان آخر:
+     * يمكن تغييرها إلى:
+     *
+     * https://drnotes-apii.onrender.com/api
+     */
+
+    const API_BASE_URL =
+      window.DRNOTES_API_URL ||
+      "/api";
+
+
+    let adminToken =
+      localStorage.getItem(
+        "drnotes_admin_token"
+      );
+
+
+    let allUsers = [];
+
+    let selectedUserId = null;
+
+
+    // =====================================================
+    // INITIALIZATION
+    // =====================================================
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+
+        if (adminToken) {
+
+          showAdminApp();
+
+          loadDashboard();
+
+        } else {
+
+          showLoginPage();
+
+        }
+
+      }
+    );
+
+
+    // =====================================================
+    // LOGIN
+    // =====================================================
+
+    document
+      .getElementById("admin-login-form")
+      .addEventListener(
+        "submit",
+        async function(event) {
+
+          event.preventDefault();
+
+          const email =
+            document
+              .getElementById("admin-email")
+              .value
+              .trim();
+
+          const password =
+            document
+              .getElementById("admin-password")
+              .value;
+
+          const button =
+            document.getElementById(
+              "login-button"
+            );
+
+          const errorBox =
+            document.getElementById(
+              "login-error"
+            );
+
+          errorBox.classList.add(
+            "hidden"
+          );
+
+          button.disabled = true;
+
+          button.textContent =
+            "جاري تسجيل الدخول...";
+
+          try {
+
+            const response =
+              await fetch(
+                `${API_BASE_URL}/admin/login`,
+                {
+                  method: "POST",
+
+                  headers: {
+                    "Content-Type":
+                      "application/json"
+                  },
+
+                  body: JSON.stringify({
+                    email,
+                    password
+                  })
+                }
+              );
+
+            const data =
+              await response.json();
+
+            if (
+              !response.ok ||
+              !data.success
+            ) {
+
+              throw new Error(
+                data.message ||
+                "فشل تسجيل الدخول."
+              );
+
+            }
+
+            adminToken =
+              data.token;
+
+            localStorage.setItem(
+              "drnotes_admin_token",
+              adminToken
+            );
+
+            document
+              .getElementById(
+                "admin-password"
+              )
+              .value = "";
+
+            showAdminApp();
+
+            await loadDashboard();
+
+            showToast(
+              "تم تسجيل دخول المدير بنجاح.",
+              "success"
+            );
+
+          } catch (error) {
+
+            console.error(
+              "Admin login error:",
+              error
+            );
+
+            errorBox.textContent =
+              error.message ||
+              "حدث خطأ أثناء تسجيل الدخول.";
+
+            errorBox.classList.remove(
+              "hidden"
+            );
+
+          } finally {
+
+            button.disabled = false;
+
+            button.textContent =
+              "تسجيل الدخول";
+          }
+
+        }
+      );
+
+
+    // =====================================================
+    // SHOW / HIDE
+    // =====================================================
+
+    function showLoginPage() {
+
+      document
+        .getElementById("login-page")
+        .classList.remove("hidden");
+
+      document
+        .getElementById("admin-app")
+        .classList.add("hidden");
+
+    }
+
+
+    function showAdminApp() {
+
+      document
+        .getElementById("login-page")
+        .classList.add("hidden");
+
+      document
+        .getElementById("admin-app")
+        .classList.remove("hidden");
+
+    }
+
+
+    // =====================================================
+    // LOAD DASHBOARD
+    // =====================================================
+
+    async function loadDashboard() {
+
+      try {
+
+        await Promise.all([
+          loadUsers(),
+          checkDatabase()
+        ]);
+
+      } catch (error) {
+
+        console.error(
+          "Dashboard error:",
+          error
+        );
+
+      }
+
+    }
+
+
+    // =====================================================
+    // LOAD USERS
+    // =====================================================
+
+    async function loadUsers() {
+
+      const response =
+        await fetch(
+          `${API_BASE_URL}/admin/users`,
+          {
+            method: "GET",
+
+            headers: {
+              "Authorization":
+                `Bearer ${adminToken}`
+            }
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (
+        response.status === 401 ||
+        response.status === 403
+      ) {
+
+        adminLogout();
+
+        throw new Error(
+          "انتهت جلسة المدير."
+        );
+
+      }
+
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+
+        throw new Error(
+          data.message ||
+          "تعذر تحميل المستخدمين."
+        );
+
+      }
+
+
+      allUsers =
+        data.users || [];
+
+
+      document
+        .getElementById(
+          "users-count"
+        )
+        .textContent =
+          allUsers.length;
+
+
+      renderUsers(
+        allUsers
+      );
+
+    }
+
+
+    // =====================================================
+    // RENDER USERS
+    // =====================================================
+
+    function renderUsers(
+      users
+    ) {
+
+      const tbody =
+        document.getElementById(
+          "users-table-body"
+        );
+
+
+      if (!users.length) {
+
+        tbody.innerHTML = `
+          <tr>
+            <td
+              colspan="6"
+              class="empty"
+            >
+              لا يوجد طلاب مسجلون حاليًا.
+            </td>
+          </tr>
+        `;
+
+        return;
+      }
+
+
+      tbody.innerHTML =
+        users.map(
+          (user, index) => {
+
+            const date =
+              formatDate(
+                user.created_at
+              );
+
+
+            return `
+              <tr>
+
+                <td>
+                  ${index + 1}
+                </td>
+
+                <td>
+                  <strong>
+                    ${escapeHTML(
+                      user.name
+                    )}
+                  </strong>
+                </td>
+
+                <td>
+                  ${escapeHTML(
+                    user.email
+                  )}
+                </td>
+
+                <td>
+                  ${escapeHTML(
+                    user.grade
+                  )}
+                </td>
+
+                <td>
+                  ${date}
+                </td>
+
+                <td>
+
+                  <div class="action-buttons">
+
+                    <button
+                      class="action-btn reset-btn"
+                      onclick="openResetModal(
+                        ${user.id},
+                        '${escapeJS(
+                          user.name
+                        )}',
+                        '${escapeJS(
+                          user.email
+                        )}'
+                      )"
+                    >
+                      🔑 إعادة تعيين
+                    </button>
+
+                    <button
+                      class="action-btn delete-btn"
+                      onclick="openDeleteModal(
+                        ${user.id},
+                        '${escapeJS(
+                          user.name
+                        )}'
+                      )"
+                    >
+                      🗑️ حذف
+                    </button>
+
+                  </div>
+
+                </td>
+
+              </tr>
+            `;
+
+          }
+        ).join("");
+
+    }
+
+
+    // =====================================================
+    // SEARCH
+    // =====================================================
+
+    function filterUsers() {
+
+      const query =
+        document
+          .getElementById(
+            "search-input"
+          )
+          .value
+          .trim()
+          .toLowerCase();
+
+
+      if (!query) {
+
+        renderUsers(
+          allUsers
+        );
+
+        return;
+      }
+
+
+      const filtered =
+        allUsers.filter(
+          user => {
+
+            return (
+              String(
+                user.name || ""
+              )
+                .toLowerCase()
+                .includes(query)
+
+              ||
+
+              String(
+                user.email || ""
+              )
+                .toLowerCase()
+                .includes(query)
+
+              ||
+
+              String(
+                user.grade || ""
+              )
+                .toLowerCase()
+                .includes(query)
+            );
+
+          }
+        );
+
+
+      renderUsers(
+        filtered
+      );
+
+    }
+
+
+    // =====================================================
+    // RESET PASSWORD
+    // =====================================================
+
+    function openResetModal(
+      userId,
+      name,
+      email
+    ) {
+
+      selectedUserId =
+        userId;
+
+
+      document
+        .getElementById(
+          "reset-user-info"
+        )
+        .textContent =
+          `سيتم تغيير كلمة مرور ${name} (${email}).`;
+
+
+      document
+        .getElementById(
+          "new-password"
+        )
+        .value = "";
+
+
+      document
+        .getElementById(
+          "reset-modal"
+        )
+        .classList.remove(
+          "hidden"
+        );
+
+    }
+
+
+    function closeResetModal() {
+
+      selectedUserId =
+        null;
+
+
+      document
+        .getElementById(
+          "reset-modal"
+        )
+        .classList.add(
+          "hidden"
+        );
+
+    }
+
+
+    async function confirmResetPassword() {
+
+      if (!selectedUserId) {
+        return;
+      }
+
+
+      const password =
+        document
+          .getElementById(
+            "new-password"
+          )
+          .value;
+
+
+      if (
+        !password ||
+        password.length < 6
+      ) {
+
+        showToast(
+          "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
+          "warning"
+        );
+
+        return;
+      }
+
+
+      const button =
+        document.getElementById(
+          "reset-confirm-button"
+        );
+
+
+      button.disabled = true;
+
+      button.textContent =
+        "جاري التغيير...";
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/admin/users/${selectedUserId}/reset-password`,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+
+                "Authorization":
+                  `Bearer ${adminToken}`
+              },
+
+              body: JSON.stringify({
+                newPassword:
+                  password
+              })
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          response.status === 401 ||
+          response.status === 403
+        ) {
+
+          adminLogout();
+
+          return;
+
+        }
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.message ||
+            "تعذر تغيير كلمة المرور."
+          );
+
+        }
+
+
+        closeResetModal();
+
+
+        showToast(
+          "تم تغيير كلمة مرور الطالب بنجاح.",
+          "success"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Reset password error:",
+          error
+        );
+
+        showToast(
+          error.message ||
+          "حدث خطأ أثناء تغيير كلمة المرور.",
+          "error"
+        );
+
+      } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+          "تغيير كلمة المرور";
+
+      }
+
+    }
+
+
+    // =====================================================
+    // DELETE USER
+    // =====================================================
+
+    function openDeleteModal(
+      userId,
+      name
+    ) {
+
+      selectedUserId =
+        userId;
+
+
+      document
+        .getElementById(
+          "delete-user-info"
+        )
+        .textContent =
+          `هل أنت متأكد من حذف حساب "${name}"؟ لا يمكن التراجع عن هذا الإجراء.`;
+
+
+      document
+        .getElementById(
+          "delete-modal"
+        )
+        .classList.remove(
+          "hidden"
+        );
+
+    }
+
+
+    function closeDeleteModal() {
+
+      selectedUserId =
+        null;
+
+
+      document
+        .getElementById(
+          "delete-modal"
+        )
+        .classList.add(
+          "hidden"
+        );
+
+    }
+
+
+    async function confirmDeleteUser() {
+
+      if (!selectedUserId) {
+        return;
+      }
+
+
+      const confirmed =
+        confirm(
+          "تأكيد حذف الحساب نهائيًا؟"
+        );
+
+
+      if (!confirmed) {
+        return;
+      }
+
+
+      const button =
+        document.getElementById(
+          "delete-confirm-button"
+        );
+
+
+      button.disabled = true;
+
+      button.textContent =
+        "جاري الحذف...";
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/admin/users/${selectedUserId}`,
+            {
+              method: "DELETE",
+
+              headers: {
+                "Authorization":
+                  `Bearer ${adminToken}`
+              }
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          response.status === 401 ||
+          response.status === 403
+        ) {
+
+          adminLogout();
+
+          return;
+
+        }
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.message ||
+            "تعذر حذف المستخدم."
+          );
+
+        }
+
+
+        closeDeleteModal();
+
+
+        showToast(
+          "تم حذف الحساب بنجاح.",
+          "success"
+        );
+
+
+        await loadUsers();
+
+
+      } catch (error) {
+
+        console.error(
+          "Delete user error:",
+          error
+        );
+
+        showToast(
+          error.message ||
+          "حدث خطأ أثناء حذف الحساب.",
+          "error"
+        );
+
+      } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+          "حذف الحساب";
+
+      }
+
+    }
+
+
+    // =====================================================
+    // DATABASE CHECK
+    // =====================================================
+
+    async function checkDatabase() {
+
+      const status =
+        document.getElementById(
+          "database-status"
+        );
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/health`
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          response.ok &&
+          data.success &&
+          data.database === "connected"
+        ) {
+
+          status.textContent =
+            "متصلة ✅";
+
+        } else {
+
+          status.textContent =
+            "خطأ ❌";
+        }
+
+
+      } catch (error) {
+
+        console.error(
+          "Database check error:",
+          error
+        );
+
+        status.textContent =
+          "غير متاحة ❌";
+
+      }
+
+    }
+
+
+    // =====================================================
+    // LOGOUT
+    // =====================================================
+
+    function adminLogout() {
+
+      localStorage.removeItem(
+        "drnotes_admin_token"
+      );
+
+      adminToken =
+        null;
+
+      allUsers =
+        [];
+
+      showLoginPage();
+
+      showToast(
+        "تم تسجيل الخروج.",
+        "success"
+      );
+
+    }
+
+
+    // =====================================================
+    // HELPERS
+    // =====================================================
+
+    function formatDate(
+      dateString
+    ) {
+
+      if (!dateString) {
+        return "-";
+      }
+
+
+      try {
+
+        return new Date(
+          dateString
+        ).toLocaleString(
+          "ar-LY",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+          }
+        );
+
+      } catch {
+
+        return dateString;
+
+      }
+
+    }
+
+
+    function escapeHTML(
+      value
+    ) {
+
+      return String(
+        value ?? ""
+      )
+        .replace(
+          /&/g,
+          "&amp;"
+        )
+        .replace(
+          /</g,
+          "&lt;"
+        )
+        .replace(
+          />/g,
+          "&gt;"
+        )
+        .replace(
+          /"/g,
+          "&quot;"
+        )
+        .replace(
+          /'/g,
+          "&#039;"
+        );
+
+    }
+
+
+    function escapeJS(
+      value
+    ) {
+
+      return String(
+        value ?? ""
+      )
+        .replace(
+          /\\/g,
+          "\\\\"
+        )
+        .replace(
+          /'/g,
+          "\\'"
+        )
+        .replace(
+          /"/g,
+          '\\"'
+        )
+        .replace(
+          /\n/g,
+          "\\n"
+        )
+        .replace(
+          /\r/g,
+          "\\r"
+        );
+
+    }
+
+
+    // =====================================================
+    // TOAST
+    // =====================================================
+
+    function showToast(
+      message,
+      type = "success"
+    ) {
+
+      const toast =
+        document.getElementById(
+          "toast"
+        );
+
+
+      toast.textContent =
+        message;
+
+
+      toast.className =
+        type;
+
+
+      toast.style.display =
+        "block";
+
+
+      clearTimeout(
+        window.toastTimer
+      );
+
+
+      window.toastTimer =
+        setTimeout(
+          () => {
+
+            toast.style.display =
+              "none";
+
+          },
+          3500
+        );
+
+    }
+
+  </script>
+
+</body>
+  </html>
