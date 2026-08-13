@@ -26,6 +26,7 @@
       --accent: #ff9f1c;
       --success: #16a34a;
       --danger: #dc2626;
+      --warning: #f59e0b;
 
       --bg: #f5f7fa;
       --card: #ffffff;
@@ -53,6 +54,10 @@
       background: var(--bg);
       color: var(--text);
       direction: rtl;
+    }
+
+    body.no-scroll {
+      overflow: hidden;
     }
 
     button,
@@ -423,6 +428,7 @@
         var(--primary)
       );
       border-radius: inherit;
+      transition: width .4s ease;
     }
 
     .subject-btn {
@@ -435,6 +441,10 @@
       color: white;
 
       font-weight: 700;
+    }
+
+    .subject-btn:hover {
+      background: var(--primary-light);
     }
 
     /* =========================
@@ -701,6 +711,445 @@
     }
 
     /* =========================
+       LESSONS PAGE
+    ========================= */
+
+    #subjectPage {
+      display: none;
+      min-height: 70vh;
+    }
+
+    .lesson-page-header {
+      background:
+        radial-gradient(circle at 90% 20%, rgba(255,159,28,.18), transparent 30%),
+        linear-gradient(135deg, var(--primary), var(--primary-light));
+
+      color: white;
+      padding: 35px;
+      border-radius: 22px;
+      margin-bottom: 25px;
+    }
+
+    .back-btn {
+      border: 1px solid rgba(255,255,255,.3);
+      background: rgba(255,255,255,.1);
+      color: white;
+      padding: 9px 15px;
+      border-radius: 9px;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    .lesson-page-header h2 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .lesson-page-header p {
+      opacity: .9;
+      line-height: 1.9;
+    }
+
+    .subject-progress-box {
+      background: white;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      margin-bottom: 25px;
+    }
+
+    .subject-progress-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .subject-progress-top strong {
+      color: var(--primary);
+    }
+
+    .lessons-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .lessons-list {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      position: sticky;
+      top: 94px;
+    }
+
+    .lessons-list-title {
+      padding: 18px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    .lesson-item {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      background: white;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: right;
+      transition: .2s;
+    }
+
+    .lesson-item:last-child {
+      border-bottom: none;
+    }
+
+    .lesson-item:hover:not(.locked) {
+      background: #f8fafc;
+    }
+
+    .lesson-item.active {
+      background: #e0f2fe;
+    }
+
+    .lesson-item.locked {
+      cursor: not-allowed;
+      opacity: .55;
+    }
+
+    .lesson-number {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border-radius: 10px;
+      background: #e0f2fe;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+    }
+
+    .lesson-item.completed .lesson-number {
+      background: #dcfce7;
+      color: var(--success);
+    }
+
+    .lesson-item.locked .lesson-number {
+      background: #f1f5f9;
+      color: #94a3b8;
+    }
+
+    .lesson-item-info {
+      flex: 1;
+    }
+
+    .lesson-item-info strong {
+      display: block;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    .lesson-item-info span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .lesson-status {
+      color: var(--muted);
+    }
+
+    .lesson-item.completed .lesson-status {
+      color: var(--success);
+    }
+
+    .lesson-item.locked .lesson-status {
+      color: #94a3b8;
+    }
+
+    .lesson-content {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .lesson-content-header {
+      padding: 25px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .lesson-content-header h3 {
+      color: var(--primary);
+      font-size: 24px;
+      margin-bottom: 7px;
+    }
+
+    .lesson-content-header p {
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .video-wrapper {
+      background: #0f172a;
+      padding: 0;
+    }
+
+    .video-wrapper video {
+      width: 100%;
+      display: block;
+      max-height: 550px;
+      background: #000;
+    }
+
+    .video-placeholder {
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .video-placeholder i {
+      font-size: 55px;
+      margin-bottom: 15px;
+      color: #94a3b8;
+    }
+
+    .video-placeholder p {
+      color: #cbd5e1;
+    }
+
+    .lesson-info-box {
+      margin: 22px;
+      padding: 18px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .lesson-info-box h4 {
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .lesson-info-box p {
+      color: var(--muted);
+      line-height: 1.9;
+    }
+
+    .quiz-box {
+      margin: 22px;
+      padding: 25px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: white;
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 22px;
+    }
+
+    .quiz-header h3 {
+      color: var(--primary);
+      font-size: 22px;
+    }
+
+    .quiz-badge {
+      background: #fff7ed;
+      color: #c2410c;
+      padding: 7px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .question {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 15px;
+      background: #f8fafc;
+    }
+
+    .question-title {
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 14px;
+      line-height: 1.8;
+    }
+
+    .answer-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px;
+      border-radius: 9px;
+      margin-top: 8px;
+      background: white;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .answer-option:hover {
+      border-color: var(--primary-light);
+      background: #f0fdfa;
+    }
+
+    .answer-option input {
+      accent-color: var(--primary-light);
+    }
+
+    .quiz-submit {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
+      font-weight: 900;
+      font-size: 15px;
+      margin-top: 5px;
+    }
+
+    .quiz-submit:hover {
+      background: var(--primary-light);
+    }
+
+    .quiz-result {
+      display: none;
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .quiz-result.success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .quiz-result.fail {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .next-lesson-box {
+      display: none;
+      margin: 22px;
+      padding: 20px;
+      border-radius: 14px;
+      background: linear-gradient(135deg,#ecfdf5,#f0fdfa);
+      border: 1px solid #bbf7d0;
+    }
+
+    .next-lesson-box.show {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .next-lesson-box h4 {
+      color: #166534;
+      margin-bottom: 4px;
+    }
+
+    .next-lesson-box p {
+      color: #15803d;
+      font-size: 13px;
+    }
+
+    .next-lesson-btn {
+      border: none;
+      background: var(--success);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 9px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .locked-message {
+      margin: 22px;
+      padding: 25px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 14px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .locked-message i {
+      display: block;
+      font-size: 35px;
+      margin-bottom: 10px;
+      color: #94a3b8;
+    }
+
+    /* =========================
+       EMPTY / ALERT
+    ========================= */
+
+    .empty-message {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      display: none;
+      grid-column: 1/-1;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      z-index: 5000;
+
+      background: #0f172a;
+      color: white;
+
+      padding: 14px 18px;
+      border-radius: 10px;
+
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+
+      transform: translateY(100px);
+      opacity: 0;
+      pointer-events: none;
+
+      transition: .3s;
+      max-width: 340px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* =========================
        FOOTER
     ========================= */
 
@@ -752,6 +1201,17 @@
     /* =========================
        RESPONSIVE
     ========================= */
+
+    @media (max-width: 1000px) {
+
+      .lessons-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .lessons-list {
+        position: static;
+      }
+    }
 
     @media (max-width: 900px) {
 
@@ -839,6 +1299,35 @@
       .footer-content {
         grid-template-columns: 1fr;
       }
+
+      .lesson-page-header {
+        padding: 25px;
+      }
+
+      .lesson-page-header h2 {
+        font-size: 25px;
+      }
+
+      .quiz-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .next-lesson-box.show {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .next-lesson-btn {
+        width: 100%;
+      }
+
+      .toast {
+        left: 15px;
+        right: 15px;
+        bottom: 15px;
+        max-width: none;
+      }
     }
   </style>
 </head>
@@ -851,17 +1340,17 @@
 
 <header>
 
-  <a href="#" class="logo">
+  <a href="#" class="logo" onclick="goHome(); return false;">
     <i class="fa-solid fa-graduation-cap"></i>
     DrNotes
   </a>
 
   <nav>
     <ul>
-      <li><a href="#home">الرئيسية</a></li>
-      <li><a href="#subjects">المواد</a></li>
-      <li><a href="#how">كيف تعمل؟</a></li>
-      <li><a href="#about">عن المنصة</a></li>
+      <li><a href="#home" onclick="goHome()">الرئيسية</a></li>
+      <li><a href="#subjects" onclick="goHome()">المواد</a></li>
+      <li><a href="#how" onclick="goHome()">كيف تعمل؟</a></li>
+      <li><a href="#about" onclick="goHome()">عن المنصة</a></li>
     </ul>
   </nav>
 
@@ -891,766 +1380,998 @@
 
 
 <!-- =========================
-     HERO
+     HOME
 ========================= -->
 
-<section class="hero" id="home">
+<main id="homePage">
 
-  <div class="hero-container">
+  <!-- HERO -->
 
-    <div class="hero-content">
+  <section class="hero" id="home">
 
-      <h1>
-        منصتك للتفوق في
-        <span>الثانوية العامة في ليبيا 🇱🇾</span>
-      </h1>
+    <div class="hero-container">
 
-      <p>
-        شرح مبسط، ملخصات منظمة، اختبارات وأسئلة تساعدك على فهم
-        المواد ومراجعتها والاستعداد للامتحانات في مكان واحد.
-      </p>
+      <div class="hero-content">
 
-      <div class="hero-buttons">
+        <h1>
+          منصتك للتفوق في
+          <span>الثانوية العامة في ليبيا 🇱🇾</span>
+        </h1>
 
-        <button
-          class="hero-btn"
-          onclick="openRegister()"
-        >
-          ابدأ التعلم الآن
-          <i class="fa-solid fa-arrow-left"></i>
-        </button>
+        <p>
+          شرح مبسط، ملخصات منظمة، اختبارات وأسئلة تساعدك على فهم
+          المواد ومراجعتها والاستعداد للامتحانات في مكان واحد.
+        </p>
 
-        <a
-          href="#subjects"
-          class="hero-btn secondary"
-        >
-          استكشف المواد
-        </a>
+        <div class="hero-buttons">
+
+          <button
+            class="hero-btn"
+            onclick="openRegister()"
+          >
+            ابدأ التعلم الآن
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+
+          <a
+            href="#subjects"
+            class="hero-btn secondary"
+          >
+            استكشف المواد
+          </a>
+
+        </div>
 
       </div>
 
-    </div>
+      <div class="hero-card">
 
-    <div class="hero-card">
-
-      <div class="hero-card-icon">
-        <i class="fa-solid fa-book-open-reader"></i>
-      </div>
-
-      <h3>
-        كل دراستك في مكان واحد
-      </h3>
-
-      <p>
-        تابع دروسك، اختبر نفسك، احفظ الدروس المهمة
-        واعرف مستوى تقدمك خطوة بخطوة.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =========================
-     FEATURES
-========================= -->
-
-<section class="container">
-
-  <div class="section-title center">
-
-    <h2>
-      كل ما تحتاجه للدراسة
-    </h2>
-
-    <p>
-      أدوات تعليمية تساعدك على تنظيم ومتابعة مذاكرتك
-    </p>
-
-  </div>
-
-  <div class="features">
-
-    <div class="feature">
-
-      <div class="feature-icon">
-        <i class="fa-solid fa-book-open"></i>
-      </div>
-
-      <h3>
-        شرح الدروس
-      </h3>
-
-      <p>
-        دروس منظمة ومبسطة تساعدك على فهم المنهج.
-      </p>
-
-    </div>
-
-
-    <div class="feature">
-
-      <div class="feature-icon">
-        <i class="fa-solid fa-pen-to-square"></i>
-      </div>
-
-      <h3>
-        اختبارات MCQ
-      </h3>
-
-      <p>
-        اختبر فهمك من خلال أسئلة واختبارات متنوعة.
-      </p>
-
-    </div>
-
-
-    <div class="feature">
-
-      <div class="feature-icon">
-        <i class="fa-solid fa-chart-line"></i>
-      </div>
-
-      <h3>
-        متابعة تقدمك
-      </h3>
-
-      <p>
-        اعرف الدروس التي أنجزتها ونسبة تقدمك في كل مادة.
-      </p>
-
-    </div>
-
-
-    <div class="feature">
-
-      <div class="feature-icon">
-        <i class="fa-solid fa-bullseye"></i>
-      </div>
-
-      <h3>
-        الاستعداد للامتحان
-      </h3>
-
-      <p>
-        راجع أهم النقاط وحل اختبارات تجريبية قبل الامتحان.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =========================
-     SUBJECTS
-========================= -->
-
-<section class="container" id="subjects">
-
-  <div class="section-title center">
-
-    <h2>
-      المواد الدراسية
-    </h2>
-
-    <p>
-      اختر المادة وابدأ رحلة التعلم
-    </p>
-
-  </div>
-
-  <div class="search-box">
-
-    <i class="fa-solid fa-magnifying-glass"></i>
-
-    <input
-      type="text"
-      id="subjectSearch"
-      placeholder="ابحث عن مادة..."
-      oninput="searchSubjects()"
-    >
-
-  </div>
-
-
-  <div class="subjects" id="subjectsContainer">
-
-    <!-- Biology -->
-
-    <div class="subject-card" data-name="الأحياء">
-
-      <div class="subject-top">
-        <i class="fa-solid fa-dna"></i>
-      </div>
-
-      <div class="subject-body">
+        <div class="hero-card-icon">
+          <i class="fa-solid fa-book-open-reader"></i>
+        </div>
 
         <h3>
-          الأحياء
+          كل دراستك في مكان واحد
         </h3>
 
         <p>
-          شرح ومراجعة موضوعات الأحياء بطريقة منظمة
-          مع أسئلة واختبارات.
+          تابع دروسك، شاهد الفيديوهات، حل الاختبارات،
+          واعرف مستوى تقدمك خطوة بخطوة.
         </p>
 
-        <div class="subject-info">
-          <span>
-            <i class="fa-solid fa-book"></i>
-            20 درس
-          </span>
-
-          <span>
-            8 اختبارات
-          </span>
-        </div>
-
-        <div class="progress">
-          <div
-            class="progress-bar"
-            style="width: 0%"
-          ></div>
-        </div>
-
-        <button
-          class="subject-btn"
-          onclick="openLogin()"
-        >
-          ابدأ المادة
-        </button>
-
       </div>
 
     </div>
 
+  </section>
 
-    <!-- Chemistry -->
 
-    <div class="subject-card" data-name="الكيمياء">
+  <!-- FEATURES -->
 
-      <div class="subject-top">
-        <i class="fa-solid fa-flask"></i>
-      </div>
+  <section class="container">
 
-      <div class="subject-body">
+    <div class="section-title center">
 
-        <h3>
-          الكيمياء
-        </h3>
-
-        <p>
-          شرح المفاهيم والقوانين والتفاعلات
-          مع تدريبات وأسئلة اختيار من متعدد.
-        </p>
-
-        <div class="subject-info">
-          <span>
-            <i class="fa-solid fa-book"></i>
-            18 درس
-          </span>
-
-          <span>
-            7 اختبارات
-          </span>
-        </div>
-
-        <div class="progress">
-          <div
-            class="progress-bar"
-            style="width: 0%"
-          ></div>
-        </div>
-
-        <button
-          class="subject-btn"
-          onclick="openLogin()"
-        >
-          ابدأ المادة
-        </button>
-
-      </div>
-
-    </div>
-
-
-    <!-- Physics -->
-
-    <div class="subject-card" data-name="الفيزياء">
-
-      <div class="subject-top">
-        <i class="fa-solid fa-atom"></i>
-      </div>
-
-      <div class="subject-body">
-
-        <h3>
-          الفيزياء
-        </h3>
-
-        <p>
-          شرح القوانين والمفاهيم الفيزيائية
-          مع مسائل وتدريبات امتحانية.
-        </p>
-
-        <div class="subject-info">
-          <span>
-            <i class="fa-solid fa-book"></i>
-            22 درس
-          </span>
-
-          <span>
-            9 اختبارات
-          </span>
-        </div>
-
-        <div class="progress">
-          <div
-            class="progress-bar"
-            style="width: 0%"
-          ></div>
-        </div>
-
-        <button
-          class="subject-btn"
-          onclick="openLogin()"
-        >
-          ابدأ المادة
-        </button>
-
-      </div>
-
-    </div>
-
-
-    <!-- Mathematics -->
-
-    <div class="subject-card" data-name="الرياضيات">
-
-      <div class="subject-top">
-        <i class="fa-solid fa-square-root-variable"></i>
-      </div>
-
-      <div class="subject-body">
-
-        <h3>
-          الرياضيات
-        </h3>
-
-        <p>
-          شرح القوانين والأفكار مع أمثلة
-          وتدريبات تساعدك على إتقان الحل.
-        </p>
-
-        <div class="subject-info">
-          <span>
-            <i class="fa-solid fa-book"></i>
-            25 درس
-          </span>
-
-          <span>
-            10 اختبارات
-          </span>
-        </div>
-
-        <div class="progress">
-          <div
-            class="progress-bar"
-            style="width: 0%"
-          ></div>
-        </div>
-
-        <button
-          class="subject-btn"
-          onclick="openLogin()"
-        >
-          ابدأ المادة
-        </button>
-
-      </div>
-
-    </div>
-
-
-    <!-- English -->
-
-    <div class="subject-card" data-name="اللغة الإنجليزية">
-
-      <div class="subject-top">
-        <i class="fa-solid fa-language"></i>
-      </div>
-
-      <div class="subject-body">
-
-        <h3>
-          اللغة الإنجليزية
-        </h3>
-
-        <p>
-          Grammar وVocabulary وReading
-          مع تدريبات واختبارات.
-        </p>
-
-        <div class="subject-info">
-          <span>
-            <i class="fa-solid fa-book"></i>
-            16 درس
-          </span>
-
-          <span>
-            6 اختبارات
-          </span>
-        </div>
-
-        <div class="progress">
-          <div
-            class="progress-bar"
-            style="width: 0%"
-          ></div>
-        </div>
-
-        <button
-          class="subject-btn"
-          onclick="openLogin()"
-        >
-          ابدأ المادة
-        </button>
-
-      </div>
-
-    </div>
-
-
-    <!-- Computer -->
-
-    <div class="subject-card" data-name="الحاسوب">
-
-      <div class="subject-top">
-        <i class="fa-solid fa-computer"></i>
-      </div>
-
-      <div class="subject-body">
-
-        <h3>
-          الحاسوب
-        </h3>
-
-        <p>
-          شرح أساسيات الحاسوب والموضوعات
-          المطلوبة بطريقة سهلة ومنظمة.
-        </p>
-
-        <div class="subject-info">
-          <span>
-            <i class="fa-solid fa-book"></i>
-            14 درس
-          </span>
-
-          <span>
-            5 اختبارات
-          </span>
-        </div>
-
-        <div class="progress">
-          <div
-            class="progress-bar"
-            style="width: 0%"
-          ></div>
-        </div>
-
-        <button
-          class="subject-btn"
-          onclick="openLogin()"
-        >
-          ابدأ المادة
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =========================
-     HOW IT WORKS
-========================= -->
-
-<section class="container" id="how">
-
-  <div class="section-title center">
-
-    <h2>
-      كيف تعمل المنصة؟
-    </h2>
-
-    <p>
-      ابدأ الدراسة في أربع خطوات بسيطة
-    </p>
-
-  </div>
-
-  <div class="steps">
-
-    <div class="step">
-
-      <div class="step-number">
-        1
-      </div>
-
-      <h3>
-        أنشئ حسابك
-      </h3>
-
-      <p>
-        سجل حسابك واختر صفك الدراسي.
-      </p>
-
-    </div>
-
-
-    <div class="step">
-
-      <div class="step-number">
-        2
-      </div>
-
-      <h3>
-        اختر المادة
-      </h3>
-
-      <p>
-        اختر المادة التي تريد دراستها.
-      </p>
-
-    </div>
-
-
-    <div class="step">
-
-      <div class="step-number">
-        3
-      </div>
-
-      <h3>
-        ابدأ التعلم
-      </h3>
-
-      <p>
-        شاهد الشرح وراجع الملخصات وحل الأسئلة.
-      </p>
-
-    </div>
-
-
-    <div class="step">
-
-      <div class="step-number">
-        4
-      </div>
-
-      <h3>
-        تابع تقدمك
-      </h3>
-
-      <p>
-        اعرف مستواك ونتائج اختباراتك باستمرار.
-      </p>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =========================
-     DASHBOARD
-========================= -->
-
-<section
-  class="container"
-  id="dashboard"
->
-
-  <div class="dashboard-header">
-
-    <div>
-
-      <h2 id="welcomeUser">
-        مرحبًا 👋
+      <h2>
+        كل ما تحتاجه للدراسة
       </h2>
 
       <p>
-        مستعد تكمل رحلتك التعليمية؟
+        أدوات تعليمية تساعدك على تنظيم ومتابعة مذاكرتك
       </p>
 
     </div>
 
-    <button
-      class="btn"
-      style="background:white;color:#0b3954"
-      onclick="logout()"
+    <div class="features">
+
+      <div class="feature">
+
+        <div class="feature-icon">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+
+        <h3>
+          شرح الدروس
+        </h3>
+
+        <p>
+          دروس منظمة ومبسطة تساعدك على فهم المنهج.
+        </p>
+
+      </div>
+
+
+      <div class="feature">
+
+        <div class="feature-icon">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </div>
+
+        <h3>
+          اختبارات MCQ
+        </h3>
+
+        <p>
+          اختبر فهمك من خلال أسئلة واختبارات متنوعة.
+        </p>
+
+      </div>
+
+
+      <div class="feature">
+
+        <div class="feature-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+
+        <h3>
+          متابعة تقدمك
+        </h3>
+
+        <p>
+          اعرف الدروس التي أنجزتها ونسبة تقدمك في كل مادة.
+        </p>
+
+      </div>
+
+
+      <div class="feature">
+
+        <div class="feature-icon">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+
+        <h3>
+          نظام الدروس المتسلسل
+        </h3>
+
+        <p>
+          لا ينتقل الطالب للدرس التالي إلا بعد اجتياز اختبار الدرس الحالي.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- SUBJECTS -->
+
+  <section class="container" id="subjects">
+
+    <div class="section-title center">
+
+      <h2>
+        المواد الدراسية
+      </h2>
+
+      <p>
+        اختر المادة وابدأ رحلة التعلم
+      </p>
+
+    </div>
+
+    <div class="search-box">
+
+      <i class="fa-solid fa-magnifying-glass"></i>
+
+      <input
+        type="text"
+        id="subjectSearch"
+        placeholder="ابحث عن مادة..."
+        oninput="searchSubjects()"
+      >
+
+    </div>
+
+
+    <div class="subjects" id="subjectsContainer">
+
+      <!-- Biology -->
+
+      <div class="subject-card" data-name="الأحياء">
+
+        <div class="subject-top">
+          <i class="fa-solid fa-dna"></i>
+        </div>
+
+        <div class="subject-body">
+
+          <h3>
+            الأحياء
+          </h3>
+
+          <p>
+            شرح ومراجعة موضوعات الأحياء بطريقة منظمة
+            مع فيديوهات وأسئلة واختبارات.
+          </p>
+
+          <div class="subject-info">
+            <span>
+              <i class="fa-solid fa-book"></i>
+              4 دروس
+            </span>
+
+            <span>
+              اختبارات بعد الدروس
+            </span>
+          </div>
+
+          <div class="progress">
+            <div
+              class="progress-bar"
+              id="progress-biology"
+              style="width: 0%"
+            ></div>
+          </div>
+
+          <button
+            class="subject-btn"
+            onclick="openSubject('biology')"
+          >
+            ابدأ المادة
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- Chemistry -->
+
+      <div class="subject-card" data-name="الكيمياء">
+
+        <div class="subject-top">
+          <i class="fa-solid fa-flask"></i>
+        </div>
+
+        <div class="subject-body">
+
+          <h3>
+            الكيمياء
+          </h3>
+
+          <p>
+            شرح المفاهيم والقوانين والتفاعلات
+            مع فيديوهات وتدريبات وأسئلة.
+          </p>
+
+          <div class="subject-info">
+            <span>
+              <i class="fa-solid fa-book"></i>
+              4 دروس
+            </span>
+
+            <span>
+              اختبارات بعد الدروس
+            </span>
+          </div>
+
+          <div class="progress">
+            <div
+              class="progress-bar"
+              id="progress-chemistry"
+              style="width: 0%"
+            ></div>
+          </div>
+
+          <button
+            class="subject-btn"
+            onclick="openSubject('chemistry')"
+          >
+            ابدأ المادة
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- Physics -->
+
+      <div class="subject-card" data-name="الفيزياء">
+
+        <div class="subject-top">
+          <i class="fa-solid fa-atom"></i>
+        </div>
+
+        <div class="subject-body">
+
+          <h3>
+            الفيزياء
+          </h3>
+
+          <p>
+            شرح القوانين والمفاهيم الفيزيائية
+            مع فيديوهات ومسائل وتدريبات.
+          </p>
+
+          <div class="subject-info">
+            <span>
+              <i class="fa-solid fa-book"></i>
+              4 دروس
+            </span>
+
+            <span>
+              اختبارات بعد الدروس
+            </span>
+          </div>
+
+          <div class="progress">
+            <div
+              class="progress-bar"
+              id="progress-physics"
+              style="width: 0%"
+            ></div>
+          </div>
+
+          <button
+            class="subject-btn"
+            onclick="openSubject('physics')"
+          >
+            ابدأ المادة
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- Mathematics -->
+
+      <div class="subject-card" data-name="الرياضيات">
+
+        <div class="subject-top">
+          <i class="fa-solid fa-square-root-variable"></i>
+        </div>
+
+        <div class="subject-body">
+
+          <h3>
+            الرياضيات
+          </h3>
+
+          <p>
+            شرح القوانين والأفكار مع أمثلة
+            وتدريبات تساعدك على إتقان الحل.
+          </p>
+
+          <div class="subject-info">
+            <span>
+              <i class="fa-solid fa-book"></i>
+              4 دروس
+            </span>
+
+            <span>
+              اختبارات بعد الدروس
+            </span>
+          </div>
+
+          <div class="progress">
+            <div
+              class="progress-bar"
+              id="progress-math"
+              style="width: 0%"
+            ></div>
+          </div>
+
+          <button
+            class="subject-btn"
+            onclick="openSubject('math')"
+          >
+            ابدأ المادة
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- English -->
+
+      <div class="subject-card" data-name="اللغة الإنجليزية">
+
+        <div class="subject-top">
+          <i class="fa-solid fa-language"></i>
+        </div>
+
+        <div class="subject-body">
+
+          <h3>
+            اللغة الإنجليزية
+          </h3>
+
+          <p>
+            Grammar وVocabulary وReading
+            مع فيديوهات وتدريبات واختبارات.
+          </p>
+
+          <div class="subject-info">
+            <span>
+              <i class="fa-solid fa-book"></i>
+              4 دروس
+            </span>
+
+            <span>
+              اختبارات بعد الدروس
+            </span>
+          </div>
+
+          <div class="progress">
+            <div
+              class="progress-bar"
+              id="progress-english"
+              style="width: 0%"
+            ></div>
+          </div>
+
+          <button
+            class="subject-btn"
+            onclick="openSubject('english')"
+          >
+            ابدأ المادة
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- Computer -->
+
+      <div class="subject-card" data-name="الحاسوب">
+
+        <div class="subject-top">
+          <i class="fa-solid fa-computer"></i>
+        </div>
+
+        <div class="subject-body">
+
+          <h3>
+            الحاسوب
+          </h3>
+
+          <p>
+            شرح أساسيات الحاسوب والموضوعات
+            المطلوبة بطريقة سهلة ومنظمة.
+          </p>
+
+          <div class="subject-info">
+            <span>
+              <i class="fa-solid fa-book"></i>
+              4 دروس
+            </span>
+
+            <span>
+              اختبارات بعد الدروس
+            </span>
+          </div>
+
+          <div class="progress">
+            <div
+              class="progress-bar"
+              id="progress-computer"
+              style="width: 0%"
+            ></div>
+          </div>
+
+          <button
+            class="subject-btn"
+            onclick="openSubject('computer')"
+          >
+            ابدأ المادة
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div
+      class="empty-message"
+      id="emptySubjects"
     >
-      تسجيل الخروج
-    </button>
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <br>
+      لا توجد مادة بهذا الاسم.
+    </div>
 
-  </div>
+  </section>
 
 
-  <div class="stats">
+  <!-- HOW IT WORKS -->
 
-    <div class="stat">
+  <section class="container" id="how">
 
-      <div class="stat-icon">
-        <i class="fa-solid fa-book-open"></i>
-      </div>
+    <div class="section-title center">
 
-      <h3 id="completedLessons">
-        0
-      </h3>
+      <h2>
+        كيف تعمل المنصة؟
+      </h2>
 
       <p>
-        دروس مكتملة
+        ابدأ الدراسة في أربع خطوات بسيطة
       </p>
 
     </div>
 
+    <div class="steps">
 
-    <div class="stat">
+      <div class="step">
 
-      <div class="stat-icon">
-        <i class="fa-solid fa-chart-line"></i>
+        <div class="step-number">
+          1
+        </div>
+
+        <h3>
+          أنشئ حسابك
+        </h3>
+
+        <p>
+          سجل حسابك واختر صفك الدراسي.
+        </p>
+
       </div>
 
-      <h3 id="overallProgress">
-        0%
-      </h3>
 
-      <p>
-        نسبة التقدم
-      </p>
+      <div class="step">
+
+        <div class="step-number">
+          2
+        </div>
+
+        <h3>
+          اختر المادة
+        </h3>
+
+        <p>
+          اختر المادة التي تريد دراستها.
+        </p>
+
+      </div>
+
+
+      <div class="step">
+
+        <div class="step-number">
+          3
+        </div>
+
+        <h3>
+          شاهد الدرس
+        </h3>
+
+        <p>
+          شاهد الفيديو داخل المنصة ثم حل الاختبار.
+        </p>
+
+      </div>
+
+
+      <div class="step">
+
+        <div class="step-number">
+          4
+        </div>
+
+        <h3>
+          افتح الدرس التالي
+        </h3>
+
+        <p>
+          بعد اجتياز الاختبار يفتح لك الدرس التالي تلقائيًا.
+        </p>
+
+      </div>
 
     </div>
 
+  </section>
 
-    <div class="stat">
 
-      <div class="stat-icon">
-        <i class="fa-solid fa-pen-to-square"></i>
+  <!-- DASHBOARD -->
+
+  <section
+    class="container"
+    id="dashboard"
+  >
+
+    <div class="dashboard-header">
+
+      <div>
+
+        <h2 id="welcomeUser">
+          مرحبًا 👋
+        </h2>
+
+        <p>
+          مستعد تكمل رحلتك التعليمية؟
+        </p>
+
       </div>
-
-      <h3 id="quizCount">
-        0
-      </h3>
-
-      <p>
-        اختبارات مكتملة
-      </p>
-
-    </div>
-
-
-    <div class="stat">
-
-      <div class="stat-icon">
-        <i class="fa-solid fa-star"></i>
-      </div>
-
-      <h3 id="favoriteCount">
-        0
-      </h3>
-
-      <p>
-        دروس مفضلة
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <div class="section-title">
-
-    <h2>
-      أكمل التعلم
-    </h2>
-
-    <p>
-      آخر درس وصلت إليه
-    </p>
-
-  </div>
-
-  <div class="subject-card">
-
-    <div class="subject-body">
-
-      <h3>
-        لا يوجد درس حاليًا
-      </h3>
-
-      <p>
-        ابدأ دراسة أحد المواد وسيظهر آخر درس لك هنا.
-      </p>
 
       <button
-        class="subject-btn"
-        onclick="document.getElementById('subjects').scrollIntoView()"
+        class="btn"
+        style="background:white;color:#0b3954"
+        onclick="logout()"
       >
-        استكشف المواد
+        تسجيل الخروج
       </button>
 
     </div>
 
-  </div>
 
-</section>
+    <div class="stats">
+
+      <div class="stat">
+
+        <div class="stat-icon">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+
+        <h3 id="completedLessons">
+          0
+        </h3>
+
+        <p>
+          دروس مكتملة
+        </p>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+
+        <h3 id="overallProgress">
+          0%
+        </h3>
+
+        <p>
+          نسبة التقدم
+        </p>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-icon">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </div>
+
+        <h3 id="quizCount">
+          0
+        </h3>
+
+        <p>
+          اختبارات مكتملة
+        </p>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-icon">
+          <i class="fa-solid fa-star"></i>
+        </div>
+
+        <h3 id="favoriteCount">
+          0
+        </h3>
+
+        <p>
+          دروس مفضلة
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="section-title">
+
+      <h2>
+        أكمل التعلم
+      </h2>
+
+      <p>
+        آخر درس وصلت إليه
+      </p>
+
+    </div>
+
+    <div class="subject-card">
+
+      <div class="subject-body">
+
+        <h3 id="lastLessonTitle">
+          لا يوجد درس حاليًا
+        </h3>
+
+        <p id="lastLessonDescription">
+          ابدأ دراسة أحد المواد وسيظهر آخر درس لك هنا.
+        </p>
+
+        <button
+          class="subject-btn"
+          id="continueLessonBtn"
+          onclick="continueLearning()"
+        >
+          استكشف المواد
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ABOUT -->
+
+  <section
+    class="container"
+    id="about"
+  >
+
+    <div class="section-title center">
+
+      <h2>
+        عن DrNotes
+      </h2>
+
+      <p>
+        منصة تعليمية تهدف إلى جعل المذاكرة أكثر تنظيمًا وسهولة.
+      </p>
+
+    </div>
+
+    <div
+      style="
+        max-width:850px;
+        margin:auto;
+        background:white;
+        border:1px solid var(--border);
+        padding:30px;
+        border-radius:18px;
+        text-align:center;
+        line-height:2;
+        color:var(--muted);
+      "
+    >
+
+      DrNotes هي منصة تعليمية موجهة لطلاب الثانوية العامة
+      في ليبيا، تجمع الشروحات والملخصات والاختبارات
+      ومتابعة مستوى الطالب في مكان واحد.
+
+    </div>
+
+  </section>
+
+</main>
 
 
 <!-- =========================
-     ABOUT
+     SUBJECT PAGE
 ========================= -->
 
 <section
   class="container"
-  id="about"
+  id="subjectPage"
 >
 
-  <div class="section-title center">
+  <div class="lesson-page-header">
 
-    <h2>
-      عن DrNotes
+    <button
+      class="back-btn"
+      onclick="closeSubject()"
+    >
+      <i class="fa-solid fa-arrow-right"></i>
+      العودة إلى المواد
+    </button>
+
+    <h2 id="subjectPageTitle">
+      المادة
     </h2>
 
-    <p>
-      منصة تعليمية تهدف إلى جعل المذاكرة أكثر تنظيمًا وسهولة.
+    <p id="subjectPageDescription">
+      دروس المادة
     </p>
 
   </div>
 
-  <div
-    style="
-      max-width:850px;
-      margin:auto;
-      background:white;
-      border:1px solid var(--border);
-      padding:30px;
-      border-radius:18px;
-      text-align:center;
-      line-height:2;
-      color:var(--muted);
-    "
-  >
 
-    DrNotes هي منصة تعليمية موجهة لطلاب الثانوية العامة
-    في ليبيا، تجمع الشروحات والملخصات والاختبارات
-    ومتابعة مستوى الطالب في مكان واحد.
+  <div class="subject-progress-box">
+
+    <div class="subject-progress-top">
+
+      <span>
+        تقدمك في المادة
+      </span>
+
+      <strong id="subjectProgressText">
+        0%
+      </strong>
+
+    </div>
+
+    <div class="progress">
+      <div
+        class="progress-bar"
+        id="subjectPageProgress"
+        style="width:0%"
+      ></div>
+    </div>
+
+  </div>
+
+
+  <div class="lessons-layout">
+
+    <!-- LESSON LIST -->
+
+    <div class="lessons-list">
+
+      <div class="lessons-list-title">
+
+        <i class="fa-solid fa-list"></i>
+        دروس المادة
+
+      </div>
+
+      <div id="lessonsList"></div>
+
+    </div>
+
+
+    <!-- LESSON CONTENT -->
+
+    <div
+      class="lesson-content"
+      id="lessonContent"
+    >
+
+      <div class="lesson-content-header">
+
+        <h3 id="lessonTitle">
+          اختر درسًا
+        </h3>
+
+        <p id="lessonDescription">
+          اختر درسًا من القائمة لبدء التعلم.
+        </p>
+
+      </div>
+
+
+      <div
+        class="video-wrapper"
+        id="videoContainer"
+      >
+
+        <div class="video-placeholder">
+
+          <i class="fa-solid fa-circle-play"></i>
+
+          <p>
+            اختر درسًا من القائمة لعرض الفيديو.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="lesson-info-box"
+        id="lessonInfo"
+      >
+
+        <h4>
+          <i class="fa-solid fa-circle-info"></i>
+          طريقة الدراسة
+        </h4>
+
+        <p>
+          شاهد الفيديو كاملًا، وبعدها انتقل إلى الاختبار.
+          عند النجاح في الاختبار سيتم فتح الدرس التالي.
+        </p>
+
+      </div>
+
+
+      <!-- QUIZ -->
+
+      <div
+        class="quiz-box"
+        id="quizBox"
+        style="display:none"
+      >
+
+        <div class="quiz-header">
+
+          <h3>
+            <i class="fa-solid fa-pen-to-square"></i>
+            اختبار الدرس
+          </h3>
+
+          <span class="quiz-badge">
+            يجب النجاح لفتح الدرس التالي
+          </span>
+
+        </div>
+
+        <form id="quizForm"></form>
+
+        <button
+          class="quiz-submit"
+          onclick="submitQuiz()"
+        >
+          تصحيح الاختبار
+        </button>
+
+        <div
+          class="quiz-result"
+          id="quizResult"
+        ></div>
+
+      </div>
+
+
+      <div
+        class="locked-message"
+        id="lockedLessonMessage"
+        style="display:none"
+      >
+
+        <i class="fa-solid fa-lock"></i>
+
+        <strong>
+          هذا الدرس مقفول
+        </strong>
+
+        <p>
+          يجب عليك اجتياز اختبار الدرس السابق لفتح هذا الدرس.
+        </p>
+
+      </div>
+
+
+      <div
+        class="next-lesson-box"
+        id="nextLessonBox"
+      >
+
+        <div>
+
+          <h4>
+            ممتاز! 🎉 تم فتح الدرس التالي
+          </h4>
+
+          <p>
+            يمكنك الآن الانتقال للدرس التالي.
+          </p>
+
+        </div>
+
+        <button
+          class="next-lesson-btn"
+          onclick="openNextLesson()"
+        >
+          الدرس التالي
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+
+      </div>
+
+    </div>
 
   </div>
 
@@ -1689,15 +2410,21 @@
       <ul class="footer-links">
 
         <li>
-          <a href="#home">الرئيسية</a>
+          <a href="#home" onclick="goHome()">
+            الرئيسية
+          </a>
         </li>
 
         <li>
-          <a href="#subjects">المواد</a>
+          <a href="#subjects" onclick="goHome()">
+            المواد
+          </a>
         </li>
 
         <li>
-          <a href="#how">كيف تعمل؟</a>
+          <a href="#how" onclick="goHome()">
+            كيف تعمل؟
+          </a>
         </li>
 
       </ul>
@@ -1970,38 +2697,957 @@
 </div>
 
 
+<!-- TOAST -->
+
+<div
+  class="toast"
+  id="toast"
+></div>
+
+
 <script>
 
   /*
-   * ======================================
-   * API CONFIGURATION
-   * ======================================
+   * =========================================================
+   * DrNotes
+   * نظام المواد + الدروس + الفيديو + الاختبارات + القفل
+   * =========================================================
    *
-   * بعد إنشاء Backend على Render
-   * غيّر هذا الرابط إلى رابط الـ API.
+   * ملاحظة:
+   * هذه النسخة تعمل Frontend فقط باستخدام localStorage.
+   *
+   * لاحقًا يمكن ربطها بـ Backend / Database.
+   *
+   * =========================================================
+   */
+
+
+  /*
+   * ================================
+   * API CONFIGURATION
+   * ================================
+   *
+   * اتركه كما هو حاليًا.
+   *
+   * عندما ننتهي من Backend على Render
+   * سنضع رابط الـ API هنا.
+   */
+
+  const API_URL =
+    "https://رابط-الـbackend-بتاعك.onrender.com/api";
+
+
+  /*
+   * ================================
+   * SUBJECT DATA
+   * ================================
+   *
+   * هنا ستضع دروسك الحقيقية لاحقًا.
+   *
+   * كل درس يحتوي:
+   *
+   * id
+   * title
+   * description
+   * video
+   * duration
+   * questions
+   *
+   *
+   * video:
+   * ضع فيه رابط الفيديو.
+   *
+   * مثال:
+   *
+   * video:
+   * "https://example.com/video.mp4"
+  <script>
+
+  /* =========================================================
+     DrNotes
+     نظام المنصة بالكامل
+     ========================================================= */
+
+  /* ================================
+     API CONFIGURATION
+     ================================ */
+
+  /*
+   * ضع هنا رابط الـ Backend الحقيقي عندما يكون جاهزًا.
    *
    * مثال:
    *
    * const API_URL =
    * "https://drnotes-api.onrender.com/api";
    *
+   * حاليًا نتركه فارغًا حتى تعمل المنصة محليًا.
    */
 
-  const API_URL = "https://رابط-الـbackend-بتاعك.onrender.com/api";
+  const API_URL = "";
 
 
-  /*
-   * ======================================
-   * MODAL
-   * ======================================
-   */
+  /* ================================
+     SUBJECT DATA
+     ================================ */
 
-  const authModal =
-    document.getElementById("authModal");
+  const subjectsData = {
+
+    biology: {
+      name: "الأحياء",
+      icon: "fa-dna",
+      description:
+        "شرح ومراجعة موضوعات الأحياء بطريقة منظمة مع فيديوهات وأسئلة واختبارات.",
+      lessons: [
+        {
+          id: "biology-1",
+          title: "الدرس الأول: مقدمة في الأحياء",
+          description: "مقدمة وتعريفات أساسية في علم الأحياء.",
+          duration: "30 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "ما هو علم الأحياء؟",
+              options: [
+                "علم دراسة الكائنات الحية",
+                "علم دراسة النجوم فقط",
+                "علم دراسة الصخور",
+                "علم دراسة الكهرباء"
+              ],
+              answer: 0
+            },
+            {
+              question: "أي مما يلي يعد كائنًا حيًا؟",
+              options: [
+                "الصخر",
+                "النبات",
+                "الماء",
+                "الهواء"
+              ],
+              answer: 1
+            }
+          ]
+        },
+
+        {
+          id: "biology-2",
+          title: "الدرس الثاني: الخلية",
+          description: "مكونات الخلية ووظائف أهم العضيات.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "ما الوحدة الأساسية في بناء الكائنات الحية؟",
+              options: [
+                "العضو",
+                "النسيج",
+                "الخلية",
+                "الجهاز"
+              ],
+              answer: 2
+            },
+            {
+              question: "أين توجد المادة الوراثية بصورة أساسية في الخلية؟",
+              options: [
+                "النواة",
+                "الغشاء",
+                "الجدار",
+                "الفجوة"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "biology-3",
+          title: "الدرس الثالث: الانقسام الخلوي",
+          description: "شرح الانقسام المتساوي والانقسام الاختزالي.",
+          duration: "40 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "ما الهدف الأساسي من الانقسام المتساوي؟",
+              options: [
+                "النمو وتجديد الخلايا",
+                "إنتاج الأمشاج فقط",
+                "إيقاف نمو الجسم",
+                "تكوين الماء"
+              ],
+              answer: 0
+            },
+            {
+              question: "الانقسام الاختزالي ينتج خلايا تحتوي على:",
+              options: [
+                "ضعف عدد الكروموسومات",
+                "نصف عدد الكروموسومات",
+                "لا تحتوي على كروموسومات",
+                "نفس العدد دائمًا"
+              ],
+              answer: 1
+            }
+          ]
+        },
+
+        {
+          id: "biology-4",
+          title: "الدرس الرابع: الوراثة",
+          description: "مقدمة في علم الوراثة والصفات الوراثية.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "من العالم المرتبط بتجارب البازلاء في الوراثة؟",
+              options: [
+                "مندل",
+                "نيوتن",
+                "أينشتاين",
+                "داروين"
+              ],
+              answer: 0
+            },
+            {
+              question: "ما الذي يحمل المعلومات الوراثية؟",
+              options: [
+                "DNA",
+                "الماء",
+                "الجلوكوز",
+                "الأكسجين"
+              ],
+              answer: 0
+            }
+          ]
+        }
+      ]
+    },
+
+
+    chemistry: {
+      name: "الكيمياء",
+      icon: "fa-flask",
+      description:
+        "شرح المفاهيم والقوانين والتفاعلات مع فيديوهات وتدريبات وأسئلة.",
+      lessons: [
+        {
+          id: "chemistry-1",
+          title: "الدرس الأول: مقدمة في الكيمياء",
+          description: "المفاهيم الأساسية والمادة وخواصها.",
+          duration: "30 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "ما الذي تدرسه الكيمياء بشكل أساسي؟",
+              options: [
+                "المادة وتغيراتها",
+                "حركة الكواكب فقط",
+                "التاريخ",
+                "الجغرافيا"
+              ],
+              answer: 0
+            },
+            {
+              question: "أي مما يلي يعد مادة؟",
+              options: [
+                "الهواء",
+                "الضوء",
+                "الصوت",
+                "الفكرة"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "chemistry-2",
+          title: "الدرس الثاني: الذرة",
+          description: "مكونات الذرة والإلكترونات والبروتونات والنيوترونات.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "ما شحنة الإلكترون؟",
+              options: [
+                "موجبة",
+                "سالبة",
+                "متعادل",
+                "لا توجد له شحنة"
+              ],
+              answer: 1
+            },
+            {
+              question: "أين توجد البروتونات؟",
+              options: [
+                "النواة",
+                "خارج الذرة فقط",
+                "الإلكترونات",
+                "الغلاف الجوي"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "chemistry-3",
+          title: "الدرس الثالث: الروابط الكيميائية",
+          description: "الروابط الأيونية والتساهمية والمفاهيم المرتبطة بها.",
+          duration: "40 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "الرابطة الناتجة عن مشاركة الإلكترونات تسمى:",
+              options: [
+                "تساهمية",
+                "أيونية",
+                "فلزية فقط",
+                "هيدروجينية فقط"
+              ],
+              answer: 0
+            },
+            {
+              question: "الرابطة الأيونية تنتج غالبًا عن:",
+              options: [
+                "انتقال الإلكترونات",
+                "اختفاء الإلكترونات",
+                "تكوين النواة",
+                "تحول البروتونات إلى نيوترونات"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "chemistry-4",
+          title: "الدرس الرابع: التفاعلات الكيميائية",
+          description: "مفهوم التفاعل الكيميائي وأنواعه بصورة مبسطة.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "المواد الموجودة قبل حدوث التفاعل تسمى:",
+              options: [
+                "نواتج",
+                "متفاعلات",
+                "محفزات",
+                "مذيبات"
+              ],
+              answer: 1
+            },
+            {
+              question: "المواد الناتجة بعد التفاعل تسمى:",
+              options: [
+                "نواتج",
+                "متفاعلات",
+                "ذرات أصلية",
+                "إلكترونات"
+              ],
+              answer: 0
+            }
+          ]
+        }
+      ]
+    },
+
+
+    physics: {
+      name: "الفيزياء",
+      icon: "fa-atom",
+      description:
+        "شرح القوانين والمفاهيم الفيزيائية مع فيديوهات ومسائل وتدريبات.",
+      lessons: [
+        {
+          id: "physics-1",
+          title: "الدرس الأول: الحركة",
+          description: "مقدمة في الحركة والسرعة والمسافة.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "ما وحدة قياس السرعة في النظام الدولي؟",
+              options: [
+                "m/s",
+                "kg",
+                "N",
+                "J"
+              ],
+              answer: 0
+            },
+            {
+              question: "السرعة تساوي:",
+              options: [
+                "المسافة ÷ الزمن",
+                "الزمن ÷ المسافة",
+                "القوة × الزمن",
+                "الكتلة × الحجم"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "physics-2",
+          title: "الدرس الثاني: القوة",
+          description: "مفهوم القوة وقوانين نيوتن.",
+          duration: "40 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "القانون F = ma هو:",
+              options: [
+                "قانون نيوتن الأول",
+                "قانون نيوتن الثاني",
+                "قانون نيوتن الثالث",
+                "قانون حفظ الطاقة"
+              ],
+              answer: 1
+            },
+            {
+              question: "وحدة قياس القوة هي:",
+              options: [
+                "نيوتن",
+                "جول",
+                "واط",
+                "باسكال"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "physics-3",
+          title: "الدرس الثالث: الشغل والطاقة",
+          description: "الشغل والطاقة والعلاقة بينهما.",
+          duration: "40 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "وحدة قياس الشغل هي:",
+              options: [
+                "جول",
+                "نيوتن",
+                "كيلوجرام",
+                "متر"
+              ],
+              answer: 0
+            },
+            {
+              question: "الطاقة تعبر عن القدرة على:",
+              options: [
+                "بذل شغل",
+                "إيقاف الزمن",
+                "تغيير الكتلة فقط",
+                "إلغاء القوة"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "physics-4",
+          title: "الدرس الرابع: الحرارة",
+          description: "مقدمة في درجة الحرارة والطاقة الحرارية.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "درجة الحرارة تعبر عن:",
+              options: [
+                "متوسط الطاقة الحركية للجسيمات",
+                "كتلة الجسم فقط",
+                "حجم الجسم فقط",
+                "عدد البروتونات"
+              ],
+              answer: 0
+            },
+            {
+              question: "من وحدات قياس درجة الحرارة:",
+              options: [
+                "كلفن",
+                "نيوتن",
+                "جول",
+                "واط"
+              ],
+              answer: 0
+            }
+          ]
+        }
+      ]
+    },
+
+
+    math: {
+      name: "الرياضيات",
+      icon: "fa-square-root-variable",
+      description:
+        "شرح القوانين والأفكار مع أمثلة وتدريبات تساعدك على إتقان الحل.",
+      lessons: [
+        {
+          id: "math-1",
+          title: "الدرس الأول: المعادلات",
+          description: "أساسيات حل المعادلات.",
+          duration: "30 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "إذا كان x + 5 = 10 فإن x يساوي:",
+              options: ["2", "5", "10", "15"],
+              answer: 1
+            }
+          ]
+        },
+
+        {
+          id: "math-2",
+          title: "الدرس الثاني: الدوال",
+          description: "مفهوم الدالة وطرق تمثيلها.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "الدالة تربط كل عنصر من المجال بـ:",
+              options: [
+                "عنصر واحد في المدى",
+                "لا شيء",
+                "جميع العناصر",
+                "عدد لا نهائي دائمًا"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "math-3",
+          title: "الدرس الثالث: التفاضل",
+          description: "مقدمة في التفاضل.",
+          duration: "40 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "مشتقة x² هي:",
+              options: [
+                "x",
+                "2x",
+                "x²",
+                "2"
+              ],
+              answer: 1
+            }
+          ]
+        },
+
+        {
+          id: "math-4",
+          title: "الدرس الرابع: التكامل",
+          description: "مقدمة في التكامل.",
+          duration: "40 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "التكامل يعتبر العملية العكسية لـ:",
+              options: [
+                "التفاضل",
+                "الجمع فقط",
+                "الضرب",
+                "القسمة"
+              ],
+              answer: 0
+            }
+          ]
+        }
+      ]
+    },
+
+
+    english: {
+      name: "اللغة الإنجليزية",
+      icon: "fa-language",
+      description:
+        "Grammar وVocabulary وReading مع فيديوهات وتدريبات واختبارات.",
+      lessons: [
+        {
+          id: "english-1",
+          title: "Lesson 1: Grammar",
+          description: "أساسيات القواعد الإنجليزية.",
+          duration: "30 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "Choose the correct sentence:",
+              options: [
+                "He go to school.",
+                "He goes to school.",
+                "He going school.",
+                "He gone school."
+              ],
+              answer: 1
+            }
+          ]
+        },
+
+        {
+          id: "english-2",
+          title: "Lesson 2: Vocabulary",
+          description: "كلمات ومفردات مهمة.",
+          duration: "30 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "What does 'book' mean?",
+              options: [
+                "كتاب",
+                "قلم",
+                "مدرسة",
+                "بيت"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "english-3",
+          title: "Lesson 3: Reading",
+          description: "مهارات القراءة والفهم.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "Reading means:",
+              options: [
+                "الكتابة",
+                "القراءة",
+                "الاستماع",
+                "التحدث"
+              ],
+              answer: 1
+            }
+          ]
+        },
+
+        {
+          id: "english-4",
+          title: "Lesson 4: Writing",
+          description: "أساسيات الكتابة باللغة الإنجليزية.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "Which one is a complete sentence?",
+              options: [
+                "Because school",
+                "I study every day.",
+                "Every day study",
+                "Study because"
+              ],
+              answer: 1
+            }
+          ]
+        }
+      ]
+    },
+
+
+    computer: {
+      name: "الحاسوب",
+      icon: "fa-computer",
+      description:
+        "شرح أساسيات الحاسوب والموضوعات المطلوبة بطريقة سهلة ومنظمة.",
+      lessons: [
+        {
+          id: "computer-1",
+          title: "الدرس الأول: أساسيات الحاسوب",
+          description: "مقدمة في الحاسوب ومكوناته.",
+          duration: "30 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "أي مما يلي يعتبر من مكونات الحاسوب؟",
+              options: [
+                "CPU",
+                "الماء",
+                "الورق",
+                "القلم"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "computer-2",
+          title: "الدرس الثاني: نظام التشغيل",
+          description: "مفهوم نظام التشغيل ووظائفه.",
+          duration: "30 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "أي مما يلي نظام تشغيل؟",
+              options: [
+                "Windows",
+                "HTML",
+                "Keyboard",
+                "Mouse"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "computer-3",
+          title: "الدرس الثالث: الإنترنت",
+          description: "مقدمة في الإنترنت والشبكات.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "الإنترنت هو:",
+              options: [
+                "شبكة عالمية",
+                "برنامج رسم فقط",
+                "جهاز واحد",
+                "نظام تشغيل"
+              ],
+              answer: 0
+            }
+          ]
+        },
+
+        {
+          id: "computer-4",
+          title: "الدرس الرابع: أمن المعلومات",
+          description: "أساسيات حماية البيانات والحسابات.",
+          duration: "35 دقيقة",
+          video: "",
+          questions: [
+            {
+              question: "من أفضل طرق حماية الحساب:",
+              options: [
+                "استخدام كلمة مرور قوية",
+                "مشاركة كلمة المرور",
+                "استخدام نفس كلمة المرور لكل المواقع",
+                "إرسال كلمة المرور للآخرين"
+              ],
+              answer: 0
+            }
+          ]
+        }
+      ]
+    }
+
+  };
+
+
+  /* ================================
+     STATE
+     ================================ */
+
+  let currentUser = null;
+  let currentSubject = null;
+  let currentLessonIndex = 0;
+
+
+  /* ================================
+     STORAGE
+     ================================ */
+
+  const USERS_KEY = "drnotes_users";
+  const CURRENT_USER_KEY = "drnotes_current_user";
+  const PROGRESS_KEY = "drnotes_progress";
+  const QUIZ_KEY = "drnotes_quiz_count";
+  const FAVORITES_KEY = "drnotes_favorites";
+
+
+  function getUsers() {
+    try {
+      return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+
+  function saveUsers(users) {
+    localStorage.setItem(
+      USERS_KEY,
+      JSON.stringify(users)
+    );
+  }
+
+
+  function getProgress() {
+
+    try {
+
+      const all =
+        JSON.parse(
+          localStorage.getItem(PROGRESS_KEY)
+        ) || {};
+
+      if (!currentUser) return {};
+
+      return all[currentUser.email] || {};
+
+    } catch {
+
+      return {};
+
+    }
+  }
+
+
+  function saveProgress(progress) {
+
+    if (!currentUser) return;
+
+    let all = {};
+
+    try {
+      all =
+        JSON.parse(
+          localStorage.getItem(PROGRESS_KEY)
+        ) || {};
+    } catch {
+      all = {};
+    }
+
+    all[currentUser.email] = progress;
+
+    localStorage.setItem(
+      PROGRESS_KEY,
+      JSON.stringify(all)
+    );
+
+  }
+
+
+  function getQuizCount() {
+
+    if (!currentUser) return 0;
+
+    try {
+
+      const all =
+        JSON.parse(
+          localStorage.getItem(QUIZ_KEY)
+        ) || {};
+
+      return all[currentUser.email] || 0;
+
+    } catch {
+
+      return 0;
+
+    }
+  }
+
+
+  function increaseQuizCount() {
+
+    if (!currentUser) return;
+
+    let all = {};
+
+    try {
+      all =
+        JSON.parse(
+          localStorage.getItem(QUIZ_KEY)
+        ) || {};
+    } catch {
+      all = {};
+    }
+
+    all[currentUser.email] =
+      (all[currentUser.email] || 0) + 1;
+
+    localStorage.setItem(
+      QUIZ_KEY,
+      JSON.stringify(all)
+    );
+
+  }
+
+
+  function getFavorites() {
+
+    if (!currentUser) return [];
+
+    try {
+
+      const all =
+        JSON.parse(
+          localStorage.getItem(FAVORITES_KEY)
+        ) || {};
+
+      return all[currentUser.email] || [];
+
+    } catch {
+
+      return [];
+
+    }
+  }
+
+
+  function saveFavorites(favorites) {
+
+    if (!currentUser) return;
+
+    let all = {};
+
+    try {
+      all =
+        JSON.parse(
+          localStorage.getItem(FAVORITES_KEY)
+        ) || {};
+    } catch {
+      all = {};
+    }
+
+    all[currentUser.email] = favorites;
+
+    localStorage.setItem(
+      FAVORITES_KEY,
+      JSON.stringify(all)
+    );
+
+  }
+
+
+  /* ================================
+     TOAST
+     ================================ */
+
+  function showToast(message) {
+
+    const toast =
+      document.getElementById("toast");
+
+    toast.textContent = message;
+
+    toast.classList.add("show");
+
+    setTimeout(() => {
+      toast.classList.remove("show");
+    }, 3000);
+
+  }
+
+
+  /* ================================
+     MODAL
+     ================================ */
 
   function openLogin() {
 
-    authModal.classList.add("active");
+    document
+      .getElementById("authModal")
+      .classList.add("active");
 
     showLogin();
 
@@ -2010,7 +3656,9 @@
 
   function openRegister() {
 
-    authModal.classList.add("active");
+    document
+      .getElementById("authModal")
+      .classList.add("active");
 
     showRegister();
 
@@ -2019,17 +3667,21 @@
 
   function closeModal() {
 
-    authModal.classList.remove("active");
+    document
+      .getElementById("authModal")
+      .classList.remove("active");
 
   }
 
 
   function showLogin() {
 
-    document.getElementById("loginForm")
+    document
+      .getElementById("loginForm")
       .style.display = "block";
 
-    document.getElementById("registerForm")
+    document
+      .getElementById("registerForm")
       .style.display = "none";
 
   }
@@ -2037,44 +3689,70 @@
 
   function showRegister() {
 
-    document.getElementById("loginForm")
+    document
+      .getElementById("loginForm")
       .style.display = "none";
 
-    document.getElementById("registerForm")
+    document
+      .getElementById("registerForm")
       .style.display = "block";
 
   }
 
 
-  /*
-   * ======================================
-   * REGISTER
-   * ======================================
-   */
+  /* ================================
+     REGISTER
+     ================================ */
 
   async function register(event) {
 
     event.preventDefault();
 
     const name =
-      document.getElementById("registerName").value.trim();
+      document
+        .getElementById("registerName")
+        .value
+        .trim();
 
     const email =
-      document.getElementById("registerEmail").value.trim();
+      document
+        .getElementById("registerEmail")
+        .value
+        .trim()
+        .toLowerCase();
 
     const grade =
-      document.getElementById("registerGrade").value;
+      document
+        .getElementById("registerGrade")
+        .value;
 
     const password =
-      document.getElementById("registerPassword").value;
+      document
+        .getElementById("registerPassword")
+        .value;
 
     const confirm =
-      document.getElementById("registerConfirm").value;
+      document
+        .getElementById("registerConfirm")
+        .value;
 
 
     if (password !== confirm) {
 
-      alert("كلمتا المرور غير متطابقتين.");
+      showToast(
+        "كلمة المرور وتأكيدها غير متطابقين."
+      );
+
+      return;
+
+    }
+
+
+    if (password.length < 6) {
+
+      showToast(
+        "كلمة المرور يجب أن تكون 6 أحرف على الأقل."
+      );
 
       return;
 
@@ -2082,91 +3760,276 @@
 
 
     /*
-     * في المرحلة الحالية:
-     * نحفظ بيانات تجريبية محليًا.
-     *
-     * بعد ربط Backend:
-     * استبدل هذا الجزء بطلب POST إلى:
-     *
-     * POST /api/auth/register
+     * لو تم وضع API_URL حقيقي:
+     * نحاول التسجيل في Backend.
      */
 
-    const user = {
+    if (API_URL) {
+
+      try {
+
+        const response =
+          await fetch(
+            `${API_URL}/auth/register`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                name,
+                email,
+                grade,
+                password
+              })
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+
+          throw new Error(
+            data.message ||
+            "فشل إنشاء الحساب."
+          );
+
+        }
+
+        currentUser =
+          data.user || {
+            name,
+            email,
+            grade
+          };
+
+        localStorage.setItem(
+          CURRENT_USER_KEY,
+          JSON.stringify(currentUser)
+        );
+
+        closeModal();
+
+        updateUserInterface();
+
+        showToast(
+          "تم إنشاء الحساب بنجاح 🎉"
+        );
+
+        return;
+
+      } catch (error) {
+
+        showToast(
+          error.message ||
+          "حدث خطأ أثناء إنشاء الحساب."
+        );
+
+        return;
+
+      }
+
+    }
+
+
+    /*
+     * الوضع التجريبي:
+     * LocalStorage
+     */
+
+    const users = getUsers();
+
+    const exists =
+      users.some(
+        user => user.email === email
+      );
+
+    if (exists) {
+
+      showToast(
+        "هذا البريد الإلكتروني مسجل بالفعل."
+      );
+
+      return;
+
+    }
+
+
+    const newUser = {
+
+      id:
+        Date.now()
+        .toString(),
 
       name,
+
       email,
+
       grade,
 
-      createdAt:
-        new Date().toISOString()
+      /*
+       * هذا للتجربة فقط.
+       * لا تستخدم LocalStorage لتخزين كلمات مرور
+       * في الموقع الحقيقي.
+       */
+
+      password
 
     };
 
 
+    users.push(newUser);
+
+    saveUsers(users);
+
+
+    currentUser = {
+      id: newUser.id,
+      name,
+      email,
+      grade
+    };
+
+
     localStorage.setItem(
-      "drnotes_user",
-      JSON.stringify(user)
-    );
-
-
-    alert(
-      "تم إنشاء الحساب بنجاح! 🎉"
+      CURRENT_USER_KEY,
+      JSON.stringify(currentUser)
     );
 
 
     closeModal();
 
-    showDashboard(user);
+    updateUserInterface();
+
+    showToast(
+      "تم إنشاء الحساب بنجاح 🎉"
+    );
 
   }
 
 
-  /*
-   * ======================================
-   * LOGIN
-   * ======================================
-   */
+  /* ================================
+     LOGIN
+     ================================ */
 
   async function login(event) {
 
     event.preventDefault();
 
     const email =
-      document.getElementById("loginEmail").value.trim();
+      document
+        .getElementById("loginEmail")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const password =
+      document
+        .getElementById("loginPassword")
+        .value;
+
 
     /*
-     * في النسخة النهائية:
-     *
-     * POST /api/auth/login
-     *
-     * ولا يجب أبدًا التحقق من كلمة المرور
-     * داخل Frontend.
+     * Backend
      */
 
+    if (API_URL) {
 
-    const savedUser =
-      localStorage.getItem("drnotes_user");
+      try {
+
+        const response =
+          await fetch(
+            `${API_URL}/auth/login`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                email,
+                password
+              })
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+
+          throw new Error(
+            data.message ||
+            "بيانات تسجيل الدخول غير صحيحة."
+          );
+
+        }
 
 
-    if (!savedUser) {
+        currentUser =
+          data.user || {
+            email
+          };
 
-      alert(
-        "الحساب غير موجود. قم بإنشاء حساب أولًا."
-      );
 
-      return;
+        if (data.token) {
+
+          localStorage.setItem(
+            "drnotes_token",
+            data.token
+          );
+
+        }
+
+
+        localStorage.setItem(
+          CURRENT_USER_KEY,
+          JSON.stringify(currentUser)
+        );
+
+
+        closeModal();
+
+        updateUserInterface();
+
+        showToast(
+          "تم تسجيل الدخول بنجاح 👋"
+        );
+
+        return;
+
+      } catch (error) {
+
+        showToast(
+          error.message ||
+          "حدث خطأ أثناء تسجيل الدخول."
+        );
+
+        return;
+
+      }
 
     }
 
+
+    /*
+     * LocalStorage
+     */
+
+    const users = getUsers();
 
     const user =
-      JSON.parse(savedUser);
+      users.find(
+        u =>
+          u.email === email &&
+          u.password === password
+      );
 
 
-    if (user.email !== email) {
+    if (!user) {
 
-      alert(
-        "البريد الإلكتروني غير موجود."
+      showToast(
+        "البريد الإلكتروني أو كلمة المرور غير صحيحة."
       );
 
       return;
@@ -2174,143 +4037,440 @@
     }
 
 
-    alert(
-      "تم تسجيل الدخول بنجاح."
+    currentUser = {
+
+      id: user.id,
+
+      name: user.name,
+
+      email: user.email,
+
+      grade: user.grade
+
+    };
+
+
+    localStorage.setItem(
+      CURRENT_USER_KEY,
+      JSON.stringify(currentUser)
     );
 
 
     closeModal();
 
-    showDashboard(user);
+    updateUserInterface();
+
+    showToast(
+      "تم تسجيل الدخول بنجاح 👋"
+    );
 
   }
 
 
-  /*
-   * ======================================
-   * DASHBOARD
-   * ======================================
-   */
-
-  function showDashboard(user) {
-
-    document.getElementById("dashboard")
-      .style.display = "block";
-
-
-    document.getElementById("welcomeUser")
-      .textContent =
-      `مرحبًا ${user.name} 👋`;
-
-
-    document.getElementById("dashboard")
-      .scrollIntoView({
-        behavior: "smooth"
-      });
-
-
-    updateDashboard();
-
-  }
-
-
-  function updateDashboard() {
-
-    const completed =
-      JSON.parse(
-        localStorage.getItem("completed_lessons") || "[]"
-      );
-
-    const favorites =
-      JSON.parse(
-        localStorage.getItem("favorites") || "[]"
-      );
-
-    const quizzes =
-      JSON.parse(
-        localStorage.getItem("quiz_results") || "[]"
-      );
-
-
-    document.getElementById(
-      "completedLessons"
-    ).textContent = completed.length;
-
-
-    document.getElementById(
-      "favoriteCount"
-    ).textContent = favorites.length;
-
-
-    document.getElementById(
-      "quizCount"
-    ).textContent = quizzes.length;
-
-
-    /*
-     * مؤقتًا.
-     * سيتم حسابه من Database لاحقًا.
-     */
-
-    const progress =
-      completed.length === 0
-      ? 0
-      : Math.min(
-          completed.length * 5,
-          100
-        );
-
-
-    document.getElementById(
-      "overallProgress"
-    ).textContent =
-      progress + "%";
-
-  }
-
-
-  /*
-   * ======================================
-   * LOGOUT
-   * ======================================
-   */
+  /* ================================
+     LOGOUT
+     ================================ */
 
   function logout() {
 
+    currentUser = null;
+
     localStorage.removeItem(
-      "drnotes_user"
+      CURRENT_USER_KEY
     );
 
-    document.getElementById(
-      "dashboard"
-    ).style.display = "none";
+    localStorage.removeItem(
+      "drnotes_token"
+    );
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
+    document
+      .getElementById("dashboard")
+      .style.display = "none";
 
-    alert(
+    closeSubject();
+
+    updateHeader();
+
+    showToast(
       "تم تسجيل الخروج."
     );
 
   }
 
 
-  /*
-   * ======================================
-   * SEARCH
-   * ======================================
-   */
+  /* ================================
+     LOAD CURRENT USER
+     ================================ */
+
+  function loadCurrentUser() {
+
+    try {
+
+      const saved =
+        localStorage.getItem(
+          CURRENT_USER_KEY
+        );
+
+      if (saved) {
+
+        currentUser =
+          JSON.parse(saved);
+
+      }
+
+    } catch {
+
+      currentUser = null;
+
+    }
+
+  }
+
+
+  /* ================================
+     HEADER
+     ================================ */
+
+  function updateHeader() {
+
+    const actions =
+      document.querySelector(
+        ".header-actions"
+      );
+
+    if (!actions) return;
+
+
+    if (currentUser) {
+
+      actions.innerHTML = `
+
+        <button
+          class="btn btn-outline"
+          onclick="scrollToDashboard()"
+        >
+          <i class="fa-solid fa-user"></i>
+          حسابي
+        </button>
+
+        <button
+          class="btn btn-primary"
+          onclick="logout()"
+        >
+          تسجيل الخروج
+        </button>
+
+      `;
+
+    } else {
+
+      actions.innerHTML = `
+
+        <button
+          class="btn btn-outline"
+          onclick="openLogin()"
+        >
+          تسجيل الدخول
+        </button>
+
+        <button
+          class="btn btn-primary"
+          onclick="openRegister()"
+        >
+          إنشاء حساب
+        </button>
+
+      `;
+
+    }
+
+  }
+
+
+  /* ================================
+     USER INTERFACE
+     ================================ */
+
+  function updateUserInterface() {
+
+    updateHeader();
+
+    const dashboard =
+      document.getElementById(
+        "dashboard"
+      );
+
+
+    if (currentUser) {
+
+      dashboard.style.display =
+        "block";
+
+      document
+        .getElementById(
+          "welcomeUser"
+        )
+        .textContent =
+        `مرحبًا ${currentUser.name} 👋`;
+
+      updateDashboard();
+
+    } else {
+
+      dashboard.style.display =
+        "none";
+
+    }
+
+    updateAllProgressBars();
+
+  }
+
+
+  /* ================================
+     DASHBOARD
+     ================================ */
+
+  function updateDashboard() {
+
+    if (!currentUser) return;
+
+
+    const progress =
+      getProgress();
+
+    const favorites =
+      getFavorites();
+
+
+    let completed = 0;
+
+    let total = 0;
+
+
+    Object.keys(subjectsData)
+      .forEach(subjectKey => {
+
+        const lessons =
+          subjectsData[
+            subjectKey
+          ].lessons;
+
+        total += lessons.length;
+
+
+        lessons.forEach(
+          lesson => {
+
+            if (
+              progress[
+                lesson.id
+              ] === true
+            ) {
+
+              completed++;
+
+            }
+
+          }
+        );
+
+      });
+
+
+    const percentage =
+      total > 0
+        ? Math.round(
+            (completed / total) * 100
+          )
+        : 0;
+
+
+    document
+      .getElementById(
+        "completedLessons"
+      )
+      .textContent =
+      completed;
+
+
+    document
+      .getElementById(
+        "overallProgress"
+      )
+      .textContent =
+      `${percentage}%`;
+
+
+    document
+      .getElementById(
+        "quizCount"
+      )
+      .textContent =
+      getQuizCount();
+
+
+    document
+      .getElementById(
+        "favoriteCount"
+      )
+      .textContent =
+      favorites.length;
+
+
+    /*
+     * البحث عن آخر درس مكتمل.
+     */
+
+    let lastCompleted = null;
+
+    Object.keys(subjectsData)
+      .forEach(subjectKey => {
+
+        subjectsData[
+          subjectKey
+        ].lessons.forEach(
+          (lesson, index) => {
+
+            if (
+              progress[
+                lesson.id
+              ] === true
+            ) {
+
+              lastCompleted = {
+
+                subjectKey,
+
+                lesson,
+
+                index
+
+              };
+
+            }
+
+          }
+        );
+
+      });
+
+
+    const title =
+      document.getElementById(
+        "lastLessonTitle"
+      );
+
+    const description =
+      document.getElementById(
+        "lastLessonDescription"
+      );
+
+    const button =
+      document.getElementById(
+        "continueLessonBtn"
+      );
+
+
+    if (lastCompleted) {
+
+      title.textContent =
+        lastCompleted.lesson.title;
+
+      description.textContent =
+        `أكملت هذا الدرس في مادة ${subjectsData[lastCompleted.subjectKey].name}.`;
+
+
+      button.textContent =
+        "متابعة التعلم";
+
+
+      button.onclick = function() {
+
+        openSubject(
+          lastCompleted.subjectKey
+        );
+
+      };
+
+    } else {
+
+      title.textContent =
+        "لا يوجد درس حاليًا";
+
+      description.textContent =
+        "ابدأ دراسة أحد المواد وسيظهر آخر درس لك هنا.";
+
+      button.textContent =
+        "استكشف المواد";
+
+      button.onclick =
+        function() {
+
+          document
+            .getElementById(
+              "subjects"
+            )
+            .scrollIntoView({
+              behavior: "smooth"
+            });
+
+        };
+
+    }
+
+  }
+
+
+  function scrollToDashboard() {
+
+    document
+      .getElementById(
+        "dashboard"
+      )
+      .scrollIntoView({
+        behavior: "smooth"
+      });
+
+  }
+
+
+  function continueLearning() {
+
+    if (!currentUser) {
+
+      openLogin();
+
+      return;
+
+    }
+
+    document
+      .getElementById(
+        "subjects"
+      )
+      .scrollIntoView({
+        behavior: "smooth"
+      });
+
+  }
+
+
+  /* ================================
+     SEARCH SUBJECTS
+     ================================ */
 
   function searchSubjects() {
 
-    const search =
+    const input =
       document.getElementById(
         "subjectSearch"
-      ).value
-      .toLowerCase()
-      .trim();
+      );
+
+    const value =
+      input.value
+        .trim()
+        .toLowerCase();
 
 
     const cards =
@@ -2318,80 +4478,1489 @@
         ".subject-card"
       );
 
+    let found = false;
+
 
     cards.forEach(card => {
 
       const name =
-        card.dataset.name
-        .toLowerCase();
+        (
+          card.dataset.name ||
+          ""
+        ).toLowerCase();
 
 
       if (
-        name.includes(search)
+        name.includes(value)
       ) {
 
-        card.style.display = "";
+        card.style.display =
+          "";
+
+        found = true;
 
       } else {
 
-        card.style.display = "none";
+        card.style.display =
+          "none";
 
       }
 
     });
 
+
+    document
+      .getElementById(
+        "emptySubjects"
+      )
+      .style.display =
+      found ? "none" : "block";
+
   }
 
 
-  /*
-   * ======================================
-   * RESTORE SESSION
-   * ======================================
-   */
+  /* ================================
+     SUBJECT
+     ================================ */
 
-  document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+  function openSubject(subjectKey) {
 
-      const savedUser =
-        localStorage.getItem(
-          "drnotes_user"
-        );
+    if (!currentUser) {
+
+      openLogin();
+
+      showToast(
+        "سجل الدخول أولًا لبدء الدراسة."
+      );
+
+      return;
+
+    }
 
 
-      if (savedUser) {
+    if (
+      !subjectsData[
+        subjectKey
+      ]
+    ) {
 
-        try {
+      showToast(
+        "المادة غير موجودة."
+      );
 
-          const user =
-            JSON.parse(savedUser);
+      return;
 
-          showDashboard(user);
+    }
 
-        } catch (error) {
 
-          localStorage.removeItem(
-            "drnotes_user"
+    currentSubject =
+      subjectKey;
+
+
+    currentLessonIndex = 0;
+
+
+    document
+      .getElementById(
+        "homePage"
+      )
+      .style.display =
+      "none";
+
+
+    document
+      .getElementById(
+        "subjectPage"
+      )
+      .style.display =
+      "block";
+
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+
+    const subject =
+      subjectsData[
+        subjectKey
+      ];
+
+
+    document
+      .getElementById(
+        "subjectPageTitle"
+      )
+      .textContent =
+      subject.name;
+
+
+    document
+      .getElementById(
+        "subjectPageDescription"
+      )
+      .textContent =
+      subject.description;
+
+
+    renderLessonsList();
+
+    updateSubjectProgress();
+
+
+    /*
+     * فتح أول درس متاح.
+     */
+
+    const firstAvailable =
+      getFirstAvailableLessonIndex();
+
+
+    selectLesson(
+      firstAvailable
+    );
+
+  }
+
+
+  function closeSubject() {
+
+    currentSubject = null;
+
+    currentLessonIndex = 0;
+
+
+    document
+      .getElementById(
+        "subjectPage"
+      )
+      .style.display =
+      "none";
+
+
+    document
+      .getElementById(
+        "homePage"
+      )
+      .style.display =
+      "block";
+
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+
+
+  function goHome() {
+
+    closeSubject();
+
+    document
+      .getElementById(
+        "homePage"
+      )
+      .style.display =
+      "block";
+
+    setTimeout(() => {
+
+      const hash =
+        window.location.hash;
+
+      if (hash) {
+
+        const target =
+          document.querySelector(
+            hash
           );
 
+        if (target) {
+
+          target.scrollIntoView({
+            behavior: "smooth"
+          });
+
         }
+
+      } else {
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+
+      }
+
+    }, 50);
+
+  }
+
+
+  /* ================================
+     LESSON LOCK SYSTEM
+     ================================ */
+
+  function isLessonUnlocked(
+    subjectKey,
+    index
+  ) {
+
+    if (index === 0) {
+      return true;
+    }
+
+
+    const progress =
+      getProgress();
+
+    const lessons =
+      subjectsData[
+        subjectKey
+      ].lessons;
+
+
+    const previousLesson =
+      lessons[
+        index - 1
+      ];
+
+
+    return (
+      progress[
+        previousLesson.id
+      ] === true
+    );
+
+  }
+
+
+  function getFirstAvailableLessonIndex() {
+
+    if (!currentSubject) {
+      return 0;
+    }
+
+
+    const lessons =
+      subjectsData[
+        currentSubject
+      ].lessons;
+
+
+    for (
+      let i = 0;
+      i < lessons.length;
+      i++
+    ) {
+
+      if (
+        isLessonUnlocked(
+          currentSubject,
+          i
+        )
+      ) {
+
+        return i;
 
       }
 
     }
-  );
 
 
-  /*
-   * إغلاق الـ Modal عند الضغط خارجه
-   */
+    return 0;
 
-  authModal.addEventListener(
-    "click",
-    event => {
+  }
+
+
+  /* ================================
+     RENDER LESSONS
+     ================================ */
+
+  function renderLessonsList() {
+
+    const container =
+      document.getElementById(
+        "lessonsList"
+      );
+
+
+    container.innerHTML = "";
+
+
+    if (!currentSubject) {
+      return;
+    }
+
+
+    const lessons =
+      subjectsData[
+        currentSubject
+      ].lessons;
+
+
+    const progress =
+      getProgress();
+
+
+    const favorites =
+      getFavorites();
+
+
+    lessons.forEach(
+      (lesson, index) => {
+
+        const unlocked =
+          isLessonUnlocked(
+            currentSubject,
+            index
+          );
+
+
+        const completed =
+          progress[
+            lesson.id
+          ] === true;
+
+
+        const favorite =
+          favorites.includes(
+            lesson.id
+          );
+
+
+        const button =
+          document.createElement(
+            "button"
+          );
+
+
+        button.className =
+          "lesson-item";
+
+
+        if (completed) {
+
+          button.classList.add(
+            "completed"
+          );
+
+        }
+
+
+        if (!unlocked) {
+
+          button.classList.add(
+            "locked"
+          );
+
+        }
+
+
+        if (
+          index ===
+          currentLessonIndex
+        ) {
+
+          button.classList.add(
+            "active"
+          );
+
+        }
+
+
+        button.innerHTML = `
+
+          <div class="lesson-number">
+
+            ${
+              completed
+                ? '<i class="fa-solid fa-check"></i>'
+                : (
+                    index + 1
+                  )
+            }
+
+          </div>
+
+          <div class="lesson-item-info">
+
+            <strong>
+              ${lesson.title}
+            </strong>
+
+            <span>
+              ${lesson.duration}
+            </span>
+
+          </div>
+
+          <div class="lesson-status">
+
+            ${
+              !unlocked
+                ? '<i class="fa-solid fa-lock"></i>'
+                : favorite
+                  ? '<i class="fa-solid fa-star" style="color:#f59e0b"></i>'
+                  : '<i class="fa-solid fa-chevron-left"></i>'
+            }
+
+          </div>
+
+        `;
+
+
+        button.onclick =
+          function() {
+
+            if (!unlocked) {
+
+              showToast(
+                "🔒 يجب اجتياز اختبار الدرس السابق أولًا."
+              );
+
+              return;
+
+            }
+
+
+            selectLesson(index);
+
+          };
+
+
+        container.appendChild(
+          button
+        );
+
+      }
+    );
+
+  }
+
+
+  /* ================================
+     SELECT LESSON
+     ================================ */
+
+  function selectLesson(index) {
+
+    if (!currentSubject) {
+      return;
+    }
+
+
+    const lessons =
+      subjectsData[
+        currentSubject
+      ].lessons;
+
+
+    if (
+      index < 0 ||
+      index >= lessons.length
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      !isLessonUnlocked(
+        currentSubject,
+        index
+      )
+    ) {
+
+      showToast(
+        "🔒 هذا الدرس مقفول."
+      );
+
+      return;
+
+    }
+
+
+    currentLessonIndex =
+      index;
+
+
+    const lesson =
+      lessons[index];
+
+
+    document
+      .getElementById(
+        "lessonTitle"
+      )
+      .textContent =
+      lesson.title;
+
+
+    document
+      .getElementById(
+        "lessonDescription"
+      )
+      .textContent =
+      lesson.description;
+
+
+    renderVideo(
+      lesson
+    );
+
+
+    renderQuiz(
+      lesson
+    );
+
+
+    document
+      .getElementById(
+        "lockedLessonMessage"
+      )
+      .style.display =
+      "none";
+
+
+    document
+      .getElementById(
+        "nextLessonBox"
+      )
+      .classList.remove(
+        "show"
+      );
+
+
+    updateFavoriteButton();
+
+
+    renderLessonsList();
+
+
+    document
+      .getElementById(
+        "lessonContent"
+      )
+      .scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+  }
+
+
+  /* ================================
+     VIDEO
+     ================================ */
+
+  function renderVideo(
+    lesson
+  ) {
+
+    const container =
+      document.getElementById(
+        "videoContainer"
+      );
+
+
+    if (
+      lesson.video &&
+      lesson.video.trim()
+    ) {
+
+      container.innerHTML = `
+
+        <video
+          controls
+          controlsList="nodownload"
+          preload="metadata"
+        >
+
+          <source
+            src="${lesson.video}"
+            type="video/mp4"
+          >
+
+          متصفحك لا يدعم تشغيل الفيديو.
+
+        </video>
+
+      `;
+
+    } else {
+
+      container.innerHTML = `
+
+        <div class="video-placeholder">
+
+          <i class="fa-solid fa-video-slash"></i>
+
+          <h3>
+            الفيديو غير مضاف بعد
+          </h3>
+
+          <p>
+            أضف رابط الفيديو داخل
+            <strong>video</strong>
+            في بيانات الدرس.
+          </p>
+
+        </div>
+
+      `;
+
+    }
+
+  }
+
+
+  /* ================================
+     QUIZ
+     ================================ */
+
+  function renderQuiz(
+    lesson
+  ) {
+
+    const quizBox =
+      document.getElementById(
+        "quizBox"
+      );
+
+    const form =
+      document.getElementById(
+        "quizForm"
+      );
+
+    const result =
+      document.getElementById(
+        "quizResult"
+      );
+
+
+    quizBox.style.display =
+      "block";
+
+
+    result.className =
+      "quiz-result";
+
+    result.textContent =
+      "";
+
+
+    form.innerHTML = "";
+
+
+    if (
+      !lesson.questions ||
+      lesson.questions.length === 0
+    ) {
+
+      form.innerHTML = `
+
+        <div class="question">
+
+          لا يوجد اختبار لهذا الدرس حاليًا.
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    lesson.questions.forEach(
+      (question, questionIndex) => {
+
+        const questionElement =
+          document.createElement(
+            "div"
+          );
+
+
+        questionElement.className =
+          "question";
+
+
+        let optionsHTML = "";
+
+
+        question.options.forEach(
+          (option, optionIndex) => {
+
+            optionsHTML += `
+
+              <label
+                class="answer-option"
+              >
+
+                <input
+                  type="radio"
+                  name="question-${questionIndex}"
+                  value="${optionIndex}"
+                >
+
+                <span>
+                  ${option}
+                </span>
+
+              </label>
+
+            `;
+
+          }
+        );
+
+
+        questionElement.innerHTML = `
+
+          <div class="question-title">
+
+            ${questionIndex + 1}.
+            ${question.question}
+
+          </div>
+
+          ${optionsHTML}
+
+        `;
+
+
+        form.appendChild(
+          questionElement
+        );
+
+      }
+    );
+
+  }
+
+
+  /* ================================
+     SUBMIT QUIZ
+     ================================ */
+
+  function submitQuiz() {
+
+    if (!currentSubject) {
+      return;
+    }
+
+
+    const lesson =
+      subjectsData[
+        currentSubject
+      ].lessons[
+        currentLessonIndex
+      ];
+
+
+    if (
+      !lesson.questions ||
+      lesson.questions.length === 0
+    ) {
+
+      showToast(
+        "لا يوجد اختبار لهذا الدرس."
+      );
+
+      return;
+
+    }
+
+
+    let score = 0;
+
+    let unanswered = 0;
+
+
+    lesson.questions.forEach(
+      (question, index) => {
+
+        const selected =
+          document.querySelector(
+            `input[name="question-${index}"]:checked`
+          );
+
+
+        if (!selected) {
+
+          unanswered++;
+
+          return;
+
+        }
+
+
+        if (
+          Number(
+            selected.value
+          ) === question.answer
+        ) {
+
+          score++;
+
+        }
+
+      }
+    );
+
+
+    if (unanswered > 0) {
+
+      showToast(
+        `أجب عن جميع الأسئلة أولًا. متبقي ${unanswered} سؤال.`
+      );
+
+      return;
+
+    }
+
+
+    const total =
+      lesson.questions.length;
+
+
+    const percentage =
+      Math.round(
+        (score / total) * 100
+      );
+
+
+    increaseQuizCount();
+
+
+    const result =
+      document.getElementById(
+        "quizResult"
+      );
+
+
+    /*
+     * نسبة النجاح:
+     * 70%
+     */
+
+    if (percentage >= 70) {
+
+      result.className =
+        "quiz-result success";
+
+
+      result.innerHTML = `
+
+        🎉 ممتاز!
+
+        <br>
+
+        نتيجتك:
+        ${score} / ${total}
+
+        (${percentage}%)
+
+        <br>
+
+        تم اجتياز الاختبار وفتح الدرس التالي.
+
+      `;
+
+
+      markLessonCompleted(
+        lesson.id
+      );
+
+
+      const lessons =
+        subjectsData[
+          currentSubject
+        ].lessons;
+
 
       if (
-        event.target === authModal
+        currentLessonIndex <
+        lessons.length - 1
+      ) {
+
+        document
+          .getElementById(
+            "nextLessonBox"
+          )
+          .classList.add(
+            "show"
+          );
+
+      } else {
+
+        document
+          .getElementById(
+            "nextLessonBox"
+          )
+          .classList.add(
+            "show"
+          );
+
+
+        document.querySelector(
+          "#nextLessonBox h4"
+        ).textContent =
+          "🎉 مبروك! أكملت المادة";
+
+        document.querySelector(
+          "#nextLessonBox p"
+        ).textContent =
+          "لقد أنهيت جميع دروس هذه المادة بنجاح.";
+
+        document.querySelector(
+          ".next-lesson-btn"
+        ).textContent =
+          "العودة إلى المواد";
+
+        document.querySelector(
+          ".next-lesson-btn"
+        ).onclick =
+          closeSubject;
+
+      }
+
+
+      updateDashboard();
+
+      updateSubjectProgress();
+
+      updateAllProgressBars();
+
+      renderLessonsList();
+
+
+      showToast(
+        "🎉 أحسنت! تم فتح الدرس التالي."
+      );
+
+
+    } else {
+
+      result.className =
+        "quiz-result fail";
+
+
+      result.innerHTML = `
+
+        حاول مرة أخرى.
+
+        <br>
+
+        نتيجتك:
+        ${score} / ${total}
+
+        (${percentage}%)
+
+        <br>
+
+        تحتاج إلى 70% على الأقل لفتح الدرس التالي.
+
+      `;
+
+
+      showToast(
+        "لم تنجح هذه المرة، راجع الدرس وحاول مرة أخرى."
+      );
+
+    }
+
+  }
+
+
+  /* ================================
+     COMPLETE LESSON
+     ================================ */
+
+  function markLessonCompleted(
+    lessonId
+  ) {
+
+    const progress =
+      getProgress();
+
+
+    progress[
+      lessonId
+    ] = true;
+
+
+    saveProgress(
+      progress
+    );
+
+  }
+
+
+  /* ================================
+     NEXT LESSON
+     ================================ */
+
+  function openNextLesson() {
+
+    if (!currentSubject) {
+      return;
+    }
+
+
+    const lessons =
+      subjectsData[
+        currentSubject
+      ].lessons;
+
+
+    const nextIndex =
+      currentLessonIndex + 1;
+
+
+    if (
+      nextIndex >=
+      lessons.length
+    ) {
+
+      closeSubject();
+
+      return;
+
+    }
+
+
+    if (
+      !isLessonUnlocked(
+        currentSubject,
+        nextIndex
+      )
+    ) {
+
+      showToast(
+        "يجب اجتياز الاختبار أولًا."
+      );
+
+      return;
+
+    }
+
+
+    selectLesson(
+      nextIndex
+    );
+
+  }
+
+
+  /* ================================
+     PROGRESS
+     ================================ */
+
+  function getSubjectProgress(
+    subjectKey
+  ) {
+
+    const progress =
+      getProgress();
+
+
+    const lessons =
+      subjectsData[
+        subjectKey
+      ].lessons;
+
+
+    if (!lessons.length) {
+      return 0;
+    }
+
+
+    const completed =
+      lessons.filter(
+        lesson =>
+          progress[
+            lesson.id
+          ] === true
+      ).length;
+
+
+    return Math.round(
+      (completed /
+        lessons.length) *
+      100
+    );
+
+  }
+
+
+  function updateSubjectProgress() {
+
+    if (!currentSubject) {
+      return;
+    }
+
+
+    const percentage =
+      getSubjectProgress(
+        currentSubject
+      );
+
+
+    document
+      .getElementById(
+        "subjectProgressText"
+      )
+      .textContent =
+      `${percentage}%`;
+
+
+    document
+      .getElementById(
+        "subjectPageProgress"
+      )
+      .style.width =
+      `${percentage}%`;
+
+  }
+
+
+  function updateAllProgressBars() {
+
+    Object.keys(
+      subjectsData
+    ).forEach(
+      subjectKey => {
+
+        const element =
+          document.getElementById(
+            `progress-${subjectKey}`
+          );
+
+
+        if (element) {
+
+          element.style.width =
+            `${getSubjectProgress(subjectKey)}%`;
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* ================================
+     FAVORITES
+     ================================ */
+
+  function toggleFavorite() {
+
+    if (!currentUser) {
+
+      openLogin();
+
+      return;
+
+    }
+
+
+    if (!currentSubject) {
+      return;
+    }
+
+
+    const lesson =
+      subjectsData[
+        currentSubject
+      ].lessons[
+        currentLessonIndex
+      ];
+
+
+    let favorites =
+      getFavorites();
+
+
+    if (
+      favorites.includes(
+        lesson.id
+      )
+    ) {
+
+      favorites =
+        favorites.filter(
+          id =>
+            id !== lesson.id
+        );
+
+      showToast(
+        "تم حذف الدرس من المفضلة."
+      );
+
+    } else {
+
+      favorites.push(
+        lesson.id
+      );
+
+      showToast(
+        "⭐ تمت إضافة الدرس للمفضلة."
+      );
+
+    }
+
+
+    saveFavorites(
+      favorites
+    );
+
+
+    updateFavoriteButton();
+
+    renderLessonsList();
+
+    updateDashboard();
+
+  }
+
+
+  function updateFavoriteButton() {
+
+    const header =
+      document.querySelector(
+        ".lesson-content-header"
+      );
+
+
+    if (!header) {
+      return;
+    }
+
+
+    let button =
+      document.getElementById(
+        "favoriteLessonBtn"
+      );
+
+
+    if (!button) {
+
+      button =
+        document.createElement(
+          "button"
+        );
+
+      button.id =
+        "favoriteLessonBtn";
+
+
+      button.style.cssText = `
+
+        margin-top:15px;
+        border:1px solid #e5e7eb;
+        background:white;
+        color:#0b3954;
+        padding:9px 14px;
+        border-radius:9px;
+        font-weight:700;
+        cursor:pointer;
+
+      `;
+
+
+      button.onclick =
+        toggleFavorite;
+
+
+      header.appendChild(
+        button
+      );
+
+    }
+
+
+    const lesson =
+      subjectsData[
+        currentSubject
+      ].lessons[
+        currentLessonIndex
+      ];
+
+
+    const favorites =
+      getFavorites();
+
+
+    const isFavorite =
+      favorites.includes(
+        lesson.id
+      );
+
+
+    button.innerHTML =
+      isFavorite
+        ? '<i class="fa-solid fa-star"></i> إزالة من المفضلة'
+        : '<i class="fa-regular fa-star"></i> إضافة للمفضلة';
+
+  }
+
+
+  /* ================================
+     MOBILE MENU
+     ================================ */
+
+  function initMobileMenu() {
+
+    const menuButton =
+      document.querySelector(
+        ".menu-btn"
+      );
+
+    const nav =
+      document.querySelector(
+        "nav"
+      );
+
+
+    if (
+      !menuButton ||
+      !nav
+    ) {
+
+      return;
+
+    }
+
+
+    menuButton.onclick =
+      function() {
+
+        if (
+          nav.style.display ===
+          "block"
+        ) {
+
+          nav.style.display =
+            "none";
+
+        } else {
+
+          nav.style.display =
+            "block";
+
+
+          nav.style.position =
+            "absolute";
+
+          nav.style.top =
+            "74px";
+
+          nav.style.right =
+            "0";
+
+          nav.style.left =
+            "0";
+
+          nav.style.background =
+            "white";
+
+          nav.style.padding =
+            "15px 20px";
+
+          nav.style.borderBottom =
+            "1px solid #e5e7eb";
+
+
+          nav.querySelector(
+            "ul"
+          ).style.flexDirection =
+            "column";
+
+
+          nav.querySelector(
+            "ul"
+          ).style.gap =
+            "15px";
+
+        }
+
+      };
+
+
+    nav
+      .querySelectorAll("a")
+      .forEach(link => {
+
+        link.addEventListener(
+          "click",
+          () => {
+
+            if (
+              window.innerWidth <=
+              900
+            ) {
+
+              nav.style.display =
+                "none";
+
+            }
+
+          }
+        );
+
+      });
+
+  }
+
+
+  /* ================================
+     MODAL CLICK OUTSIDE
+     ================================ */
+
+  function initModal() {
+
+    const modal =
+      document.getElementById(
+        "authModal"
+      );
+
+
+    modal.addEventListener(
+      "click",
+      function(event) {
+
+        if (
+          event.target === modal
+        ) {
+
+          closeModal();
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* ================================
+     ESC KEY
+     ================================ */
+
+  document.addEventListener(
+    "keydown",
+    function(event) {
+
+      if (
+        event.key ===
+        "Escape"
       ) {
 
         closeModal();
@@ -2401,7 +5970,30 @@
     }
   );
 
+
+  /* ================================
+     INITIALIZATION
+     ================================ */
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+      loadCurrentUser();
+
+      updateUserInterface();
+
+      updateAllProgressBars();
+
+      initMobileMenu();
+
+      initModal();
+
+    }
+  );
+
+
 </script>
 
 </body>
-  </html>
+</html>
