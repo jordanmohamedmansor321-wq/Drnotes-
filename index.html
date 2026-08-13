@@ -5514,5 +5514,1570 @@ body * {
 })();
 
   </script>
+  <!-- =========================================================
+     DrNotes - نظام المواد والوحدات والدروس والكويز الجديد
+     PostgreSQL API
+========================================================= -->
+
+<style>
+  /* ================================
+     وحدات ودروس DrNotes
+  ================================= */
+
+  .dr-units-box {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .dr-unit {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .dr-unit-header {
+    width: 100%;
+    border: 0;
+    background: var(--bg-soft);
+    color: var(--primary);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 800;
+    text-align: right;
+  }
+
+  .dr-unit-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dr-unit-lessons {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dr-lesson-row {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--white);
+    border-radius: 12px;
+    padding: 13px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--text);
+    text-align: right;
+    transition: 0.2s ease;
+  }
+
+  .dr-lesson-row:hover {
+    border-color: var(--primary-light);
+    transform: translateY(-1px);
+  }
+
+  .dr-lesson-info {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+  }
+
+  .dr-lesson-number {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 11px;
+    background: var(--bg-soft);
+    color: var(--primary-light);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+  }
+
+  .dr-lesson-name {
+    font-weight: 800;
+    color: var(--primary);
+  }
+
+  .dr-lesson-description {
+    font-size: 11px;
+    color: var(--text-light);
+  }
+
+  .dr-arrow {
+    color: var(--primary-light);
+  }
+
+  /* ================================
+     محتوى الدرس
+  ================================= */
+
+  .dr-content-box {
+    margin-top: 20px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .dr-content-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary);
+    margin-bottom: 18px;
+  }
+
+  .dr-video-box {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 15px;
+    background: #07131c;
+    margin-bottom: 16px;
+  }
+
+  .dr-video-box iframe,
+  .dr-video-box video {
+    width: 100%;
+    min-height: 420px;
+    display: block;
+    border: 0;
+  }
+
+  .dr-pdf-box {
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 15px;
+    background: var(--bg-soft);
+    margin-bottom: 16px;
+  }
+
+  .dr-pdf-box a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dr-explanation {
+    padding: 16px;
+    border-radius: 13px;
+    background: var(--bg-soft);
+    color: var(--text);
+    white-space: pre-wrap;
+    line-height: 1.9;
+  }
+
+  /* ================================
+     الكويز
+  ================================= */
+
+  .dr-quiz-box {
+    margin-top: 20px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .dr-quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .dr-quiz-header h3 {
+    color: var(--primary);
+  }
+
+  .dr-question {
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 15px;
+    margin-bottom: 12px;
+  }
+
+  .dr-question-title {
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+
+  .dr-option {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px;
+    border-radius: 9px;
+    cursor: pointer;
+  }
+
+  .dr-option:hover {
+    background: var(--bg-soft);
+  }
+
+  .dr-result {
+    margin-top: 18px;
+    padding: 17px;
+    border-radius: 13px;
+    background: var(--bg-soft);
+  }
+
+  .dr-correct {
+    border-right: 4px solid var(--success);
+    background: var(--success-bg);
+    padding: 12px;
+    border-radius: 9px;
+    margin-top: 10px;
+  }
+
+  .dr-wrong {
+    border-right: 4px solid var(--danger);
+    background: var(--danger-bg);
+    padding: 12px;
+    border-radius: 9px;
+    margin-top: 10px;
+  }
+
+  .dr-solution {
+    margin-top: 8px;
+    font-size: 13px;
+  }
+
+  .dr-next-lesson {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 700px) {
+    .dr-video-box iframe,
+    .dr-video-box video {
+      min-height: 230px;
+    }
+
+    .dr-lesson-row {
+      padding: 11px;
+    }
+  }
+</style>
+
+<script>
+(function () {
+
+  /*
+    =========================================================
+    ملاحظة:
+    نستخدم API_BASE_URL الموجود أصلًا في index.html.
+    =========================================================
+  */
+
+  let drCurrentSubjectId = null;
+  let drCurrentUnitId = null;
+  let drCurrentLessonId = null;
+
+  let drUnits = [];
+  let drLessons = [];
+
+  /* =========================================================
+     تحميل الوحدات
+  ========================================================= */
+
+  async function drLoadUnits(subjectId) {
+
+    try {
+
+      const data = await apiRequest(
+        `/subjects/${subjectId}/units`
+      );
+
+      drUnits = data.units || [];
+
+      return drUnits;
+
+    } catch (error) {
+
+      console.error(
+        "DrNotes units error:",
+        error
+      );
+
+      showToast(
+        error.message || "تعذر تحميل الوحدات.",
+        "error"
+      );
+
+      return [];
+
+    }
+  }
+
+  /* =========================================================
+     تحميل دروس الوحدة
+  ========================================================= */
+
+  async function drLoadLessons(unitId) {
+
+    try {
+
+      const data = await apiRequest(
+        `/units/${unitId}/lessons`
+      );
+
+      return data.lessons || [];
+
+    } catch (error) {
+
+      console.error(
+        "DrNotes lessons error:",
+        error
+      );
+
+      showToast(
+        error.message || "تعذر تحميل الدروس.",
+        "error"
+      );
+
+      return [];
+
+    }
+  }
+
+  /* =========================================================
+     عرض الوحدات
+  ========================================================= */
+
+  async function drRenderUnits(subjectId) {
+
+    const container =
+      document.getElementById("lessons-list");
+
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="empty-state">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <h3>جاري تحميل الوحدات...</h3>
+      </div>
+    `;
+
+    const units =
+      await drLoadUnits(subjectId);
+
+    if (!units.length) {
+
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-book-open"></i>
+          <h3>لا توجد وحدات حاليًا.</h3>
+          <p>سيتم إضافة الوحدات من لوحة المدير.</p>
+        </div>
+      `;
+
+      return;
+    }
+
+    container.innerHTML =
+      `<div class="dr-units-box">
+        ${units.map((unit, index) => `
+          <div class="dr-unit">
+
+            <button
+              class="dr-unit-header"
+              type="button"
+              onclick="drToggleUnit(${unit.id})"
+            >
+
+              <span class="dr-unit-title">
+                <i class="fa-solid fa-layer-group"></i>
+
+                ${escapeHtml(
+                  unit.name ||
+                  `الوحدة ${index + 1}`
+                )}
+              </span>
+
+              <i
+                id="dr-unit-icon-${unit.id}"
+                class="fa-solid fa-chevron-down"
+              ></i>
+
+            </button>
+
+            <div
+              id="dr-unit-lessons-${unit.id}"
+              class="dr-unit-lessons hidden"
+            >
+              <div class="empty-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>جاري تحميل الدروس...</p>
+              </div>
+            </div>
+
+          </div>
+        `).join("")}
+      </div>`;
+
+  }
+
+  /* =========================================================
+     فتح / غلق الوحدة
+  ========================================================= */
+
+  window.drToggleUnit = async function (unitId) {
+
+    const box =
+      document.getElementById(
+        `dr-unit-lessons-${unitId}`
+      );
+
+    const icon =
+      document.getElementById(
+        `dr-unit-icon-${unitId}`
+      );
+
+    if (!box) return;
+
+    if (!box.classList.contains("hidden")) {
+
+      box.classList.add("hidden");
+
+      if (icon) {
+        icon.className =
+          "fa-solid fa-chevron-down";
+      }
+
+      return;
+    }
+
+    box.classList.remove("hidden");
+
+    if (icon) {
+      icon.className =
+        "fa-solid fa-chevron-up";
+    }
+
+    const lessons =
+      await drLoadLessons(unitId);
+
+    if (!lessons.length) {
+
+      box.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-book"></i>
+          <p>لا توجد دروس في هذه الوحدة حاليًا.</p>
+        </div>
+      `;
+
+      return;
+    }
+
+    box.innerHTML =
+      lessons.map((lesson, index) => `
+        <button
+          type="button"
+          class="dr-lesson-row"
+          onclick="drOpenLesson(${lesson.id})"
+        >
+
+          <span class="dr-lesson-info">
+
+            <span class="dr-lesson-number">
+              ${index + 1}
+            </span>
+
+            <span>
+              <span class="dr-lesson-name">
+                ${escapeHtml(lesson.name)}
+              </span>
+
+              ${
+                lesson.description
+                  ? `
+                    <span class="dr-lesson-description">
+                      ${escapeHtml(
+                        lesson.description
+                      )}
+                    </span>
+                  `
+                  : ""
+              }
+
+            </span>
+
+          </span>
+
+          <i class="fa-solid fa-arrow-left dr-arrow"></i>
+
+        </button>
+      `).join("");
+
+  };
+
+  /* =========================================================
+     فتح الدرس
+  ========================================================= */
+
+  window.drOpenLesson = async function (lessonId) {
+
+    drCurrentLessonId =
+      lessonId;
+
+    const content =
+      document.getElementById(
+        "lesson-content"
+      );
+
+    if (!content) return;
+
+    content.innerHTML = `
+      <div class="empty-state">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <h3>جاري تحميل الدرس...</h3>
+      </div>
+    `;
+
+    try {
+
+      const data =
+        await apiRequest(
+          `/lessons/${lessonId}`
+        );
+
+      const lesson =
+        data.lesson;
+
+      const quiz =
+        data.quiz;
+
+      if (!lesson) {
+
+        throw new Error(
+          "الدرس غير موجود."
+        );
+
+      }
+
+      drCurrentLessonId =
+        lesson.id;
+
+      content.innerHTML = `
+
+        <div class="dr-content-box">
+
+          <div class="dr-content-title">
+
+            <i class="fa-solid fa-book-open"></i>
+
+            <div>
+              <h2>
+                ${escapeHtml(lesson.name)}
+              </h2>
+
+              ${
+                lesson.description
+                  ? `
+                    <p style="
+                      color:var(--text-light);
+                      font-size:12px;
+                    ">
+                      ${escapeHtml(
+                        lesson.description
+                      )}
+                    </p>
+                  `
+                  : ""
+              }
+
+            </div>
+
+          </div>
+
+          ${
+            lesson.video_url
+              ? drRenderVideo(
+                  lesson.video_url
+                )
+              : `
+                <div class="empty-state">
+                  <i class="fa-solid fa-video-slash"></i>
+                  <p>فيديو الشرح غير متوفر حاليًا.</p>
+                </div>
+              `
+          }
+
+          ${
+            lesson.pdf_url
+              ? `
+                <div class="dr-pdf-box">
+
+                  <strong>
+                    <i class="fa-solid fa-file-pdf"></i>
+                    ملف الدرس
+                  </strong>
+
+                  <br><br>
+
+                  <a
+                    class="btn btn-primary"
+                    href="${escapeAttribute(
+                      lesson.pdf_url
+                    )}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                    فتح ملف PDF
+                  </a>
+
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            lesson.explanation
+              ? `
+                <div class="dr-explanation">
+
+                  <strong>
+                    <i class="fa-solid fa-align-right"></i>
+                    شرح الدرس
+                  </strong>
+
+                  <br><br>
+
+                  ${escapeHtml(
+                    lesson.explanation
+                  )}
+
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+
+        ${drRenderQuizButton(quiz)}
+
+      `;
+
+      content.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    } catch (error) {
+
+      console.error(
+        "DrNotes lesson error:",
+        error
+      );
+
+      content.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <h3>تعذر تحميل الدرس</h3>
+          <p>
+            ${escapeHtml(
+              error.message ||
+              "حدث خطأ غير متوقع."
+            )}
+          </p>
+        </div>
+      `;
+
+    }
+
+  };
+
+  /* =========================================================
+     الفيديو
+  ========================================================= */
+
+  function drRenderVideo(url) {
+
+    const safe =
+      escapeAttribute(url);
+
+    const lower =
+      String(url).toLowerCase();
+
+    if (
+      lower.includes("youtube.com") ||
+      lower.includes("youtu.be") ||
+      lower.includes("vimeo.com")
+    ) {
+
+      return `
+        <div class="dr-video-box">
+
+          <iframe
+            src="${safe}"
+            title="فيديو شرح الدرس"
+            allowfullscreen
+          ></iframe>
+
+        </div>
+      `;
+
+    }
+
+    return `
+      <div class="dr-video-box">
+
+        <video
+          controls
+          preload="metadata"
+        >
+          <source
+            src="${safe}"
+            type="video/mp4"
+          >
+
+          المتصفح لا يدعم تشغيل الفيديو.
+
+        </video>
+
+      </div>
+    `;
+
+  }
+
+  /* =========================================================
+     زر الكويز
+  ========================================================= */
+
+  function drRenderQuizButton(quiz) {
+
+    if (!quiz) {
+
+      return `
+        <div class="dr-quiz-box">
+
+          <div class="dr-quiz-header">
+
+            <h3>
+              <i class="fa-solid fa-clipboard-question"></i>
+              كويز الدرس
+            </h3>
+
+          </div>
+
+          <p style="color:var(--text-light);">
+            لا يوجد كويز لهذا الدرس حاليًا.
+          </p>
+
+        </div>
+      `;
+
+    }
+
+    return `
+      <div class="dr-quiz-box">
+
+        <div class="dr-quiz-header">
+
+          <h3>
+            <i class="fa-solid fa-clipboard-question"></i>
+            ${escapeHtml(quiz.title)}
+          </h3>
+
+          <span style="
+            color:var(--text-light);
+            font-size:12px;
+          ">
+            النجاح من ${quiz.passing_percentage}%
+          </span>
+
+        </div>
+
+        ${
+          quiz.description
+            ? `
+              <p style="
+                color:var(--text-light);
+                margin-bottom:15px;
+              ">
+                ${escapeHtml(
+                  quiz.description
+                )}
+              </p>
+            `
+            : ""
+        }
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="drStartQuiz(${quiz.id})"
+        >
+          <i class="fa-solid fa-play"></i>
+          فتح الاختبار
+        </button>
+
+        <div id="dr-quiz-area"></div>
+
+      </div>
+    `;
+
+  }
+
+  /* =========================================================
+     بدء الكويز
+  ========================================================= */
+
+  window.drStartQuiz = async function (quizId) {
+
+    if (!currentUser) {
+
+      showToast(
+        "يجب تسجيل الدخول أولًا.",
+        "warning"
+      );
+
+      openAuth("login");
+
+      return;
+    }
+
+    const area =
+      document.getElementById(
+        "dr-quiz-area"
+      );
+
+    if (!area) return;
+
+    area.innerHTML = `
+      <div class="empty-state">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <p>جاري فتح الاختبار...</p>
+      </div>
+    `;
+
+    try {
+
+      const data =
+        await apiRequest(
+          `/quizzes/${quizId}/start`,
+          {
+            method: "POST"
+          }
+        );
+
+      drRenderQuizQuestions(
+        data
+      );
+
+    } catch (error) {
+
+      if (
+        error.status === 409
+      ) {
+
+        area.innerHTML = `
+          <div class="dr-result">
+
+            <strong>
+              <i class="fa-solid fa-lock"></i>
+              هذا الاختبار تم استخدامه من قبل.
+            </strong>
+
+            <p style="
+              margin-top:8px;
+              color:var(--text-light);
+            ">
+              لا يمكن فتح الاختبار مرة أخرى.
+            </p>
+
+          </div>
+        `;
+
+        return;
+      }
+
+      area.innerHTML = `
+        <div class="dr-result">
+
+          <strong>
+            تعذر فتح الاختبار
+          </strong>
+
+          <p>
+            ${escapeHtml(
+              error.message ||
+              "حدث خطأ."
+            )}
+          </p>
+
+        </div>
+      `;
+
+    }
+
+  };
+
+  /* =========================================================
+     عرض الأسئلة
+  ========================================================= */
+
+  function drRenderQuizQuestions(data) {
+
+    const area =
+      document.getElementById(
+        "dr-quiz-area"
+      );
+
+    if (!area) return;
+
+    const questions =
+      data.questions || [];
+
+    const perPage =
+      Number(
+        data.quiz?.questions_per_page
+      ) || 10;
+
+    const groups = [];
+
+    for (
+      let i = 0;
+      i < questions.length;
+      i += perPage
+    ) {
+
+      groups.push(
+        questions.slice(
+          i,
+          i + perPage
+        )
+      );
+
+    }
+
+    let currentGroup = 0;
+
+    const answers = {};
+
+    function renderGroup() {
+
+      const group =
+        groups[currentGroup];
+
+      area.innerHTML = `
+
+        <div style="
+          margin-top:20px;
+        ">
+
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            margin-bottom:12px;
+            color:var(--text-light);
+            font-size:12px;
+          ">
+
+            <span>
+              المجموعة
+              ${currentGroup + 1}
+              من
+              ${groups.length}
+            </span>
+
+            <span>
+              ${group.length} أسئلة
+            </span>
+
+          </div>
+
+          ${group.map((q, index) => {
+
+            const number =
+              currentGroup *
+                perPage +
+              index +
+              1;
+
+            return `
+
+              <div class="dr-question">
+
+                <div class="dr-question-title">
+
+                  ${number}.
+                  ${escapeHtml(
+                    q.question_text
+                  )}
+
+                </div>
+
+                ${["A","B","C","D"].map(
+                  letter => {
+
+                    const text =
+                      q[
+                        `option_${letter.toLowerCase()}`
+                      ];
+
+                    return `
+
+                      <label class="dr-option">
+
+                        <input
+                          type="radio"
+                          name="dr-q-${q.id}"
+                          value="${letter}"
+                          ${
+                            answers[q.id] === letter
+                              ? "checked"
+                              : ""
+                          }
+                        >
+
+                        <span>
+                          <strong>${letter}.</strong>
+                          ${escapeHtml(text)}
+                        </span>
+
+                      </label>
+
+                    `;
+
+                  }
+                ).join("")}
+
+              </div>
+
+            `;
+
+          }).join("")}
+
+          <div style="
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+          ">
+
+            ${
+              currentGroup > 0
+                ? `
+                  <button
+                    class="btn btn-outline"
+                    type="button"
+                    id="dr-prev-group"
+                  >
+                    السابق
+                  </button>
+                `
+                : ""
+            }
+
+            ${
+              currentGroup <
+              groups.length - 1
+
+                ? `
+                  <button
+                    class="btn btn-primary"
+                    type="button"
+                    id="dr-next-group"
+                  >
+                    المجموعة التالية
+                    <i class="fa-solid fa-arrow-left"></i>
+                  </button>
+                `
+
+                : `
+                  <button
+                    class="btn btn-success"
+                    type="button"
+                    id="dr-submit-quiz"
+                  >
+                    <i class="fa-solid fa-check"></i>
+                    تسليم الاختبار
+                  </button>
+                `
+            }
+
+          </div>
+
+        </div>
+
+      `;
+
+      group.forEach(q => {
+
+        const selected =
+          area.querySelector(
+            `input[name="dr-q-${q.id}"]:checked`
+          );
+
+        if (selected) {
+          answers[q.id] =
+            selected.value;
+        }
+
+        area
+          .querySelectorAll(
+            `input[name="dr-q-${q.id}"]`
+          )
+          .forEach(input => {
+
+            input.addEventListener(
+              "change",
+              () => {
+
+                answers[q.id] =
+                  input.value;
+
+              }
+            );
+
+          });
+
+      });
+
+      const next =
+        document.getElementById(
+          "dr-next-group"
+        );
+
+      if (next) {
+
+        next.onclick = () => {
+
+          currentGroup++;
+
+          renderGroup();
+
+        };
+
+      }
+
+      const prev =
+        document.getElementById(
+          "dr-prev-group"
+        );
+
+      if (prev) {
+
+        prev.onclick = () => {
+
+          currentGroup--;
+
+          renderGroup();
+
+        };
+
+      }
+
+      const submit =
+        document.getElementById(
+          "dr-submit-quiz"
+        );
+
+      if (submit) {
+
+        submit.onclick = () => {
+
+          drSubmitQuiz(
+            data.attempt.id,
+            questions,
+            answers
+          );
+
+        };
+
+      }
+
+    }
+
+    renderGroup();
+
+  }
+
+  /* =========================================================
+     تسليم الكويز
+  ========================================================= */
+
+  async function drSubmitQuiz(
+    attemptId,
+    questions,
+    answers
+  ) {
+
+    const missing =
+      questions.filter(
+        q => !answers[q.id]
+      );
+
+    if (missing.length) {
+
+      showToast(
+        "يجب الإجابة عن جميع الأسئلة قبل التسليم.",
+        "warning"
+      );
+
+      return;
+    }
+
+    const area =
+      document.getElementById(
+        "dr-quiz-area"
+      );
+
+    if (!area) return;
+
+    area.innerHTML = `
+      <div class="empty-state">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <p>جاري تصحيح الاختبار...</p>
+      </div>
+    `;
+
+    try {
+
+      const answerList =
+        questions.map(q => ({
+          question_id:
+            q.id,
+
+          selected_answer:
+            answers[q.id]
+        }));
+
+      const data =
+        await apiRequest(
+          `/quizzes/attempts/${attemptId}/submit`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              answers:
+                answerList
+            })
+          }
+        );
+
+      drRenderQuizResult(
+        data
+      );
+
+    } catch (error) {
+
+      area.innerHTML = `
+        <div class="dr-result">
+
+          <strong>
+            تعذر تسليم الاختبار
+          </strong>
+
+          <p>
+            ${escapeHtml(
+              error.message ||
+              "حدث خطأ."
+            )}
+          </p>
+
+        </div>
+      `;
+
+    }
+
+  }
+
+  /* =========================================================
+     النتيجة + الحل
+  ========================================================= */
+
+  function drRenderQuizResult(data) {
+
+    const area =
+      document.getElementById(
+        "dr-quiz-area"
+      );
+
+    if (!area) return;
+
+    const result =
+      data.result;
+
+    const questions =
+      data.questions || [];
+
+    area.innerHTML = `
+
+      <div class="dr-result">
+
+        <h3>
+          ${
+            result.passed
+              ? "🎉 مبروك! نجحت"
+              : "📚 راجع إجاباتك"
+          }
+        </h3>
+
+        <p>
+          النتيجة:
+          <strong>
+            ${result.percentage}%
+          </strong>
+        </p>
+
+        <p>
+          الصحيح:
+          <strong>
+            ${result.score}
+          </strong>
+          من
+          <strong>
+            ${result.total_questions}
+          </strong>
+        </p>
+
+        <p>
+          نسبة النجاح:
+          ${result.passing_percentage}%
+        </p>
+
+      </div>
+
+      <div style="
+        margin-top:20px;
+      ">
+
+        <h3 style="
+          color:var(--primary);
+          margin-bottom:12px;
+        ">
+          📖 الحل والشرح
+        </h3>
+
+        ${questions.map((q, index) => `
+
+          <div class="${
+            q.is_correct
+              ? "dr-correct"
+              : "dr-wrong"
+          }">
+
+            <strong>
+              ${index + 1}.
+              ${escapeHtml(
+                q.question_text
+              )}
+            </strong>
+
+            <div style="
+              margin-top:7px;
+              font-size:13px;
+            ">
+
+              إجابتك:
+              <strong>
+                ${q.selected_answer}
+              </strong>
+
+              <br>
+
+              الإجابة الصحيحة:
+              <strong>
+                ${q.correct_answer}
+              </strong>
+
+            </div>
+
+            ${
+              !q.is_correct
+                ? `
+                  <div class="dr-solution">
+
+                    <strong>
+                      سبب الخطأ:
+                    </strong>
+
+                    ${escapeHtml(
+                      q.explanation
+                    )}
+
+                  </div>
+                `
+                : `
+                  <div class="dr-solution">
+                    ✅ إجابة صحيحة.
+                  </div>
+                `
+            }
+
+          </div>
+
+        `).join("")}
+
+      </div>
+
+      ${
+        result.passed
+          ? `
+            <div class="dr-next-lesson">
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick="drGoNextLesson()"
+              >
+                الدرس التالي
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+
+            </div>
+          `
+          : ""
+      }
+
+    `;
+
+  }
+
+  /* =========================================================
+     الانتقال للدرس التالي
+  ========================================================= */
+
+  window.drGoNextLesson = function () {
+
+    if (
+      typeof currentSubject ===
+      "undefined" ||
+      !currentSubject
+    ) {
+      return;
+    }
+
+    if (
+      typeof currentLessonIndex ===
+      "undefined"
+    ) {
+      return;
+    }
+
+    const nextIndex =
+      currentLessonIndex + 1;
+
+    if (
+      nextIndex >=
+      currentSubject.lessons.length
+    ) {
+
+      showToast(
+        "أكملت جميع دروس المادة 🎉",
+        "success"
+      );
+
+      return;
+    }
+
+    selectLesson(
+      nextIndex
+    );
+
+  };
+
+  /* =========================================================
+     تحديث صفحة المادة لتستخدم الوحدات
+  ========================================================= */
+
+  const originalOpenSubject =
+    window.openSubject;
+
+  window.openSubject =
+    async function (subjectId) {
+
+      if (!currentUser) {
+
+        showToast(
+          "يجب تسجيل الدخول أولًا.",
+          "warning"
+        );
+
+        openAuth("login");
+
+        return;
+
+      }
+
+      drCurrentSubjectId =
+        subjectId;
+
+      document.getElementById(
+        "home-page"
+      ).style.display = "none";
+
+      document.getElementById(
+        "course-page"
+      ).style.display = "block";
+
+      const subject =
+        subjects.find(
+          item =>
+            String(item.id) ===
+            String(subjectId)
+        );
+
+      if (subject) {
+
+        document.getElementById(
+          "course-title"
+        ).textContent =
+          subject.name;
+
+        document.getElementById(
+          "course-description"
+        ).textContent =
+          subject.description || "";
+
+      }
+
+      const list =
+        document.getElementById(
+          "lessons-list"
+        );
+
+      if (list) {
+
+        list.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <h3>جاري تحميل الوحدات...</h3>
+          </div>
+        `;
+
+      }
+
+      await drRenderUnits(
+        subjectId
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    };
+
+})();
+  </script>
 </body>
   </html>
