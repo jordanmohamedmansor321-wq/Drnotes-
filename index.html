@@ -5,253 +5,295 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>منصة DrNotes التعليمية</title>
   
-  <!-- مكتبات Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+  <!-- خط Cairo الأنيق من Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- مكتبة FontAwesome للأيقونات -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
+    :root {
+      --primary-blue: #0b3954;
+      --secondary-blue: #087e8b;
+      --accent-color: #ff9f1c;
+      --light-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+    }
+
     * {
       box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
-    body {
+      font-family: 'Cairo', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f7f9fc;
-      direction: rtl;
-      text-align: right;
     }
+
+    body {
+      background-color: var(--light-bg);
+      color: var(--text-dark);
+      direction: rtl;
+    }
+
+    /* الهيدر العلوي */
     header {
-      background-color: #0b7bff;
-      color: white;
-      padding: 15px 20px;
+      background-color: var(--card-bg);
+      padding: 15px 8%;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
+
     .logo {
-      font-size: 20px;
-      font-weight: bold;
-    }
-    .auth-buttons button {
-      padding: 8px 16px;
-      margin-right: 5px;
-      border: none;
-      border-radius: 5px;
-      background-color: white;
-      color: #0b7bff;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    #user-profile {
-      display: none;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary-blue);
+      display: flex;
       align-items: center;
       gap: 10px;
     }
-    #user-profile button {
-      padding: 6px 12px;
-      border: 1px solid white;
-      border-radius: 5px;
-      background: transparent;
-      color: white;
-      cursor: pointer;
+
+    .logo i {
+      color: var(--secondary-blue);
     }
-    main {
-      padding: 20px;
-      max-width: 600px;
-      margin: 0 auto;
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 25px;
     }
-    .card {
-      background-color: white;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    .btn-submit {
-      width: 100%;
-      padding: 10px;
-      background-color: #0b7bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
+
+    nav a {
+      text-decoration: none;
+      color: var(--text-dark);
+      font-weight: 600;
       font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
+      transition: color 0.3s;
     }
-    .btn-google {
-      background-color: #db4437;
+
+    nav a:hover {
+      color: var(--secondary-blue);
     }
-    .divider {
+
+    /* قسم الهيرو (Hero Section) */
+    .hero {
+      background: linear-gradient(135deg, #0b3954 0%, #087e8b 100%);
+      color: white;
+      padding: 80px 8%;
       text-align: center;
-      margin: 15px 0;
-      color: #777;
+      position: relative;
+    }
+
+    .hero h1 {
+      font-size: 38px;
+      font-weight: 900;
+      margin-bottom: 15px;
+      line-height: 1.4;
+    }
+
+    .hero p {
+      font-size: 19px;
+      max-width: 800px;
+      margin: 0 auto 30px auto;
+      opacity: 0.9;
+      line-height: 1.7;
+    }
+
+    .hero-btn {
+      display: inline-block;
+      background-color: var(--accent-color);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: 0 4px 15px rgba(255, 159, 28, 0.4);
+      transition: transform 0.2s;
+    }
+
+    .hero-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    /* الأقسام والمحتوى */
+    .container {
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 0 20px;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .section-title h2 {
+      font-size: 28px;
+      color: var(--primary-blue);
+      font-weight: 800;
+    }
+
+    .section-title p {
+      color: var(--text-muted);
+      font-size: 16px;
+      margin-top: 5px;
+    }
+
+    /* كروت الكورسات والمواد */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+      background-color: #e0f2fe;
+      color: var(--primary-blue);
+      padding: 25px;
+      text-align: center;
+      font-size: 40px;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .card-body h3 {
+      font-size: 20px;
+      color: var(--primary-blue);
+      margin-bottom: 10px;
+    }
+
+    .card-body p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .card-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 10px;
+      background-color: var(--primary-blue);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 700;
+      transition: background 0.3s;
+    }
+
+    .card-btn:hover {
+      background-color: var(--secondary-blue);
+    }
+
+    /* الفوتر (Footer) */
+    footer {
+      background-color: var(--primary-blue);
+      color: white;
+      text-align: center;
+      padding: 25px;
+      margin-top: 60px;
+      font-size: 15px;
     }
   </style>
 </head>
 <body>
 
+  <!-- Navigation Bar -->
   <header>
-    <div class="logo">منصة DrNotes التعليمية</div>
-    
-    <!-- زرار للوصول لنموذج التسجيل لو الشاشة كبيرة -->
-    <div class="auth-buttons" id="auth-buttons">
-      <button onclick="scrollToAuth()">تسجيل الدخول / حساب جديد</button>
+    <div class="logo">
+      <i class="fa-solid fa-user-doctor"></i>
+      منصة DrNotes
     </div>
-
-    <!-- معلومات المستخدم (تظهر فور تسجيل الدخول وتخفي أزرار الدخول) -->
-    <div id="user-profile">
-      <span id="user-name"></span>
-      <button onclick="logout()">تسجيل الخروج</button>
-    </div>
+    <nav>
+      <ul>
+        <li><a href="#courses">المواد الدراسية</a></li>
+        <li><a href="#about">عن المنصة</a></li>
+        <li><a href="#contact">التواصل</a></li>
+      </ul>
+    </nav>
   </header>
 
-  <main>
-    <!-- قسم تسجيل الدخول وإنشاء الحساب (يختفي فوراً بعد التسجيل) -->
-    <div id="booking-section" class="card">
-      <h2>تسجيل الدخول / حساب جديد</h2>
-      
-      <div class="form-group">
-        <label>البريد الإلكتروني</label>
-        <input type="email" id="auth-email" placeholder="example@mail.com">
-      </div>
+  <!-- Hero Banner -->
+  <section class="hero">
+    <h1>تضمن التميز والامتياز بإذن الله في كليتك الطبية</h1>
+    <p>شروحات مبسطة ومذكرات شاملة لمساعدتك على استيعاب المواد الطبية وتحقيق أعلى الدرجات بكل سهولة.</p>
+    <a href="#courses" class="hero-btn">استكشف الكورسات والمذكرات</a>
+  </section>
 
-      <div class="form-group">
-        <label>رقم الهاتف (اختياري للتواصل)</label>
-        <input type="tel" id="auth-phone" placeholder="010XXXXXXXX">
-      </div>
-      
-      <div class="form-group">
-        <label>كلمة السر</label>
-        <input type="password" id="auth-password" placeholder="******">
-      </div>
-
-      <button class="btn-submit" onclick="loginWithEmail()">تسجيل الدخول</button>
-      <button class="btn-submit" style="background-color: #28a745;" onclick="registerWithEmail()">إنشاء حساب جديد</button>
-      
-      <div class="divider">أو</div>
-
-      <button class="btn-submit btn-google" onclick="loginWithGoogle()">التسجيل بواسطة Google</button>
+  <!-- Courses & Subjects Section -->
+  <div class="container" id="courses">
+    <div class="section-title">
+      <h2>المواد والكورسات المتاحة</h2>
+      <p>اختر المادة للوصول إلى الشروحات والمذكرات الخاصة بها</p>
     </div>
 
-    <!-- قسم خصائص الكورس والمحتوى (يظهر فقط بعد تسجيل الدخول) -->
-    <div id="course-features" class="card" style="display: none;">
-      <h2>خصائص الكورس والمحتوى التعليمي</h2>
-      <p>أهلاً بك! يمكنك الآن الاستفادة من جميع تلاوات ومذكرات منصة DrNotes التعليمية.</p>
+    <div class="grid">
+      <!-- Card 1 -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fa-solid fa-notes-medical"></i>
+        </div>
+        <div class="card-body">
+          <h3>علم التشريح (Anatomy)</h3>
+          <p>شرح كامل لأساسيات علم التشريح مع مذكرات ورسومات توضيحية مبسطة.</p>
+          <a href="#" class="card-btn">عرض المحتوى</a>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fa-solid fa-heart-pulse"></i>
+        </div>
+        <div class="card-body">
+          <h3>علم وظائف الأعضاء (Physiology)</h3>
+          <p>فهم آليات عمل أعضاء الجسم المختلفة بأسهل الطرق وأعلى جودة.</p>
+          <a href="#" class="card-btn">عرض المحتوى</a>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fa-solid fa-flask-vial"></i>
+        </div>
+        <div class="card-body">
+          <h3>الكيمياء الحيوية (Biochemistry)</h3>
+          <p>ملخصات ومخططات لجميع الممرات الكيميائية والدورات الحيوية.</p>
+          <a href="#" class="card-btn">عرض المحتوى</a>
+        </div>
+      </div>
     </div>
-  </main>
+  </div>
 
-  <script>
-    // تهيئة Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyAmjD404cVW5hPcsA6I9cXyNkCdCJ4uUK",
-      authDomain: "drnotes-18a5b.firebaseapp.com",
-      projectId: "drnotes-18a5b",
-      storageBucket: "drnotes-18a5b.firebaseapp.com",
-      messagingSenderId: "945944053945",
-      appId: "1:945944053945:web:26fda357413a57585d3368",
-      measurementId: "G-8J357Y3Q12"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-
-    // متابعة حالة تسجيل الدخول تلقائياً
-    firebase.auth().onAuthStateChanged((user) => {
-      const authButtons = document.getElementById('auth-buttons');
-      const userProfile = document.getElementById('user-profile');
-      const userName = document.getElementById('user-name');
-      const bookingSection = document.getElementById('booking-section');
-      const courseFeatures = document.getElementById('course-features');
-
-      if (user) {
-        // إذا كان المستخدم مسجلاً لدخوله
-        authButtons.style.display = 'none';
-        userName.textContent = `مرحباً، ${user.displayName || user.email}`;
-        userProfile.style.display = 'flex';
-        
-        // إخفاء نموذج التسجيل والحجز وإظهار خصائص الكورس
-        if (bookingSection) bookingSection.style.display = 'none';
-        if (courseFeatures) courseFeatures.style.display = 'block';
-      } else {
-        // إذا لم يكن مسجلاً لدخوله
-        authButtons.style.display = 'block';
-        userProfile.style.display = 'none';
-        
-        // إظهار نموذج التسجيل وإخفاء خصائص الكورس
-        if (bookingSection) bookingSection.style.display = 'block';
-        if (courseFeatures) courseFeatures.style.display = 'none';
-      }
-    });
-
-    // 1. تسجيل الدخول بواسطة Google
-    function loginWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider).catch((error) => {
-        alert("خطأ أثناء تسجيل الدخول بجوجل: " + error.message);
-      });
-    }
-
-    // 2. تسجيل الدخول بالبريد وكلمة السر
-    function loginWithEmail() {
-      const email = document.getElementById('auth-email').value;
-      const password = document.getElementById('auth-password').value;
-
-      if (!email || !password) {
-        alert("يرجى إدخال البريد الإلكتروني وكلمة السر");
-        return;
-      }
-
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .catch((error) => {
-          alert("خطأ في تسجيل الدخول: " + error.message);
-        });
-    }
-
-    // 3. إنشاء حساب جديد بالبريد وكلمة السر
-    function registerWithEmail() {
-      const email = document.getElementById('auth-email').value;
-      const password = document.getElementById('auth-password').value;
-
-      if (!email || !password) {
-        alert("يرجى إدخال البريد الإلكتروني وكلمة السر لإنشاء الحساب");
-        return;
-      }
-
-      firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          alert("تم إنشاء الحساب بنجاح!");
-        })
-        .catch((error) => {
-          alert("خطأ في إنشاء الحساب: " + error.message);
-        });
-    }
-
-    // دالة تسجيل الخروج
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.reload();
-      });
-    }
-
-    function scrollToAuth() {
-      document.getElementById('booking-section').scrollIntoView({ behavior: 'smooth' });
-    }
-  </script>
+  <!-- Footer -->
+  <footer>
+    <p>جميع الحقوق محفوظة © 2026 - منصة DrNotes التعليمية</p>
+  </footer>
 
 </body>
 </html>
