@@ -25,7 +25,9 @@
     }
 
     button,
-    input {
+    input,
+    select,
+    textarea {
       font-family: inherit;
     }
 
@@ -91,7 +93,9 @@
       font-weight: 700;
     }
 
-    .form-group input {
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
       width: 100%;
       border: 1px solid #d1d5db;
       border-radius: 12px;
@@ -99,9 +103,18 @@
       font-size: 15px;
       outline: none;
       transition: 0.2s;
+      background: white;
     }
 
-    .form-group input:focus {
+    .form-group textarea {
+      min-height: 130px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
       border-color: #1769aa;
       box-shadow:
         0 0 0 3px rgba(23, 105, 170, 0.1);
@@ -222,6 +235,157 @@
       font-size: 30px;
       font-weight: 800;
       color: #1769aa;
+    }
+
+    /* =========================
+       CONTENT MANAGEMENT
+    ========================= */
+
+    .content-card {
+      background: white;
+      border-radius: 18px;
+      box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.05);
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+
+    .content-header {
+      margin-bottom: 22px;
+    }
+
+    .content-header h2 {
+      font-size: 23px;
+      margin-bottom: 8px;
+    }
+
+    .content-header p {
+      color: #6b7280;
+      line-height: 1.7;
+    }
+
+    .content-selectors {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .selector-box {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 15px;
+    }
+
+    .selector-box label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .selector-box select {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 12px;
+      background: white;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .selector-box select:focus {
+      border-color: #1769aa;
+    }
+
+    .lesson-content-box {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 22px;
+    }
+
+    .lesson-selected {
+      background: #eef6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      padding: 13px 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .content-field {
+      margin-bottom: 5px;
+    }
+
+    .content-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .content-field label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .content-field input,
+    .content-field textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .content-field textarea {
+      min-height: 150px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .content-field input:focus,
+    .content-field textarea:focus {
+      border-color: #1769aa;
+      box-shadow:
+        0 0 0 3px rgba(23, 105, 170, 0.1);
+    }
+
+    .field-hint {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .content-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .save-content-btn {
+      background: #1769aa;
+      color: white;
+    }
+
+    .clear-content-btn {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .content-loading {
+      text-align: center;
+      color: #6b7280;
+      padding: 20px;
     }
 
     /* =========================
@@ -413,6 +577,22 @@
        MOBILE
     ========================= */
 
+    @media (max-width: 800px) {
+
+      .content-selectors {
+        grid-template-columns: 1fr;
+      }
+
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .content-field.full {
+        grid-column: auto;
+      }
+
+    }
+
     @media (max-width: 700px) {
 
       .topbar {
@@ -434,6 +614,11 @@
       .login-card {
         padding: 25px 20px;
       }
+
+      .content-card {
+        padding: 18px;
+      }
+
     }
   </style>
 </head>
@@ -457,7 +642,7 @@
       </h1>
 
       <p class="login-subtitle">
-        تسجيل دخول المدير لإدارة الطلاب والحسابات.
+        تسجيل دخول المدير لإدارة الطلاب والمحتوى التعليمي.
       </p>
 
       <div
@@ -547,7 +732,9 @@
 
     <main class="container">
 
-      <!-- STATS -->
+      <!-- =================================================
+           STATS
+      ================================================== -->
 
       <div class="stats">
 
@@ -602,7 +789,210 @@
       </div>
 
 
-      <!-- USERS -->
+      <!-- =================================================
+           CONTENT MANAGEMENT
+      ================================================== -->
+
+      <section class="content-card">
+
+        <div class="content-header">
+
+          <h2>
+            📚 إدارة المحتوى التعليمي
+          </h2>
+
+          <p>
+            اختر المادة ثم الوحدة ثم الدرس لإضافة أو تحديث
+            فيديو الشرح وملف الـ PDF والشرح النصي.
+          </p>
+
+        </div>
+
+
+        <!-- اختيار المادة / الوحدة / الدرس -->
+
+        <div class="content-selectors">
+
+          <div class="selector-box">
+
+            <label for="content-subject">
+              📚 المادة
+            </label>
+
+            <select
+              id="content-subject"
+              onchange="loadUnitsForContent()"
+            >
+
+              <option value="">
+                اختر المادة
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="selector-box">
+
+            <label for="content-unit">
+              📖 الوحدة
+            </label>
+
+            <select
+              id="content-unit"
+              onchange="loadLessonsForContent()"
+              disabled
+            >
+
+              <option value="">
+                اختر الوحدة
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="selector-box">
+
+            <label for="content-lesson">
+              📝 الدرس
+            </label>
+
+            <select
+              id="content-lesson"
+              onchange="loadLessonContent()"
+              disabled
+            >
+
+              <option value="">
+                اختر الدرس
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- محتوى الدرس -->
+
+        <div
+          id="lesson-content-area"
+          class="lesson-content-box hidden"
+        >
+
+          <div
+            id="selected-lesson-name"
+            class="lesson-selected"
+          >
+            لم يتم اختيار درس.
+          </div>
+
+
+          <div class="content-grid">
+
+            <!-- VIDEO -->
+
+            <div class="content-field">
+
+              <label for="video-url">
+                🎥 رابط فيديو الشرح
+              </label>
+
+              <input
+                id="video-url"
+                type="url"
+                placeholder="https://..."
+              >
+
+              <div class="field-hint">
+                ضع رابط الفيديو الذي سيظهر للطالب داخل الدرس.
+              </div>
+
+            </div>
+
+
+            <!-- PDF -->
+
+            <div class="content-field">
+
+              <label for="pdf-url">
+                📄 رابط ملف PDF
+              </label>
+
+              <input
+                id="pdf-url"
+                type="url"
+                placeholder="https://..."
+              >
+
+              <div class="field-hint">
+                ضع رابط ملف الـPDF الخاص بالدرس.
+              </div>
+
+            </div>
+
+
+            <!-- EXPLANATION -->
+
+            <div class="content-field full">
+
+              <label for="lesson-explanation">
+                📝 شرح إضافي للدرس
+              </label>
+
+              <textarea
+                id="lesson-explanation"
+                placeholder="اكتب شرحًا أو ملاحظات إضافية للدرس هنا..."
+              ></textarea>
+
+              <div class="field-hint">
+                هذا الحقل اختياري ويمكن تركه فارغًا.
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="content-actions">
+
+            <button
+              id="save-content-button"
+              class="btn save-content-btn"
+              onclick="saveLessonContent()"
+            >
+              💾 حفظ / تحديث المحتوى
+            </button>
+
+            <button
+              class="btn clear-content-btn"
+              onclick="clearLessonContentForm()"
+            >
+              🧹 مسح الحقول
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="content-loading"
+          class="content-loading hidden"
+        >
+          جارٍ تحميل المحتوى...
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           USERS
+      ================================================== -->
 
       <section class="users-card">
 
@@ -783,16 +1173,6 @@
   ====================================================== -->
 
   <script>
-
-    /*
-     * إذا كانت admin.html تُفتح من نفس خدمة Render
-     * نستخدم /api.
-     *
-     * وإذا فتحتها من مكان آخر:
-     * يمكن تغييرها إلى:
-     *
-     * https://drnotes-apii.onrender.com/api
-     */
 
     const API_BASE_URL =
       window.DRNOTES_API_URL ||
@@ -1001,7 +1381,8 @@
 
         await Promise.all([
           loadUsers(),
-          checkDatabase()
+          checkDatabase(),
+          loadSubjectsForContent()
         ]);
 
       } catch (error) {
@@ -1011,6 +1392,765 @@
           error
         );
 
+      }
+
+    }
+
+
+    // =====================================================
+    // CONTENT MANAGEMENT
+    // =====================================================
+
+
+    // -----------------------------------------------------
+    // تحميل المواد
+    // -----------------------------------------------------
+
+    async function loadSubjectsForContent() {
+
+      const subjectSelect =
+        document.getElementById(
+          "content-subject"
+        );
+
+      try {
+
+        subjectSelect.innerHTML = `
+          <option value="">
+            جارٍ تحميل المواد...
+          </option>
+        `;
+
+        subjectSelect.disabled = true;
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/subjects`
+          );
+
+        const data =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.message ||
+            "تعذر تحميل المواد."
+          );
+
+        }
+
+        const subjects =
+          data.subjects || [];
+
+        subjectSelect.innerHTML = `
+          <option value="">
+            اختر المادة
+          </option>
+        `;
+
+        subjects.forEach(
+          subject => {
+
+            const option =
+              document.createElement(
+                "option"
+              );
+
+            option.value =
+              subject.id;
+
+            option.textContent =
+              subject.name;
+
+            subjectSelect.appendChild(
+              option
+            );
+
+          }
+        );
+
+        subjectSelect.disabled =
+          false;
+
+      } catch (error) {
+
+        console.error(
+          "Load subjects error:",
+          error
+        );
+
+        subjectSelect.innerHTML = `
+          <option value="">
+            تعذر تحميل المواد
+          </option>
+        `;
+
+        showToast(
+          error.message ||
+          "تعذر تحميل المواد.",
+          "error"
+        );
+
+      }
+
+    }
+
+
+    // -----------------------------------------------------
+    // تحميل الوحدات
+    // -----------------------------------------------------
+
+    async function loadUnitsForContent() {
+
+      const subjectId =
+        document.getElementById(
+          "content-subject"
+        ).value;
+
+      const unitSelect =
+        document.getElementById(
+          "content-unit"
+        );
+
+      const lessonSelect =
+        document.getElementById(
+          "content-lesson"
+        );
+
+
+      // إعادة ضبط الدرس
+
+      lessonSelect.innerHTML = `
+        <option value="">
+          اختر الدرس
+        </option>
+      `;
+
+      lessonSelect.disabled =
+        true;
+
+
+      document
+        .getElementById(
+          "lesson-content-area"
+        )
+        .classList.add(
+          "hidden"
+        );
+
+
+      if (!subjectId) {
+
+        unitSelect.innerHTML = `
+          <option value="">
+            اختر الوحدة
+          </option>
+        `;
+
+        unitSelect.disabled =
+          true;
+
+        return;
+
+      }
+
+
+      try {
+
+        unitSelect.innerHTML = `
+          <option value="">
+            جارٍ تحميل الوحدات...
+          </option>
+        `;
+
+        unitSelect.disabled =
+          true;
+
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/subjects/${subjectId}/units`
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.message ||
+            "تعذر تحميل الوحدات."
+          );
+
+        }
+
+
+        const units =
+          data.units || [];
+
+
+        unitSelect.innerHTML = `
+          <option value="">
+            اختر الوحدة
+          </option>
+        `;
+
+
+        units.forEach(
+          unit => {
+
+            const option =
+              document.createElement(
+                "option"
+              );
+
+            option.value =
+              unit.id;
+
+            option.textContent =
+              unit.name;
+
+            unitSelect.appendChild(
+              option
+            );
+
+          }
+        );
+
+
+        unitSelect.disabled =
+          false;
+
+
+      } catch (error) {
+
+        console.error(
+          "Load units error:",
+          error
+        );
+
+
+        unitSelect.innerHTML = `
+          <option value="">
+            تعذر تحميل الوحدات
+          </option>
+        `;
+
+
+        showToast(
+          error.message ||
+          "تعذر تحميل الوحدات.",
+          "error"
+        );
+
+      }
+
+    }
+
+
+    // -----------------------------------------------------
+    // تحميل الدروس
+    // -----------------------------------------------------
+
+    async function loadLessonsForContent() {
+
+      const unitId =
+        document.getElementById(
+          "content-unit"
+        ).value;
+
+      const lessonSelect =
+        document.getElementById(
+          "content-lesson"
+        );
+
+
+      document
+        .getElementById(
+          "lesson-content-area"
+        )
+        .classList.add(
+          "hidden"
+        );
+
+
+      clearLessonContentForm();
+
+
+      if (!unitId) {
+
+        lessonSelect.innerHTML = `
+          <option value="">
+            اختر الدرس
+          </option>
+        `;
+
+        lessonSelect.disabled =
+          true;
+
+        return;
+
+      }
+
+
+      try {
+
+        lessonSelect.innerHTML = `
+          <option value="">
+            جارٍ تحميل الدروس...
+          </option>
+        `;
+
+        lessonSelect.disabled =
+          true;
+
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/units/${unitId}/lessons`
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.message ||
+            "تعذر تحميل الدروس."
+          );
+
+        }
+
+
+        const lessons =
+          data.lessons || [];
+
+
+        lessonSelect.innerHTML = `
+          <option value="">
+            اختر الدرس
+          </option>
+        `;
+
+
+        lessons.forEach(
+          lesson => {
+
+            const option =
+              document.createElement(
+                "option"
+              );
+
+            option.value =
+              lesson.id;
+
+            option.textContent =
+              lesson.name;
+
+            lessonSelect.appendChild(
+              option
+            );
+
+          }
+        );
+
+
+        lessonSelect.disabled =
+          false;
+
+
+      } catch (error) {
+
+        console.error(
+          "Load lessons error:",
+          error
+        );
+
+
+        lessonSelect.innerHTML = `
+          <option value="">
+            تعذر تحميل الدروس
+          </option>
+        `;
+
+
+        showToast(
+          error.message ||
+          "تعذر تحميل الدروس.",
+          "error"
+        );
+
+      }
+
+    }
+
+
+    // -----------------------------------------------------
+    // تحميل محتوى الدرس
+    // -----------------------------------------------------
+
+    async function loadLessonContent() {
+
+      const lessonId =
+        document.getElementById(
+          "content-lesson"
+        ).value;
+
+
+      const area =
+        document.getElementById(
+          "lesson-content-area"
+        );
+
+
+      if (!lessonId) {
+
+        area.classList.add(
+          "hidden"
+        );
+
+        clearLessonContentForm();
+
+        return;
+
+      }
+
+
+      const loading =
+        document.getElementById(
+          "content-loading"
+        );
+
+
+      try {
+
+        loading.classList.remove(
+          "hidden"
+        );
+
+        area.classList.add(
+          "hidden"
+        );
+
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/lessons/${lessonId}`
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.message ||
+            "تعذر تحميل بيانات الدرس."
+          );
+
+        }
+
+
+        const lesson =
+          data.lesson;
+
+
+        const lessonName =
+          document.getElementById(
+            "selected-lesson-name"
+          );
+
+
+        lessonName.textContent =
+          `📝 الدرس المحدد: ${lesson.name}`;
+
+
+        document
+          .getElementById(
+            "video-url"
+          )
+          .value =
+            lesson.video_url || "";
+
+
+        document
+          .getElementById(
+            "pdf-url"
+          )
+          .value =
+            lesson.pdf_url || "";
+
+
+        document
+          .getElementById(
+            "lesson-explanation"
+          )
+          .value =
+            lesson.explanation || "";
+
+
+        area.classList.remove(
+          "hidden"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Load lesson content error:",
+          error
+        );
+
+
+        showToast(
+          error.message ||
+          "تعذر تحميل محتوى الدرس.",
+          "error"
+        );
+
+
+      } finally {
+
+        loading.classList.add(
+          "hidden"
+        );
+
+      }
+
+    }
+
+
+    // -----------------------------------------------------
+    // حفظ / تحديث محتوى الدرس
+    // -----------------------------------------------------
+
+    async function saveLessonContent() {
+
+      const lessonId =
+        document.getElementById(
+          "content-lesson"
+        ).value;
+
+
+      if (!lessonId) {
+
+        showToast(
+          "اختر الدرس أولًا.",
+          "warning"
+        );
+
+        return;
+
+      }
+
+
+      const videoUrl =
+        document
+          .getElementById(
+            "video-url"
+          )
+          .value
+          .trim();
+
+
+      const pdfUrl =
+        document
+          .getElementById(
+            "pdf-url"
+          )
+          .value
+          .trim();
+
+
+      const explanation =
+        document
+          .getElementById(
+            "lesson-explanation"
+          )
+          .value
+          .trim();
+
+
+      if (!videoUrl && !pdfUrl && !explanation) {
+
+        const confirmed =
+          confirm(
+            "لم تضف فيديو أو ملف أو شرح. هل تريد حفظ المحتوى فارغًا؟"
+          );
+
+        if (!confirmed) {
+          return;
+        }
+
+      }
+
+
+      const button =
+        document.getElementById(
+          "save-content-button"
+        );
+
+
+      button.disabled =
+        true;
+
+      button.textContent =
+        "جاري الحفظ...";
+
+
+      try {
+
+        const response =
+          await fetch(
+            `${API_BASE_URL}/admin/lessons/${lessonId}/content`,
+            {
+              method: "POST",
+
+              headers: {
+
+                "Content-Type":
+                  "application/json",
+
+                "Authorization":
+                  `Bearer ${adminToken}`
+
+              },
+
+              body:
+                JSON.stringify({
+
+                  video_url:
+                    videoUrl || null,
+
+                  pdf_url:
+                    pdfUrl || null,
+
+                  explanation:
+                    explanation || null
+
+                })
+
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        if (
+          response.status === 401 ||
+          response.status === 403
+        ) {
+
+          adminLogout();
+
+          return;
+
+        }
+
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+
+          throw new Error(
+            data.message ||
+            "تعذر حفظ محتوى الدرس."
+          );
+
+        }
+
+
+        showToast(
+          "تم حفظ / تحديث محتوى الدرس بنجاح ✅",
+          "success"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Save lesson content error:",
+          error
+        );
+
+
+        showToast(
+          error.message ||
+          "حدث خطأ أثناء حفظ المحتوى.",
+          "error"
+        );
+
+
+      } finally {
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          "💾 حفظ / تحديث المحتوى";
+
+      }
+
+    }
+
+
+    // -----------------------------------------------------
+    // مسح حقول المحتوى
+    // -----------------------------------------------------
+
+    function clearLessonContentForm() {
+
+      const video =
+        document.getElementById(
+          "video-url"
+        );
+
+      const pdf =
+        document.getElementById(
+          "pdf-url"
+        );
+
+      const explanation =
+        document.getElementById(
+          "lesson-explanation"
+        );
+
+
+      if (video) {
+        video.value = "";
+      }
+
+
+      if (pdf) {
+        pdf.value = "";
+      }
+
+
+      if (explanation) {
+        explanation.value = "";
       }
 
     }
