@@ -1,4 +1,4 @@
-const express = require("express");
+
 const cors = require("cors");
 const path = require("path");
 const { Pool } = require("pg");
@@ -36,7 +36,6 @@ app.use(express.urlencoded({ extended: true }));
 async function initializeDatabase() {
   try {
 
-    // USERS
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -48,10 +47,6 @@ async function initializeDatabase() {
       );
     `);
 
-    // =====================================================
-    // SUBJECTS
-    // =====================================================
-
     await pool.query(`
       CREATE TABLE IF NOT EXISTS subjects (
         id SERIAL PRIMARY KEY,
@@ -61,10 +56,6 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-
-    // =====================================================
-    // UNITS
-    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS units (
@@ -79,10 +70,6 @@ async function initializeDatabase() {
       );
     `);
 
-    // =====================================================
-    // LESSONS
-    // =====================================================
-
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lessons (
         id SERIAL PRIMARY KEY,
@@ -95,10 +82,6 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-
-    // =====================================================
-    // LESSON CONTENT
-    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lesson_content (
@@ -113,10 +96,6 @@ async function initializeDatabase() {
       );
     `);
 
-    // =====================================================
-    // QUIZZES
-    // =====================================================
-
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quizzes (
         id SERIAL PRIMARY KEY,
@@ -130,10 +109,6 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-
-    // =====================================================
-    // QUIZ QUESTIONS
-    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_questions (
@@ -150,9 +125,7 @@ async function initializeDatabase() {
         option_d TEXT NOT NULL,
 
         correct_answer VARCHAR(1) NOT NULL
-          CHECK (
-            correct_answer IN ('A', 'B', 'C', 'D')
-          ),
+          CHECK (correct_answer IN ('A', 'B', 'C', 'D')),
 
         explanation TEXT,
 
@@ -161,10 +134,6 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-
-    // =====================================================
-    // QUIZ ATTEMPTS
-    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_attempts (
@@ -202,10 +171,6 @@ async function initializeDatabase() {
         UNIQUE(user_id, quiz_id)
       );
     `);
-
-    // =====================================================
-    // QUIZ ANSWERS
-    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_answers (
@@ -1008,7 +973,7 @@ app.get(
 );
 
 // =========================================================
-// ADMIN - RESET USER PASSWORD
+// ADMIN - RESET PASSWORD
 // =========================================================
 
 app.post(
@@ -1066,11 +1031,8 @@ app.post(
         await pool.query(
           `
           UPDATE users
-
           SET password_hash = $1
-
           WHERE id = $2
-
           RETURNING
             id,
             name,
@@ -1163,9 +1125,7 @@ app.delete(
         await pool.query(
           `
           DELETE FROM users
-
           WHERE id = $1
-
           RETURNING
             id,
             name,
@@ -1226,7 +1186,6 @@ app.delete(
 // SUBJECTS
 // =========================================================
 
-// GET ALL SUBJECTS
 app.get(
   "/api/subjects",
   async (req, res) => {
@@ -1275,7 +1234,10 @@ app.get(
   }
 );
 
-// ADMIN ADD SUBJECT
+// =========================================================
+// ADMIN - ADD SUBJECT
+// =========================================================
+
 app.post(
   "/api/admin/subjects",
   requireAdmin,
@@ -1312,7 +1274,6 @@ app.post(
             image_url
           )
           VALUES ($1, $2, $3)
-
           RETURNING *
           `,
           [
@@ -1356,7 +1317,6 @@ app.post(
 // UNITS
 // =========================================================
 
-// GET UNITS BY SUBJECT
 app.get(
   "/api/subjects/:subjectId/units",
   async (req, res) => {
@@ -1376,11 +1336,8 @@ app.get(
             description,
             unit_order,
             created_at
-
           FROM units
-
           WHERE subject_id = $1
-
           ORDER BY unit_order ASC, id ASC
           `,
           [subjectId]
@@ -1416,7 +1373,10 @@ app.get(
   }
 );
 
-// ADMIN ADD UNIT
+// =========================================================
+// ADMIN - ADD UNIT
+// =========================================================
+
 app.post(
   "/api/admin/units",
   requireAdmin,
@@ -1457,9 +1417,7 @@ app.post(
             description,
             unit_order
           )
-
           VALUES ($1, $2, $3, $4)
-
           RETURNING *
           `,
           [
@@ -1504,7 +1462,6 @@ app.post(
 // LESSONS
 // =========================================================
 
-// GET LESSONS BY UNIT
 app.get(
   "/api/units/:unitId/lessons",
   async (req, res) => {
@@ -1524,11 +1481,8 @@ app.get(
             description,
             lesson_order,
             created_at
-
           FROM lessons
-
           WHERE unit_id = $1
-
           ORDER BY lesson_order ASC, id ASC
           `,
           [unitId]
@@ -1564,106 +1518,10 @@ app.get(
   }
 );
 
-// GET COMPLETE LESSON
-app.get(
-  "/api/lessons/:lessonId",
-  async (req, res) => {
+// =========================================================
+// ADMIN - ADD LESSON
+// =========================================================
 
-    try {
-
-      const lessonId =
-        Number(req.params.lessonId);
-
-      const lessonResult =
-        await pool.query(
-          `
-          SELECT
-            l.id,
-            l.unit_id,
-            l.name,
-            l.description,
-            l.lesson_order,
-
-            lc.video_url,
-            lc.pdf_url,
-            lc.explanation
-
-          FROM lessons l
-
-          LEFT JOIN lesson_content lc
-            ON lc.lesson_id = l.id
-
-          WHERE l.id = $1
-          `,
-          [lessonId]
-        );
-
-      if (
-        lessonResult.rows.length === 0
-      ) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "الدرس غير موجود."
-
-        });
-
-      }
-
-      const quizResult =
-        await pool.query(
-          `
-          SELECT
-            id,
-            title,
-            description,
-            passing_percentage,
-            questions_per_page
-
-          FROM quizzes
-
-          WHERE lesson_id = $1
-          `,
-          [lessonId]
-        );
-
-      res.json({
-
-        success: true,
-
-        lesson:
-          lessonResult.rows[0],
-
-        quiz:
-          quizResult.rows[0] || null
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get lesson error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل الدرس."
-
-      });
-
-    }
-
-  }
-);
-
-// ADMIN ADD LESSON
 app.post(
   "/api/admin/lessons",
   requireAdmin,
@@ -1704,9 +1562,7 @@ app.post(
             description,
             lesson_order
           )
-
           VALUES ($1, $2, $3, $4)
-
           RETURNING *
           `,
           [
@@ -1748,10 +1604,105 @@ app.post(
 );
 
 // =========================================================
-// LESSON CONTENT
+// GET COMPLETE LESSON
 // =========================================================
 
-// ADMIN ADD / UPDATE VIDEO + PDF
+app.get(
+  "/api/lessons/:lessonId",
+  async (req, res) => {
+
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      const lessonResult =
+        await pool.query(
+          `
+          SELECT
+            l.id,
+            l.unit_id,
+            l.name,
+            l.description,
+            l.lesson_order,
+            lc.video_url,
+            lc.pdf_url,
+            lc.explanation
+          FROM lessons l
+          LEFT JOIN lesson_content lc
+            ON lc.lesson_id = l.id
+          WHERE l.id = $1
+          `,
+          [lessonId]
+        );
+
+      if (
+        lessonResult.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "الدرس غير موجود."
+
+        });
+
+      }
+
+      const quizResult =
+        await pool.query(
+          `
+          SELECT
+            id,
+            title,
+            description,
+            passing_percentage,
+            questions_per_page
+          FROM quizzes
+          WHERE lesson_id = $1
+          `,
+          [lessonId]
+        );
+
+      res.json({
+
+        success: true,
+
+        lesson:
+          lessonResult.rows[0],
+
+        quiz:
+          quizResult.rows[0] || null
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get lesson error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل الدرس."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - LESSON CONTENT
+// =========================================================
+
 app.post(
   "/api/admin/lessons/:lessonId/content",
   requireAdmin,
@@ -1778,7 +1729,6 @@ app.post(
             pdf_url,
             explanation
           )
-
           VALUES ($1, $2, $3, $4)
 
           ON CONFLICT (lesson_id)
@@ -1830,10 +1780,9 @@ app.post(
 );
 
 // =========================================================
-// QUIZ
+// ADMIN - CREATE / UPDATE QUIZ
 // =========================================================
 
-// ADMIN CREATE QUIZ
 app.post(
   "/api/admin/quizzes",
   requireAdmin,
@@ -1865,6 +1814,12 @@ app.post(
 
       }
 
+      const passing =
+        Number(passing_percentage) || 50;
+
+      const perPage =
+        Number(questions_per_page) || 10;
+
       const result =
         await pool.query(
           `
@@ -1876,7 +1831,6 @@ app.post(
             passing_percentage,
             questions_per_page
           )
-
           VALUES ($1, $2, $3, $4, $5)
 
           ON CONFLICT (lesson_id)
@@ -1895,8 +1849,8 @@ app.post(
             lesson_id,
             title.trim(),
             description || null,
-            Number(passing_percentage) || 50,
-            Number(questions_per_page) || 10
+            passing,
+            perPage
           ]
         );
 
@@ -1931,7 +1885,7 @@ app.post(
 );
 
 // =========================================================
-// ADMIN ADD QUESTION
+// ADMIN - ADD QUESTION
 // =========================================================
 
 app.post(
@@ -1955,15 +1909,17 @@ app.post(
         question_order
       } = req.body;
 
+      const correct =
+        String(correct_answer || "")
+          .toUpperCase();
+
       if (
         !question_text ||
         !option_a ||
         !option_b ||
         !option_c ||
         !option_d ||
-        !["A", "B", "C", "D"].includes(
-          String(correct_answer).toUpperCase()
-        )
+        !["A", "B", "C", "D"].includes(correct)
       ) {
 
         return res.status(400).json({
@@ -1992,7 +1948,6 @@ app.post(
             explanation,
             question_order
           )
-
           VALUES
           ($1,$2,$3,$4,$5,$6,$7,$8,$9)
 
@@ -2005,7 +1960,7 @@ app.post(
             option_b,
             option_c,
             option_d,
-            String(correct_answer).toUpperCase(),
+            correct,
             explanation || null,
             Number(question_order) || 0
           ]
@@ -2058,11 +2013,21 @@ app.post(
       const quizId =
         Number(req.params.quizId);
 
-      await client.query(
-        "BEGIN"
-      );
+      if (!Number.isInteger(quizId)) {
 
-      // Check quiz
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف الاختبار غير صحيح."
+
+        });
+
+      }
+
+      await client.query("BEGIN");
+
       const quizResult =
         await client.query(
           `
@@ -2072,9 +2037,7 @@ app.post(
             description,
             passing_percentage,
             questions_per_page
-
           FROM quizzes
-
           WHERE id = $1
           `,
           [quizId]
@@ -2097,14 +2060,12 @@ app.post(
 
       }
 
-      // IMPORTANT:
-      // الطالب لديه محاولة واحدة فقط
+      // الطالب له محاولة واحدة فقط
       const existingAttempt =
         await client.query(
           `
           SELECT *
           FROM quiz_attempts
-
           WHERE user_id = $1
           AND quiz_id = $2
           `,
@@ -2134,7 +2095,8 @@ app.post(
 
           attempt: {
 
-            id: attempt.id,
+            id:
+              attempt.id,
 
             status:
               attempt.status,
@@ -2221,9 +2183,7 @@ app.post(
       const attempt =
         attemptResult.rows[0];
 
-      await client.query(
-        "COMMIT"
-      );
+      await client.query("COMMIT");
 
       res.status(201).json({
 
@@ -2258,9 +2218,9 @@ app.post(
 
     } catch (error) {
 
-      await client.query(
-        "ROLLBACK"
-      );
+      try {
+        await client.query("ROLLBACK");
+      } catch (_) {}
 
       console.error(
         "Start quiz error:",
@@ -2286,7 +2246,7 @@ app.post(
 );
 
 // =========================================================
-// SUBMIT ANSWERS
+// SUBMIT QUIZ
 // =========================================================
 
 app.post(
@@ -2302,14 +2262,25 @@ app.post(
       const attemptId =
         Number(req.params.attemptId);
 
+      if (!Number.isInteger(attemptId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف المحاولة غير صحيح."
+
+        });
+
+      }
+
       const answers =
         Array.isArray(req.body.answers)
           ? req.body.answers
           : [];
 
-      await client.query(
-        "BEGIN"
-      );
+      await client.query("BEGIN");
 
       const attemptResult =
         await client.query(
@@ -2317,16 +2288,11 @@ app.post(
           SELECT
             a.*,
             q.passing_percentage
-
           FROM quiz_attempts a
-
           JOIN quizzes q
             ON q.id = a.quiz_id
-
           WHERE a.id = $1
-
           AND a.user_id = $2
-
           FOR UPDATE
           `,
           [
@@ -2339,9 +2305,7 @@ app.post(
         attemptResult.rows.length === 0
       ) {
 
-        await client.query(
-          "ROLLBACK"
-        );
+        await client.query("ROLLBACK");
 
         return res.status(404).json({
 
@@ -2357,20 +2321,19 @@ app.post(
       const attempt =
         attemptResult.rows[0];
 
+      // لا يمكن إرسال الاختبار مرة ثانية
       if (
         attempt.status !== "started"
       ) {
 
-        await client.query(
-          "ROLLBACK"
-        );
+        await client.query("ROLLBACK");
 
         return res.status(409).json({
 
           success: false,
 
           message:
-            "هذه المحاولة تم التعامل معها بالفعل."
+            "هذه المحاولة تم إرسالها بالفعل ولا يمكن إرسالها مرة أخرى."
 
         });
 
@@ -2388,4 +2351,787 @@ app.post(
             option_d,
             correct_answer,
             explanation,
-           
+            question_order
+          FROM quiz_questions
+          WHERE quiz_id = $1
+          ORDER BY question_order ASC, id ASC
+          `,
+          [attempt.quiz_id]
+        );
+
+      const questions =
+        questionsResult.rows;
+
+      if (questions.length === 0) {
+
+        await client.query("ROLLBACK");
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "لا توجد أسئلة لهذا الاختبار."
+
+        });
+
+      }
+
+      // =====================================================
+      // يجب إرسال كل الأسئلة
+      // =====================================================
+
+      if (answers.length !== questions.length) {
+
+        await client.query("ROLLBACK");
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            `يجب الإجابة عن جميع الأسئلة قبل تسليم الاختبار. عدد الأسئلة: ${questions.length}`,
+
+          required:
+            questions.length,
+
+          received:
+            answers.length
+
+        });
+
+      }
+
+      // =====================================================
+      // تجهيز الإجابات
+      // =====================================================
+
+      const answerMap = new Map();
+
+      for (const item of answers) {
+
+        const questionId =
+          Number(item.question_id);
+
+        const selected =
+          String(
+            item.selected_answer || ""
+          ).toUpperCase();
+
+        if (
+          !Number.isInteger(questionId) ||
+          !["A", "B", "C", "D"].includes(selected)
+        ) {
+
+          await client.query("ROLLBACK");
+
+          return res.status(400).json({
+
+            success: false,
+
+            message:
+              "يوجد جواب غير صحيح في البيانات المرسلة."
+
+          });
+
+        }
+
+        if (answerMap.has(questionId)) {
+
+          await client.query("ROLLBACK");
+
+          return res.status(400).json({
+
+            success: false,
+
+            message:
+              "تم إرسال السؤال أكثر من مرة."
+
+          });
+
+        }
+
+        answerMap.set(
+          questionId,
+          selected
+        );
+
+      }
+
+      // =====================================================
+      // التأكد أن كل الأسئلة موجودة
+      // =====================================================
+
+      for (const question of questions) {
+
+        if (!answerMap.has(question.id)) {
+
+          await client.query("ROLLBACK");
+
+          return res.status(400).json({
+
+            success: false,
+
+            message:
+              "يجب الإجابة عن جميع الأسئلة."
+
+          });
+
+        }
+
+      }
+
+      // =====================================================
+      // التصحيح
+      // =====================================================
+
+      let score = 0;
+
+      const results = [];
+
+      for (const question of questions) {
+
+        const selectedAnswer =
+          answerMap.get(question.id);
+
+        const isCorrect =
+          selectedAnswer ===
+          question.correct_answer;
+
+        if (isCorrect) {
+          score++;
+        }
+
+        await client.query(
+          `
+          INSERT INTO quiz_answers
+          (
+            attempt_id,
+            question_id,
+            selected_answer,
+            is_correct
+          )
+          VALUES ($1, $2, $3, $4)
+
+          ON CONFLICT (attempt_id, question_id)
+
+          DO UPDATE SET
+            selected_answer =
+              EXCLUDED.selected_answer,
+            is_correct =
+              EXCLUDED.is_correct,
+            answered_at =
+              CURRENT_TIMESTAMP
+          `,
+          [
+            attemptId,
+            question.id,
+            selectedAnswer,
+            isCorrect
+          ]
+        );
+
+        results.push({
+
+          question_id:
+            question.id,
+
+          question_text:
+            question.question_text,
+
+          selected_answer:
+            selectedAnswer,
+
+          correct_answer:
+            question.correct_answer,
+
+          is_correct:
+            isCorrect,
+
+          explanation:
+            isCorrect
+              ? null
+              : (
+                  question.explanation ||
+                  "لم تتم إضافة شرح لهذا السؤال بعد."
+                )
+
+        });
+
+      }
+
+      // =====================================================
+      // النتيجة
+      // =====================================================
+
+      const totalQuestions =
+        questions.length;
+
+      const percentage =
+        Number(
+          (
+            (score / totalQuestions) *
+            100
+          ).toFixed(2)
+        );
+
+      const passingPercentage =
+        Number(attempt.passing_percentage) || 50;
+
+      const passed =
+        percentage >= passingPercentage;
+
+      // =====================================================
+      // إنهاء المحاولة
+      // =====================================================
+
+      await client.query(
+        `
+        UPDATE quiz_attempts
+
+        SET
+          finished_at = CURRENT_TIMESTAMP,
+          score = $1,
+          total_questions = $2,
+          percentage = $3,
+          passed = $4,
+          status = 'finished'
+
+        WHERE id = $5
+        `,
+        [
+          score,
+          totalQuestions,
+          percentage,
+          passed,
+          attemptId
+        ]
+      );
+
+      await client.query("COMMIT");
+
+      res.json({
+
+        success: true,
+
+        message:
+          passed
+            ? "مبروك! نجحت في الاختبار 🎉"
+            : "لم تصل إلى نسبة النجاح، راجع أخطاءك.",
+
+        result: {
+
+          attempt_id:
+            attemptId,
+
+          score,
+
+          total_questions:
+            totalQuestions,
+
+          percentage,
+
+          passing_percentage:
+            passingPercentage,
+
+          passed,
+
+          status:
+            "finished"
+
+        },
+
+        questions:
+          results
+
+      });
+
+    } catch (error) {
+
+      try {
+        await client.query("ROLLBACK");
+      } catch (_) {}
+
+      console.error(
+        "Submit quiz error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تسليم الاختبار."
+
+      });
+
+    } finally {
+
+      client.release();
+
+    }
+
+  }
+);
+
+// =========================================================
+// GET ATTEMPT RESULT
+// =========================================================
+
+app.get(
+  "/api/quizzes/attempts/:attemptId/result",
+  requireUser,
+  async (req, res) => {
+
+    try {
+
+      const attemptId =
+        Number(req.params.attemptId);
+
+      const attemptResult =
+        await pool.query(
+          `
+          SELECT
+            a.id,
+            a.quiz_id,
+            a.started_at,
+            a.finished_at,
+            a.score,
+            a.total_questions,
+            a.percentage,
+            a.passed,
+            a.status,
+            q.title,
+            q.passing_percentage
+
+          FROM quiz_attempts a
+
+          JOIN quizzes q
+            ON q.id = a.quiz_id
+
+          WHERE a.id = $1
+          AND a.user_id = $2
+          `,
+          [
+            attemptId,
+            req.user.id
+          ]
+        );
+
+      if (
+        attemptResult.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "نتيجة الاختبار غير موجودة."
+
+        });
+
+      }
+
+      const attempt =
+        attemptResult.rows[0];
+
+      const answersResult =
+        await pool.query(
+          `
+          SELECT
+            qa.question_id,
+            qa.selected_answer,
+            qa.is_correct,
+
+            qq.question_text,
+            qq.option_a,
+            qq.option_b,
+            qq.option_c,
+            qq.option_d,
+            qq.correct_answer,
+            qq.explanation,
+            qq.question_order
+
+          FROM quiz_answers qa
+
+          JOIN quiz_questions qq
+            ON qq.id = qa.question_id
+
+          WHERE qa.attempt_id = $1
+
+          ORDER BY
+            qq.question_order ASC,
+            qq.id ASC
+          `,
+          [attemptId]
+        );
+
+      const questions =
+        answersResult.rows.map(item => ({
+
+          question_id:
+            item.question_id,
+
+          question_text:
+            item.question_text,
+
+          options: {
+
+            A:
+              item.option_a,
+
+            B:
+              item.option_b,
+
+            C:
+              item.option_c,
+
+            D:
+              item.option_d
+
+          },
+
+          selected_answer:
+            item.selected_answer,
+
+          correct_answer:
+            item.correct_answer,
+
+          is_correct:
+            item.is_correct,
+
+          explanation:
+            item.explanation ||
+            "لم تتم إضافة شرح لهذا السؤال بعد."
+
+        }));
+
+      res.json({
+
+        success: true,
+
+        result: {
+
+          id:
+            attempt.id,
+
+          quiz_id:
+            attempt.quiz_id,
+
+          title:
+            attempt.title,
+
+          started_at:
+            attempt.started_at,
+
+          finished_at:
+            attempt.finished_at,
+
+          score:
+            attempt.score,
+
+          total_questions:
+            attempt.total_questions,
+
+          percentage:
+            attempt.percentage,
+
+          passing_percentage:
+            attempt.passing_percentage,
+
+          passed:
+            attempt.passed,
+
+          status:
+            attempt.status
+
+        },
+
+        questions
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get attempt result error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل نتيجة الاختبار."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// GET USER QUIZ ATTEMPTS
+// =========================================================
+
+app.get(
+  "/api/quizzes/my-attempts",
+  requireUser,
+  async (req, res) => {
+
+    try {
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            a.id,
+            a.quiz_id,
+            q.title,
+            a.started_at,
+            a.finished_at,
+            a.score,
+            a.total_questions,
+            a.percentage,
+            a.passed,
+            a.status
+
+          FROM quiz_attempts a
+
+          JOIN quizzes q
+            ON q.id = a.quiz_id
+
+          WHERE a.user_id = $1
+
+          ORDER BY a.started_at DESC
+          `,
+          [req.user.id]
+        );
+
+      res.json({
+
+        success: true,
+
+        attempts:
+          result.rows
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get my attempts error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل اختباراتك."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// GET QUIZ QUESTIONS FOR ADMIN
+// =========================================================
+
+app.get(
+  "/api/admin/quizzes/:quizId/questions",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const quizId =
+        Number(req.params.quizId);
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            id,
+            quiz_id,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            correct_answer,
+            explanation,
+            question_order,
+            created_at
+
+          FROM quiz_questions
+
+          WHERE quiz_id = $1
+
+          ORDER BY question_order ASC, id ASC
+          `,
+          [quizId]
+        );
+
+      res.json({
+
+        success: true,
+
+        questions:
+          result.rows
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get admin questions error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل أسئلة الاختبار."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - GET QUIZZES
+// =========================================================
+
+app.get(
+  "/api/admin/quizzes",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            q.id,
+            q.lesson_id,
+            q.title,
+            q.description,
+            q.passing_percentage,
+            q.questions_per_page,
+            q.created_at,
+
+            l.name AS lesson_name
+
+          FROM quizzes q
+
+          JOIN lessons l
+            ON l.id = q.lesson_id
+
+          ORDER BY q.id DESC
+          `
+        );
+
+      res.json({
+
+        success: true,
+
+        quizzes:
+          result.rows
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get admin quizzes error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل الاختبارات."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// STATIC WEBSITE
+// =========================================================
+
+app.use(
+  express.static(
+    path.join(__dirname)
+  )
+);
+
+app.get(
+  "/",
+  (req, res) => {
+
+    res.sendFile(
+      path.join(
+        __dirname,
+        "index.html"
+      )
+    );
+
+  }
+);
+
+// =========================================================
+// 404 API
+// =========================================================
+
+app.use(
+  "/api",
+  (req, res) => {
+
+    res.status(404).json({
+
+      success: false,
+
+      message:
+        "API endpoint not found."
+
+    });
+
+  }
+);
+
+// =========================================================
+// START SERVER
+// =========================================================
+
+app.listen(
+  PORT,
+  "0.0.0.0",
+  async () => {
+
+    console.log(
+      `DrNotes server running on port ${PORT}`
+    );
+
+    await initializeDatabase();
+
+  }
