@@ -4907,202 +4907,370 @@ function setAuthLoading(
 
   </script>
 <!-- =========================================================
-     DrNotes - Light / Dark Mode
-     ضع هذا الكود مباشرة قبل <body>
+     DrNotes - نظام الوضع الليلي والصباحي الكامل
+     ضع الكود مباشرة قبل </body>
 ========================================================= -->
 
 <style>
-  /* ================================
-     الوضع الأساسي
-  ================================= */
 
-  :root {
-    --dr-bg: #f5f7fb;
-    --dr-card: #ffffff;
-    --dr-text: #1f2937;
-    --dr-text-secondary: #6b7280;
-    --dr-border: #e5e7eb;
-    --dr-input: #ffffff;
-    --dr-shadow: rgba(0, 0, 0, 0.08);
-    --dr-overlay: rgba(255, 255, 255, 0.85);
-  }
+/* =========================================================
+   ألوان DrNotes
+========================================================= */
 
-  /* ================================
-     الوضع الليلي
-  ================================= */
+:root {
+  --dr-bg: #f4f7fb;
+  --dr-surface: #ffffff;
+  --dr-surface-2: #eef4fa;
 
-  html.dr-dark {
-    --dr-bg: #0f172a;
-    --dr-card: #1e293b;
-    --dr-text: #f8fafc;
-    --dr-text-secondary: #cbd5e1;
-    --dr-border: #334155;
-    --dr-input: #0f172a;
-    --dr-shadow: rgba(0, 0, 0, 0.35);
-    --dr-overlay: rgba(15, 23, 42, 0.9);
-  }
+  --dr-text: #334155;
+  --dr-heading: #1e3a5f;
+  --dr-secondary: #64748b;
 
-  /* خلفية الموقع */
+  --dr-border: #dbe4ee;
 
-  html.dr-dark body {
-    background-color: var(--dr-bg) !important;
-    color: var(--dr-text) !important;
-  }
+  --dr-primary: #2563eb;
+  --dr-primary-soft: #e8f1ff;
 
-  /* النصوص */
+  --dr-shadow: rgba(30, 58, 95, 0.10);
+}
 
-  html.dr-dark h1,
-  html.dr-dark h2,
-  html.dr-dark h3,
-  html.dr-dark h4,
-  html.dr-dark h5,
-  html.dr-dark h6,
-  html.dr-dark p,
-  html.dr-dark span,
-  html.dr-dark label,
-  html.dr-dark li {
-    color: var(--dr-text);
-  }
 
-  /* الكروت والأقسام */
+/* =========================================================
+   الوضع الليلي
+========================================================= */
 
-  html.dr-dark .card,
-  html.dr-dark .lesson-card,
-  html.dr-dark .subject-card,
-  html.dr-dark .unit-card,
-  html.dr-dark .quiz-card,
-  html.dr-dark .modal-content,
-  html.dr-dark .container-card,
-  html.dr-dark .box,
-  html.dr-dark section {
-    background-color: var(--dr-card);
-    border-color: var(--dr-border);
-    color: var(--dr-text);
-    box-shadow: 0 4px 18px var(--dr-shadow);
-  }
+html.dr-dark {
 
-  /* الحقول */
+  --dr-bg: #101827;
+  --dr-surface: #182437;
+  --dr-surface-2: #202f45;
 
-  html.dr-dark input,
-  html.dr-dark textarea,
-  html.dr-dark select {
-    background-color: var(--dr-input) !important;
-    color: var(--dr-text) !important;
-    border-color: var(--dr-border) !important;
-  }
+  --dr-text: #c7d2e3;
+  --dr-heading: #93c5fd;
+  --dr-secondary: #94a3b8;
 
-  html.dr-dark input::placeholder,
-  html.dr-dark textarea::placeholder {
-    color: var(--dr-text-secondary);
-  }
+  --dr-border: #304158;
 
-  /* الروابط */
+  --dr-primary: #60a5fa;
+  --dr-primary-soft: #1d3554;
 
-  html.dr-dark a {
-    color: #60a5fa;
-  }
+  --dr-shadow: rgba(0, 0, 0, 0.35);
+}
 
-  /* الجداول */
 
-  html.dr-dark table {
-    background-color: var(--dr-card);
-    color: var(--dr-text);
-  }
+/* =========================================================
+   الشاشة والموقع بالكامل
+========================================================= */
 
-  html.dr-dark th,
-  html.dr-dark td {
-    border-color: var(--dr-border);
-    color: var(--dr-text);
-  }
+html,
+body {
+  background-color: var(--dr-bg) !important;
+  color: var(--dr-text) !important;
 
-  /* ================================
-     زر تبديل الوضع
-  ================================= */
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+
+/* =========================================================
+   جميع العناصر
+========================================================= */
+
+html.dr-dark body * {
+  border-color: var(--dr-border);
+}
+
+
+/* =========================================================
+   النصوص
+========================================================= */
+
+html.dr-dark h1,
+html.dr-dark h2,
+html.dr-dark h3,
+html.dr-dark h4,
+html.dr-dark h5,
+html.dr-dark h6 {
+
+  color: var(--dr-heading) !important;
+}
+
+
+html.dr-dark p,
+html.dr-dark span,
+html.dr-dark label,
+html.dr-dark li,
+html.dr-dark strong,
+html.dr-dark b {
+
+  color: var(--dr-text) !important;
+}
+
+
+/* =========================================================
+   الخلفيات البيضاء
+   هذا الجزء مهم جدًا
+========================================================= */
+
+html.dr-dark [style*="background: white"],
+html.dr-dark [style*="background:white"],
+html.dr-dark [style*="background-color: white"],
+html.dr-dark [style*="background-color:white"],
+html.dr-dark [style*="background: #fff"],
+html.dr-dark [style*="background:#fff"],
+html.dr-dark [style*="background-color: #fff"],
+html.dr-dark [style*="background-color:#fff"] {
+
+  background: var(--dr-surface) !important;
+}
+
+
+/* =========================================================
+   الكروت والأقسام والحاويات
+========================================================= */
+
+html.dr-dark .card,
+html.dr-dark .lesson-card,
+html.dr-dark .subject-card,
+html.dr-dark .unit-card,
+html.dr-dark .quiz-card,
+html.dr-dark .container,
+html.dr-dark .container-card,
+html.dr-dark .box,
+html.dr-dark .section,
+html.dr-dark section,
+html.dr-dark article,
+html.dr-dark aside,
+html.dr-dark nav,
+html.dr-dark header,
+html.dr-dark footer {
+
+  background-color: var(--dr-surface) !important;
+  color: var(--dr-text) !important;
+
+  border-color: var(--dr-border) !important;
+}
+
+
+/* =========================================================
+   الحقول
+========================================================= */
+
+html.dr-dark input,
+html.dr-dark textarea,
+html.dr-dark select {
+
+  background-color: var(--dr-surface-2) !important;
+
+  color: var(--dr-text) !important;
+
+  border-color: var(--dr-border) !important;
+}
+
+
+html.dr-dark input::placeholder,
+html.dr-dark textarea::placeholder {
+
+  color: var(--dr-secondary) !important;
+}
+
+
+/* =========================================================
+   الجداول
+========================================================= */
+
+html.dr-dark table {
+
+  background-color: var(--dr-surface) !important;
+
+  color: var(--dr-text) !important;
+}
+
+
+html.dr-dark th,
+html.dr-dark td {
+
+  background-color: var(--dr-surface) !important;
+
+  color: var(--dr-text) !important;
+
+  border-color: var(--dr-border) !important;
+}
+
+
+/* =========================================================
+   الروابط
+========================================================= */
+
+html.dr-dark a {
+
+  color: var(--dr-primary) !important;
+}
+
+
+/* =========================================================
+   الأزرار
+========================================================= */
+
+html.dr-dark button {
+
+  color: var(--dr-text);
+
+  border-color: var(--dr-border);
+}
+
+
+/* =========================================================
+   العناصر ذات الخلفية السوداء
+========================================================= */
+
+html.dr-dark [style*="background: black"],
+html.dr-dark [style*="background:black"],
+html.dr-dark [style*="background-color: black"],
+html.dr-dark [style*="background-color:black"] {
+
+  background-color: var(--dr-surface-2) !important;
+}
+
+
+/* =========================================================
+   النصوص السوداء
+========================================================= */
+
+html.dr-dark [style*="color: black"],
+html.dr-dark [style*="color:black"],
+html.dr-dark [style*="color: #000"],
+html.dr-dark [style*="color:#000"] {
+
+  color: var(--dr-text) !important;
+}
+
+
+/* =========================================================
+   الكلاسات المشهورة للألوان
+========================================================= */
+
+html.dr-dark .text-black,
+html.dr-dark .text-dark,
+html.dr-dark .black-text,
+html.dr-dark .dark-text {
+
+  color: var(--dr-text) !important;
+}
+
+
+/* =========================================================
+   الظلال
+========================================================= */
+
+html.dr-dark .card,
+html.dr-dark .lesson-card,
+html.dr-dark .subject-card,
+html.dr-dark .unit-card,
+html.dr-dark .quiz-card,
+html.dr-dark .modal-content {
+
+  box-shadow:
+    0 4px 20px var(--dr-shadow) !important;
+}
+
+
+/* =========================================================
+   زر تبديل الوضع
+========================================================= */
+
+#dr-theme-toggle {
+
+  position: fixed;
+
+  top: 18px;
+  left: 18px;
+
+  width: 48px;
+  height: 48px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: var(--dr-surface) !important;
+
+  color: var(--dr-heading) !important;
+
+  box-shadow:
+    0 4px 18px var(--dr-shadow);
+
+  cursor: pointer;
+
+  z-index: 999999;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 22px;
+
+  transition:
+    transform 0.2s ease,
+    background 0.3s ease;
+}
+
+
+#dr-theme-toggle:hover {
+
+  transform: scale(1.08);
+}
+
+
+#dr-theme-toggle:active {
+
+  transform: scale(0.94);
+}
+
+
+@media (max-width: 600px) {
 
   #dr-theme-toggle {
-    position: fixed;
-    top: 18px;
-    left: 18px;
 
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
 
-    border: none;
-    border-radius: 50%;
+    top: 12px;
+    left: 12px;
 
-    background: var(--dr-card);
-    color: var(--dr-text);
-
-    box-shadow: 0 4px 15px var(--dr-shadow);
-
-    cursor: pointer;
-
-    z-index: 99999;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 22px;
-
-    transition:
-      transform 0.2s ease,
-      background 0.25s ease,
-      color 0.25s ease;
+    font-size: 19px;
   }
+}
 
-  #dr-theme-toggle:hover {
-    transform: scale(1.08);
-  }
 
-  #dr-theme-toggle:active {
-    transform: scale(0.95);
-  }
+/* =========================================================
+   انتقال ناعم
+========================================================= */
 
-  /* الموبايل */
+body,
+body * {
 
-  @media (max-width: 600px) {
-
-    #dr-theme-toggle {
-      width: 42px;
-      height: 42px;
-
-      top: 12px;
-      left: 12px;
-
-      font-size: 19px;
-    }
-
-  }
-
-  /* انتقال ناعم */
-
-  body,
-  .card,
-  .lesson-card,
-  .subject-card,
-  .unit-card,
-  .quiz-card,
-  input,
-  textarea,
-  select,
-  section {
-    transition:
-      background-color 0.25s ease,
-      color 0.25s ease,
-      border-color 0.25s ease;
-  }
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
 
 </style>
 
+
 <script>
+
 (function () {
 
-  /* =========================================
-     DrNotes Theme System
-  ========================================= */
-
   const STORAGE_KEY = "drnotes_theme";
+
+
+  /* =======================================================
+     قراءة الوضع المحفوظ
+  ======================================================= */
 
   function getSavedTheme() {
 
@@ -5118,6 +5286,11 @@ function setAuthLoading(
 
   }
 
+
+  /* =======================================================
+     حفظ الوضع
+  ======================================================= */
+
   function saveTheme(theme) {
 
     try {
@@ -5131,21 +5304,38 @@ function setAuthLoading(
 
   }
 
+
+  /* =======================================================
+     وضع الجهاز
+  ======================================================= */
+
   function getSystemTheme() {
 
-    return window.matchMedia &&
+    if (
+      window.matchMedia &&
       window.matchMedia(
         "(prefers-color-scheme: dark)"
       ).matches
-        ? "dark"
-        : "light";
+    ) {
+
+      return "dark";
+
+    }
+
+    return "light";
 
   }
+
+
+  /* =======================================================
+     تطبيق الوضع
+  ======================================================= */
 
   function applyTheme(theme) {
 
     const html =
       document.documentElement;
+
 
     if (theme === "dark") {
 
@@ -5157,67 +5347,79 @@ function setAuthLoading(
 
     }
 
-    updateThemeButton();
+
+    updateButton();
 
   }
 
-  function updateThemeButton() {
+
+  /* =======================================================
+     تحديث الزر
+  ======================================================= */
+
+  function updateButton() {
 
     const button =
       document.getElementById(
         "dr-theme-toggle"
       );
 
+
     if (!button) return;
 
-    const isDark =
+
+    const dark =
       document.documentElement
         .classList
         .contains("dr-dark");
 
-    if (isDark) {
+
+    if (dark) {
 
       button.innerHTML = "☀️";
+
+      button.title =
+        "الوضع الصباحي";
 
       button.setAttribute(
         "aria-label",
         "تفعيل الوضع الصباحي"
       );
 
-      button.setAttribute(
-        "title",
-        "الوضع الصباحي"
-      );
-
     } else {
 
       button.innerHTML = "🌙";
+
+      button.title =
+        "الوضع الليلي";
 
       button.setAttribute(
         "aria-label",
         "تفعيل الوضع الليلي"
       );
 
-      button.setAttribute(
-        "title",
-        "الوضع الليلي"
-      );
-
     }
 
   }
 
+
+  /* =======================================================
+     تبديل الوضع
+  ======================================================= */
+
   function toggleTheme() {
 
-    const isDark =
+    const dark =
       document.documentElement
         .classList
         .contains("dr-dark");
 
+
     const newTheme =
-      isDark
+      dark
         ? "light"
         : "dark";
+
 
     applyTheme(newTheme);
 
@@ -5225,22 +5427,26 @@ function setAuthLoading(
 
   }
 
-  /* =========================================
-     تطبيق الوضع قبل ظهور الصفحة
-  ========================================= */
+
+  /* =======================================================
+     تطبيق الوضع فورًا
+  ======================================================= */
 
   const savedTheme =
     getSavedTheme();
+
 
   const initialTheme =
     savedTheme ||
     getSystemTheme();
 
+
   applyTheme(initialTheme);
 
-  /* =========================================
+
+  /* =======================================================
      إنشاء زر الوضع
-  ========================================= */
+  ======================================================= */
 
   function createThemeButton() {
 
@@ -5249,39 +5455,45 @@ function setAuthLoading(
         "dr-theme-toggle"
       )
     ) {
+
       return;
+
     }
 
+
     const button =
-      document.createElement("button");
+      document.createElement(
+        "button"
+      );
+
 
     button.id =
       "dr-theme-toggle";
 
+
     button.type =
       "button";
 
-    button.innerHTML =
-      initialTheme === "dark"
-        ? "☀️"
-        : "🌙";
 
     button.addEventListener(
       "click",
       toggleTheme
     );
 
+
     document.body.appendChild(
       button
     );
 
-    updateThemeButton();
+
+    updateButton();
 
   }
 
-  /* =========================================
-     تشغيل بعد تحميل Body
-  ========================================= */
+
+  /* =======================================================
+     تشغيل بعد تحميل الصفحة
+  ======================================================= */
 
   if (
     document.readyState ===
@@ -5300,173 +5512,7 @@ function setAuthLoading(
   }
 
 })();
-</script>
-  <style>
-/* =========================================================
-   DrNotes - ألوان النصوص المتناسقة مع الموقع
-========================================================= */
 
-/* الوضع الصباحي */
-:root {
-  --dr-main-text: #334155;
-  --dr-heading-text: #1e3a5f;
-  --dr-secondary-text: #64748b;
-  --dr-link-text: #2563eb;
-}
-
-/* الوضع الليلي */
-html.dr-dark {
-  --dr-main-text: #c7d2e3;
-  --dr-heading-text: #93c5fd;
-  --dr-secondary-text: #94a3b8;
-  --dr-link-text: #60a5fa;
-}
-
-
-/* =========================================
-   النصوص الأساسية
-========================================= */
-
-body,
-body * {
-  color: var(--dr-main-text);
-}
-
-
-/* =========================================
-   العناوين
-========================================= */
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  color: var(--dr-heading-text);
-}
-
-
-/* =========================================
-   الفقرات
-========================================= */
-
-p,
-span,
-label,
-li,
-strong,
-b {
-  color: var(--dr-main-text);
-}
-
-
-/* =========================================
-   النصوص الثانوية
-========================================= */
-
-small,
-.text-muted,
-.secondary-text,
-.subtitle,
-.description {
-  color: var(--dr-secondary-text);
-}
-
-
-/* =========================================
-   الروابط
-========================================= */
-
-a {
-  color: var(--dr-link-text);
-}
-
-
-/* =========================================
-   الحقول
-========================================= */
-
-input,
-textarea,
-select {
-  color: var(--dr-main-text) !important;
-}
-
-
-/* =========================================
-   الأزرار
-========================================= */
-
-button {
-  color: var(--dr-main-text);
-}
-
-
-/* =========================================
-   الجداول
-========================================= */
-
-table,
-th,
-td {
-  color: var(--dr-main-text);
-}
-
-
-/* =========================================
-   إصلاح النص الأسود الصريح
-========================================= */
-
-[style*="color: black"],
-[style*="color:black"],
-[style*="color: #000"],
-[style*="color:#000"],
-[style*="color: rgb(0, 0, 0)"] {
-  color: var(--dr-main-text) !important;
-}
-
-
-/* =========================================
-   إصلاح الكلاسات التي تجعل النص أسود
-========================================= */
-
-.text-black,
-.text-dark,
-.black-text,
-.dark-text {
-  color: var(--dr-main-text) !important;
-}
-
-
-/* =========================================
-   الوضع الليلي - ضمان عدم ظهور نص أسود
-========================================= */
-
-html.dr-dark body,
-html.dr-dark body * {
-  color: var(--dr-main-text);
-}
-
-html.dr-dark h1,
-html.dr-dark h2,
-html.dr-dark h3,
-html.dr-dark h4,
-html.dr-dark h5,
-html.dr-dark h6 {
-  color: var(--dr-heading-text);
-}
-
-html.dr-dark a {
-  color: var(--dr-link-text);
-}
-
-html.dr-dark small,
-html.dr-dark .text-muted,
-html.dr-dark .secondary-text {
-  color: var(--dr-secondary-text);
-}
-  </style>
-  
+  </script>
 </body>
   </html>
