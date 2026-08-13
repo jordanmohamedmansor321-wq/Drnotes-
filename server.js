@@ -1,11 +1,25 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const { Pool } = require("pg");
 require("dotenv").config();
 
 const app = express();
 
 const PORT = process.env.PORT || 10000;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+pool.query("SELECT NOW()", (err, result) => {
+  if (err) {
+    console.error("PostgreSQL connection failed:", err.message);
+  } else {
+    console.log("PostgreSQL connected successfully:", result.rows[0]);
+  }
+});
 
 // Middleware
 app.use(cors());
