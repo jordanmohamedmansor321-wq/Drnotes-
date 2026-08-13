@@ -5303,102 +5303,168 @@ function setAuthLoading(
 </script>
   <style>
 /* =========================================================
-   DrNotes - إصلاح النصوص السوداء في الوضع الليلي
-   ضع هذا الكود بعد كود الوضع الليلي مباشرة
+   DrNotes - ألوان النصوص المتناسقة مع الموقع
 ========================================================= */
+
+/* الوضع الصباحي */
+:root {
+  --dr-main-text: #334155;
+  --dr-heading-text: #1e3a5f;
+  --dr-secondary-text: #64748b;
+  --dr-link-text: #2563eb;
+}
+
+/* الوضع الليلي */
+html.dr-dark {
+  --dr-main-text: #c7d2e3;
+  --dr-heading-text: #93c5fd;
+  --dr-secondary-text: #94a3b8;
+  --dr-link-text: #60a5fa;
+}
+
+
+/* =========================================
+   النصوص الأساسية
+========================================= */
+
+body,
+body * {
+  color: var(--dr-main-text);
+}
+
+
+/* =========================================
+   العناوين
+========================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--dr-heading-text);
+}
+
+
+/* =========================================
+   الفقرات
+========================================= */
+
+p,
+span,
+label,
+li,
+strong,
+b {
+  color: var(--dr-main-text);
+}
+
+
+/* =========================================
+   النصوص الثانوية
+========================================= */
+
+small,
+.text-muted,
+.secondary-text,
+.subtitle,
+.description {
+  color: var(--dr-secondary-text);
+}
+
+
+/* =========================================
+   الروابط
+========================================= */
+
+a {
+  color: var(--dr-link-text);
+}
+
+
+/* =========================================
+   الحقول
+========================================= */
+
+input,
+textarea,
+select {
+  color: var(--dr-main-text) !important;
+}
+
+
+/* =========================================
+   الأزرار
+========================================= */
+
+button {
+  color: var(--dr-main-text);
+}
+
+
+/* =========================================
+   الجداول
+========================================= */
+
+table,
+th,
+td {
+  color: var(--dr-main-text);
+}
+
+
+/* =========================================
+   إصلاح النص الأسود الصريح
+========================================= */
+
+[style*="color: black"],
+[style*="color:black"],
+[style*="color: #000"],
+[style*="color:#000"],
+[style*="color: rgb(0, 0, 0)"] {
+  color: var(--dr-main-text) !important;
+}
+
+
+/* =========================================
+   إصلاح الكلاسات التي تجعل النص أسود
+========================================= */
+
+.text-black,
+.text-dark,
+.black-text,
+.dark-text {
+  color: var(--dr-main-text) !important;
+}
+
+
+/* =========================================
+   الوضع الليلي - ضمان عدم ظهور نص أسود
+========================================= */
 
 html.dr-dark body,
 html.dr-dark body * {
-  color: var(--dr-text) !important;
+  color: var(--dr-main-text);
 }
 
-/* النصوص التي تكون سوداء بشكل مباشر */
-html.dr-dark [style*="color: black"],
-html.dr-dark [style*="color:black"],
-html.dr-dark [style*="color: #000"],
-html.dr-dark [style*="color:#000"],
-html.dr-dark [style*="color: rgb(0, 0, 0)"] {
-  color: var(--dr-text) !important;
-}
-
-/* العناوين */
 html.dr-dark h1,
 html.dr-dark h2,
 html.dr-dark h3,
 html.dr-dark h4,
 html.dr-dark h5,
 html.dr-dark h6 {
-  color: #f8fafc !important;
+  color: var(--dr-heading-text);
 }
 
-/* الفقرات والنصوص */
-html.dr-dark p,
-html.dr-dark span,
-html.dr-dark div,
-html.dr-dark label,
-html.dr-dark li,
-html.dr-dark strong,
-html.dr-dark b {
-  color: var(--dr-text) !important;
+html.dr-dark a {
+  color: var(--dr-link-text);
 }
 
-/* النصوص الثانوية */
 html.dr-dark small,
 html.dr-dark .text-muted,
-html.dr-dark .secondary-text,
-html.dr-dark .subtitle,
-html.dr-dark .description {
-  color: var(--dr-text-secondary) !important;
-}
-
-/* الأزرار */
-html.dr-dark button {
-  color: var(--dr-text) !important;
-}
-
-/* الروابط */
-html.dr-dark a {
-  color: #60a5fa !important;
-}
-
-/* الحقول */
-html.dr-dark input,
-html.dr-dark textarea,
-html.dr-dark select {
-  color: #f8fafc !important;
-}
-
-/* النص داخل الخيارات */
-html.dr-dark option {
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
-}
-
-/* الجداول */
-html.dr-dark table,
-html.dr-dark th,
-html.dr-dark td {
-  color: #f8fafc !important;
-}
-
-/* القوائم */
-html.dr-dark ul,
-html.dr-dark ol {
-  color: var(--dr-text) !important;
-}
-
-/* النصوص التي تستخدم class شائع للون الأسود */
-html.dr-dark .text-black,
-html.dr-dark .text-dark,
-html.dr-dark .black-text,
-html.dr-dark .dark-text {
-  color: #f8fafc !important;
-}
-
-/* أي عنصر مكتوب عليه لون أسود */
-html.dr-dark [class*="black"],
-html.dr-dark [class*="dark-text"] {
-  color: #f8fafc !important;
+html.dr-dark .secondary-text {
+  color: var(--dr-secondary-text);
 }
   </style>
   
