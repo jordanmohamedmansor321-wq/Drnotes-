@@ -5991,9 +5991,2403 @@
 
     }
   );
+<script>
 
+const API_URL = "";
+
+/* =========================
+   بيانات المواد والدروس
+========================= */
+
+const subjectsData = {
+
+  biology: {
+    title: "الأحياء",
+    description: "شرح ومراجعة موضوعات الأحياء بطريقة منظمة.",
+    lessons: [
+      {
+        id: "biology-1",
+        title: "الدرس الأول: مقدمة في الأحياء",
+        description: "مقدمة أساسية في علم الأحياء.",
+        video: "",
+        duration: "20 دقيقة",
+        questions: [
+          {
+            question: "ما هو علم الأحياء؟",
+            options: [
+              "علم دراسة الكائنات الحية",
+              "علم دراسة النجوم",
+              "علم دراسة الصخور",
+              "علم دراسة الطقس"
+            ],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: "biology-2",
+        title: "الدرس الثاني: الخلية",
+        description: "التعرف على الخلية ومكوناتها.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "ما هي الوحدة الأساسية للحياة؟",
+            options: [
+              "النسيج",
+              "الخلية",
+              "العضو",
+              "الجهاز"
+            ],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: "biology-3",
+        title: "الدرس الثالث: الأنسجة",
+        description: "شرح الأنسجة وأنواعها.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "مجموعة من الخلايا المتشابهة تؤدي وظيفة معينة تسمى:",
+            options: [
+              "نسيج",
+              "عضو",
+              "جهاز",
+              "كائن حي"
+            ],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: "biology-4",
+        title: "الدرس الرابع: مراجعة",
+        description: "مراجعة شاملة للدروس السابقة.",
+        video: "",
+        duration: "30 دقيقة",
+        questions: [
+          {
+            question: "أي مما يلي يعد وحدة أساسية للحياة؟",
+            options: [
+              "الخلية",
+              "العضو",
+              "الجهاز",
+              "النسيج"
+            ],
+            answer: 0
+          }
+        ]
+      }
+    ]
+  },
+
+  chemistry: {
+    title: "الكيمياء",
+    description: "شرح المفاهيم والقوانين والتفاعلات الكيميائية.",
+    lessons: [
+      {
+        id: "chemistry-1",
+        title: "الدرس الأول: مقدمة في الكيمياء",
+        description: "أساسيات علم الكيمياء.",
+        video: "",
+        duration: "20 دقيقة",
+        questions: [
+          {
+            question: "الكيمياء تهتم بدراسة:",
+            options: [
+              "المادة وتغيراتها",
+              "النجوم فقط",
+              "الكواكب فقط",
+              "الطقس"
+            ],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: "chemistry-2",
+        title: "الدرس الثاني: الذرة",
+        description: "تركيب الذرة ومكوناتها.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "ما الجسيم الذي يحمل شحنة سالبة؟",
+            options: [
+              "البروتون",
+              "النيوترون",
+              "الإلكترون",
+              "النواة"
+            ],
+            answer: 2
+          }
+        ]
+      },
+      {
+        id: "chemistry-3",
+        title: "الدرس الثالث: العناصر",
+        description: "مفهوم العناصر والجدول الدوري.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "الجدول الدوري يحتوي على:",
+            options: [
+              "العناصر الكيميائية",
+              "الأعضاء",
+              "الكواكب",
+              "الأنسجة"
+            ],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: "chemistry-4",
+        title: "الدرس الرابع: المراجعة",
+        description: "مراجعة أساسيات الكيمياء.",
+        video: "",
+        duration: "30 دقيقة",
+        questions: [
+          {
+            question: "الجسيم السالب في الذرة هو:",
+            options: [
+              "البروتون",
+              "الإلكترون",
+              "النيوترون",
+              "النواة"
+            ],
+            answer: 1
+          }
+        ]
+      }
+    ]
+  },
+
+  physics: {
+    title: "الفيزياء",
+    description: "شرح القوانين والمفاهيم الفيزيائية.",
+    lessons: [
+      {
+        id: "physics-1",
+        title: "الدرس الأول: مقدمة في الفيزياء",
+        description: "مقدمة عن علم الفيزياء.",
+        video: "",
+        duration: "20 دقيقة",
+        questions: [
+          {
+            question: "الفيزياء تدرس:",
+            options: [
+              "المادة والطاقة والتفاعلات بينهما",
+              "اللغة",
+              "الكائنات فقط",
+              "التاريخ"
+            ],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: "physics-2",
+        title: "الدرس الثاني: الحركة",
+        description: "مفهوم الحركة والسرعة.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "السرعة تساوي:",
+            options: [
+              "المسافة ÷ الزمن",
+              "الزمن ÷ المسافة",
+              "القوة × الزمن",
+              "الكتلة × السرعة"
+            ],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: "physics-3",
+        title: "الدرس الثالث: القوة",
+        description: "مفهوم القوة وقوانين نيوتن.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "القانون F = ma هو:",
+            options: [
+              "قانون نيوتن الأول",
+              "قانون نيوتن الثاني",
+              "قانون نيوتن الثالث",
+              "قانون الجاذبية"
+            ],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: "physics-4",
+        title: "الدرس الرابع: المراجعة",
+        description: "مراجعة شاملة.",
+        video: "",
+        duration: "30 دقيقة",
+        questions: [
+          {
+            question: "إذا زادت القوة مع ثبات الكتلة فإن التسارع:",
+            options: [
+              "يزداد",
+              "يقل",
+              "لا يتغير",
+              "يصبح صفرًا"
+            ],
+            answer: 0
+          }
+        ]
+      }
+    ]
+  },
+
+  math: {
+    title: "الرياضيات",
+    description: "شرح القوانين والأفكار والتدريبات.",
+    lessons: [
+      {
+        id: "math-1",
+        title: "الدرس الأول: أساسيات الرياضيات",
+        description: "مراجعة الأساسيات.",
+        video: "",
+        duration: "20 دقيقة",
+        questions: [
+          {
+            question: "كم يساوي 2 + 2؟",
+            options: [
+              "3",
+              "4",
+              "5",
+              "6"
+            ],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: "math-2",
+        title: "الدرس الثاني: المعادلات",
+        description: "أساسيات حل المعادلات.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "إذا كان x + 2 = 5 فإن x = ؟",
+            options: [
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: "math-3",
+        title: "الدرس الثالث: الدوال",
+        description: "مقدمة في الدوال.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "الدالة تربط بين:",
+            options: [
+              "مدخلات ومخرجات",
+              "ألوان",
+              "صور",
+              "أجهزة"
+            ],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: "math-4",
+        title: "الدرس الرابع: مراجعة",
+        description: "مراجعة شاملة.",
+        video: "",
+        duration: "30 دقيقة",
+        questions: [
+          {
+            question: "5 × 5 = ؟",
+            options: [
+              "20",
+              "25",
+              "30",
+              "35"
+            ],
+            answer: 1
+          }
+        ]
+      }
+    ]
+  },
+
+  english: {
+    title: "اللغة الإنجليزية",
+    description: "Grammar وVocabulary وReading.",
+    lessons: [
+      {
+        id: "english-1",
+        title: "Lesson 1: Grammar",
+        description: "أساسيات القواعد.",
+        video: "",
+        duration: "20 دقيقة",
+        questions: [
+          {
+            question: "Choose the correct sentence:",
+            options: [
+              "He are a student.",
+              "He is a student.",
+              "He am a student.",
+              "He be a student."
+            ],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: "english-2",
+        title: "Lesson 2: Vocabulary",
+        description: "كلمات مهمة.",
+        video: "",
+        duration: "20 دقيقة",
+        questions: [
+          {
+            question: "What does 'book' mean?",
+            options: [
+              "قلم",
+              "كتاب",
+              "مدرسة",
+              "بيت"
+            ],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: "english-3",
+        title: "Lesson 3: Reading",
+        description: "مهارات القراءة.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "Reading means:",
+            options: [
+              "الكتابة",
+              "القراءة",
+              "الاستماع",
+              "الكلام"
+            ],
+            answer: 1
+          }
+        ]
+      },
+      {
+        id: "english-4",
+        title: "Lesson 4: Review",
+        description: "مراجعة.",
+        video: "",
+        duration: "30 دقيقة",
+        questions: [
+          {
+            question: "Choose: She ___ a doctor.",
+            options: [
+              "are",
+              "am",
+              "is",
+              "be"
+            ],
+            answer: 2
+          }
+        ]
+      }
+    ]
+  },
+
+  computer: {
+    title: "الحاسوب",
+    description: "شرح أساسيات الحاسوب.",
+    lessons: [
+      {
+        id: "computer-1",
+        title: "الدرس الأول: مقدمة في الحاسوب",
+        description: "أساسيات الحاسوب.",
+        video: "",
+        duration: "20 دقيقة",
+        questions: [
+          {
+            question: "CPU تعني:",
+            options: [
+              "Central Processing Unit",
+              "Computer Personal Unit",
+              "Central Program User",
+              "Computer Processing Utility"
+            ],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: "computer-2",
+        title: "الدرس الثاني: أنظمة التشغيل",
+        description: "مقدمة عن أنظمة التشغيل.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "أي مما يلي نظام تشغيل؟",
+            options: [
+              "Windows",
+              "Google",
+              "HTML",
+              "YouTube"
+            ],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: "computer-3",
+        title: "الدرس الثالث: الإنترنت",
+        description: "مقدمة عن الإنترنت.",
+        video: "",
+        duration: "25 دقيقة",
+        questions: [
+          {
+            question: "الإنترنت هو:",
+            options: [
+              "شبكة عالمية",
+              "برنامج رسم",
+              "لوحة مفاتيح",
+              "نظام تشغيل"
+            ],
+            answer: 0
+          }
+        ]
+      },
+      {
+        id: "computer-4",
+        title: "الدرس الرابع: مراجعة",
+        description: "مراجعة.",
+        video: "",
+        duration: "30 دقيقة",
+        questions: [
+          {
+            question: "أي مما يلي جهاز إدخال؟",
+            options: [
+              "Keyboard",
+              "Monitor",
+              "Speaker",
+              "Printer"
+            ],
+            answer: 0
+          }
+        ]
+      }
+    ]
+  }
+
+};
+
+
+/* =========================
+   حالة التطبيق
+========================= */
+
+let currentUser = null;
+let currentSubject = null;
+let currentLessonIndex = null;
+
+
+/* =========================
+   LOCAL STORAGE
+========================= */
+
+function getUsers() {
+
+  try {
+    return JSON.parse(
+      localStorage.getItem("drnotes_users") || "[]"
+    );
+  }
+
+  catch (error) {
+    return [];
+  }
+
+}
+
+
+function saveUsers(users) {
+
+  localStorage.setItem(
+    "drnotes_users",
+    JSON.stringify(users)
+  );
+
+}
+
+
+function getCurrentUser() {
+
+  try {
+    return JSON.parse(
+      localStorage.getItem("drnotes_current_user")
+    );
+  }
+
+  catch (error) {
+    return null;
+  }
+
+}
+
+
+function saveCurrentUser(user) {
+
+  if (user) {
+
+    localStorage.setItem(
+      "drnotes_current_user",
+      JSON.stringify(user)
+    );
+
+  }
+
+  else {
+
+    localStorage.removeItem(
+      "drnotes_current_user"
+    );
+
+  }
+
+}
+
+
+/* =========================
+   TOAST
+========================= */
+
+function showToast(message) {
+
+  const toast =
+    document.getElementById("toast");
+
+  if (!toast) return;
+
+  toast.textContent = message;
+
+  toast.classList.add("show");
+
+  setTimeout(() => {
+
+    toast.classList.remove("show");
+
+  }, 3000);
+
+}
+
+
+/* =========================
+   MODAL
+========================= */
+
+function openLogin() {
+
+  document
+    .getElementById("authModal")
+    .classList.add("active");
+
+  document.body.classList.add("no-scroll");
+
+  showLogin();
+
+}
+
+
+function openRegister() {
+
+  document
+    .getElementById("authModal")
+    .classList.add("active");
+
+  document.body.classList.add("no-scroll");
+
+  showRegister();
+
+}
+
+
+function closeModal() {
+
+  document
+    .getElementById("authModal")
+    .classList.remove("active");
+
+  document.body.classList.remove("no-scroll");
+
+}
+
+
+function showLogin() {
+
+  document
+    .getElementById("loginForm")
+    .style.display = "block";
+
+  document
+    .getElementById("registerForm")
+    .style.display = "none";
+
+}
+
+
+function showRegister() {
+
+  document
+    .getElementById("loginForm")
+    .style.display = "none";
+
+  document
+    .getElementById("registerForm")
+    .style.display = "block";
+
+}
+
+
+/* =========================
+   REGISTER
+========================= */
+
+function register(event) {
+
+  event.preventDefault();
+
+  const name =
+    document
+      .getElementById("registerName")
+      .value
+      .trim();
+
+  const email =
+    document
+      .getElementById("registerEmail")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const grade =
+    document
+      .getElementById("registerGrade")
+      .value;
+
+  const password =
+    document
+      .getElementById("registerPassword")
+      .value;
+
+  const confirm =
+    document
+      .getElementById("registerConfirm")
+      .value;
+
+
+  if (!name || !email || !grade || !password) {
+
+    showToast("من فضلك أكمل جميع البيانات.");
+
+    return;
+
+  }
+
+
+  if (password.length < 6) {
+
+    showToast("كلمة المرور يجب أن تكون 6 أحرف على الأقل.");
+
+    return;
+
+  }
+
+
+  if (password !== confirm) {
+
+    showToast("كلمتا المرور غير متطابقتين.");
+
+    return;
+
+  }
+
+
+  const users = getUsers();
+
+
+  const exists =
+    users.find(
+      user => user.email === email
+    );
+
+
+  if (exists) {
+
+    showToast(
+      "هذا البريد الإلكتروني مسجل بالفعل."
+    );
+
+    showLogin();
+
+    document
+      .getElementById("loginEmail")
+      .value = email;
+
+    return;
+
+  }
+
+
+  const newUser = {
+
+    id:
+      Date.now().toString(),
+
+    name,
+
+    email,
+
+    grade,
+
+    password,
+
+    completed: {},
+
+    quizzes: {},
+
+    favorites: [],
+
+    lastLesson: null
+
+  };
+
+
+  users.push(newUser);
+
+  saveUsers(users);
+
+  currentUser = newUser;
+
+  saveCurrentUser(currentUser);
+
+  closeModal();
+
+  updateUI();
+
+  showToast(
+    "تم إنشاء الحساب بنجاح 🎉"
+  );
+
+}
+
+
+/* =========================
+   LOGIN
+========================= */
+
+function login(event) {
+
+  event.preventDefault();
+
+  const email =
+    document
+      .getElementById("loginEmail")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const password =
+    document
+      .getElementById("loginPassword")
+      .value;
+
+
+  if (!email || !password) {
+
+    showToast(
+      "من فضلك أدخل البريد الإلكتروني وكلمة المرور."
+    );
+
+    return;
+
+  }
+
+
+  const users = getUsers();
+
+
+  const user =
+    users.find(
+      item =>
+        item.email === email &&
+        item.password === password
+    );
+
+
+  if (!user) {
+
+    showToast(
+      "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+    );
+
+    return;
+
+  }
+
+
+  currentUser = user;
+
+  saveCurrentUser(currentUser);
+
+  closeModal();
+
+  updateUI();
+
+  showToast(
+    `مرحبًا ${user.name} 👋`
+  );
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+function logout() {
+
+  currentUser = null;
+
+  saveCurrentUser(null);
+
+  document
+    .getElementById("dashboard")
+    .style.display = "none";
+
+  goHome();
+
+  updateUI();
+
+  showToast(
+    "تم تسجيل الخروج."
+  );
+
+}
+
+
+/* =========================
+   UPDATE HEADER
+========================= */
+
+function updateUI() {
+
+  const actions =
+    document.querySelector(".header-actions");
+
+  if (!actions) return;
+
+
+  if (currentUser) {
+
+    actions.innerHTML = `
+
+      <button
+        class="btn btn-primary"
+        onclick="showDashboard()"
+      >
+        <i class="fa-solid fa-user"></i>
+        ${escapeHTML(currentUser.name)}
+      </button>
+
+    `;
+
+    updateDashboard();
+
+  }
+
+  else {
+
+    actions.innerHTML = `
+
+      <button
+        class="btn btn-outline"
+        onclick="openLogin()"
+      >
+        تسجيل الدخول
+      </button>
+
+      <button
+        class="btn btn-primary"
+        onclick="openRegister()"
+      >
+        إنشاء حساب
+      </button>
+
+    `;
+
+  }
+
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+function showDashboard() {
+
+  if (!currentUser) {
+
+    openLogin();
+
+    return;
+
+  }
+
+
+  document
+    .getElementById("homePage")
+    .style.display = "block";
+
+  document
+    .getElementById("subjectPage")
+    .style.display = "none";
+
+  document
+    .getElementById("dashboard")
+    .style.display = "block";
+
+
+  updateDashboard();
+
+
+  setTimeout(() => {
+
+    document
+      .getElementById("dashboard")
+      .scrollIntoView({
+        behavior: "smooth"
+      });
+
+  }, 50);
+
+}
+
+
+function updateDashboard() {
+
+  if (!currentUser) return;
+
+
+  const completedLessons =
+    Object.keys(
+      currentUser.completed || {}
+    ).filter(
+      key => currentUser.completed[key]
+    ).length;
+
+
+  let totalLessons = 0;
+
+  Object.values(subjectsData)
+    .forEach(subject => {
+
+      totalLessons +=
+        subject.lessons.length;
+
+    });
+
+
+  const progress =
+    totalLessons > 0
+      ? Math.round(
+          completedLessons /
+          totalLessons *
+          100
+        )
+      : 0;
+
+
+  const quizCount =
+    Object.keys(
+      currentUser.quizzes || {}
+    ).length;
+
+
+  const favoriteCount =
+    (currentUser.favorites || []).length;
+
+
+  setText(
+    "completedLessons",
+    completedLessons
+  );
+
+  setText(
+    "overallProgress",
+    `${progress}%`
+  );
+
+  setText(
+    "quizCount",
+    quizCount
+  );
+
+  setText(
+    "favoriteCount",
+    favoriteCount
+  );
+
+
+  setText(
+    "welcomeUser",
+    `مرحبًا ${currentUser.name} 👋`
+  );
+
+
+  if (currentUser.lastLesson) {
+
+    setText(
+      "lastLessonTitle",
+      currentUser.lastLesson.title
+    );
+
+    setText(
+      "lastLessonDescription",
+      currentUser.lastLesson.description
+    );
+
+    const button =
+      document.getElementById(
+        "continueLessonBtn"
+      );
+
+    if (button) {
+
+      button.textContent =
+        "متابعة التعلم";
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   CONTINUE LEARNING
+========================= */
+
+function continueLearning() {
+
+  if (!currentUser) {
+
+    openLogin();
+
+    return;
+
+  }
+
+
+  if (!currentUser.lastLesson) {
+
+    document
+      .getElementById("subjects")
+      .scrollIntoView({
+        behavior: "smooth"
+      });
+
+    return;
+
+  }
+
+
+  openSubject(
+    currentUser.lastLesson.subject
+  );
+
+
+  setTimeout(() => {
+
+    openLesson(
+      currentUser.lastLesson.subject,
+      currentUser.lastLesson.index
+    );
+
+  }, 100);
+
+}
+
+
+/* =========================
+   SUBJECTS SEARCH
+========================= */
+
+function searchSubjects() {
+
+  const input =
+    document
+      .getElementById("subjectSearch")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const cards =
+    document.querySelectorAll(
+      ".subject-card[data-name]"
+    );
+
+
+  let visible = 0;
+
+
+  cards.forEach(card => {
+
+    const name =
+      card
+        .getAttribute("data-name")
+        .toLowerCase();
+
+
+    if (
+      name.includes(input)
+    ) {
+
+      card.style.display = "";
+
+      visible++;
+
+    }
+
+    else {
+
+      card.style.display = "none";
+
+    }
+
+  });
+
+
+  document
+    .getElementById("emptySubjects")
+    .style.display =
+      visible === 0
+        ? "block"
+        : "none";
+
+}
+
+
+/* =========================
+   OPEN SUBJECT
+========================= */
+
+function openSubject(subjectKey) {
+
+  if (!subjectsData[subjectKey]) {
+
+    showToast("المادة غير موجودة.");
+
+    return;
+
+  }
+
+
+  if (!currentUser) {
+
+    showToast(
+      "يجب تسجيل الدخول أولًا."
+    );
+
+    openLogin();
+
+    return;
+
+  }
+
+
+  currentSubject =
+    subjectKey;
+
+  currentLessonIndex = null;
+
+
+  document
+    .getElementById("homePage")
+    .style.display = "none";
+
+
+  document
+    .getElementById("subjectPage")
+    .style.display = "block";
+
+
+  const subject =
+    subjectsData[subjectKey];
+
+
+  setText(
+    "subjectPageTitle",
+    subject.title
+  );
+
+  setText(
+    "subjectPageDescription",
+    subject.description
+  );
+
+
+  renderLessonsList();
+
+  updateSubjectProgress();
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+
+  const firstIncomplete =
+    subject.lessons.findIndex(
+      (_, index) =>
+        !isLessonCompleted(
+          subjectKey,
+          index
+        )
+    );
+
+
+  openLesson(
+    subjectKey,
+    firstIncomplete >= 0
+      ? firstIncomplete
+      : subject.lessons.length - 1
+  );
+
+}
+
+
+/* =========================
+   CLOSE SUBJECT
+========================= */
+
+function closeSubject() {
+
+  document
+    .getElementById("subjectPage")
+    .style.display = "none";
+
+  document
+    .getElementById("homePage")
+    .style.display = "block";
+
+  currentSubject = null;
+
+  currentLessonIndex = null;
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+}
+
+
+/* =========================
+   LESSON LOCK
+========================= */
+
+function isLessonUnlocked(
+  subjectKey,
+  index
+) {
+
+  if (index === 0) return true;
+
+  return isLessonCompleted(
+    subjectKey,
+    index - 1
+  );
+
+}
+
+
+function isLessonCompleted(
+  subjectKey,
+  index
+) {
+
+  if (!currentUser) return false;
+
+  const lesson =
+    subjectsData[
+      subjectKey
+    ].lessons[index];
+
+
+  return Boolean(
+    currentUser.completed &&
+    currentUser.completed[
+      lesson.id
+    ]
+  );
+
+}
+
+
+/* =========================
+   RENDER LESSONS
+========================= */
+
+function renderLessonsList() {
+
+  const container =
+    document.getElementById(
+      "lessonsList"
+    );
+
+
+  const subject =
+    subjectsData[
+      currentSubject
+    ];
+
+
+  container.innerHTML = "";
+
+
+  subject.lessons.forEach(
+    (lesson, index) => {
+
+      const unlocked =
+        isLessonUnlocked(
+          currentSubject,
+          index
+        );
+
+      const completed =
+        isLessonCompleted(
+          currentSubject,
+          index
+        );
+
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+
+      button.className =
+        "lesson-item";
+
+
+      if (!unlocked)
+        button.classList.add(
+          "locked"
+        );
+
+
+      if (completed)
+        button.classList.add(
+          "completed"
+        );
+
+
+      if (
+        currentLessonIndex === index
+      )
+        button.classList.add(
+          "active"
+        );
+
+
+      button.onclick = () => {
+
+        if (!unlocked) {
+
+          showToast(
+            "يجب اجتياز اختبار الدرس السابق أولًا 🔒"
+          );
+
+          return;
+
+        }
+
+        openLesson(
+          currentSubject,
+          index
+        );
+
+      };
+
+
+      button.innerHTML = `
+
+        <div class="lesson-number">
+
+          ${
+            completed
+              ? '<i class="fa-solid fa-check"></i>'
+              : index + 1
+          }
+
+        </div>
+
+        <div class="lesson-item-info">
+
+          <strong>
+            ${escapeHTML(lesson.title)}
+          </strong>
+
+          <span>
+            ${escapeHTML(lesson.duration)}
+          </span>
+
+        </div>
+
+        <div class="lesson-status">
+
+          ${
+            completed
+              ? '<i class="fa-solid fa-circle-check"></i>'
+              : unlocked
+                ? '<i class="fa-solid fa-play"></i>'
+                : '<i class="fa-solid fa-lock"></i>'
+          }
+
+        </div>
+
+      `;
+
+
+      container.appendChild(
+        button
+      );
+
+    }
+
+  );
+
+}
+
+
+/* =========================
+   OPEN LESSON
+========================= */
+
+function openLesson(
+  subjectKey,
+  index
+) {
+
+  if (!currentUser) {
+
+    openLogin();
+
+    return;
+
+  }
+
+
+  const subject =
+    subjectsData[
+      subjectKey
+    ];
+
+
+  if (!subject) return;
+
+
+  const lesson =
+    subject.lessons[index];
+
+
+  if (!lesson) return;
+
+
+  if (
+    !isLessonUnlocked(
+      subjectKey,
+      index
+    )
+  ) {
+
+    showToast(
+      "هذا الدرس مقفول 🔒"
+    );
+
+    return;
+
+  }
+
+
+  currentSubject =
+    subjectKey;
+
+  currentLessonIndex =
+    index;
+
+
+  currentUser.lastLesson = {
+
+    subject: subjectKey,
+
+    index,
+
+    title: lesson.title,
+
+    description:
+      lesson.description
+
+  };
+
+
+  saveUserData();
+
+
+  setText(
+    "lessonTitle",
+    lesson.title
+  );
+
+  setText(
+    "lessonDescription",
+    lesson.description
+  );
+
+
+  renderVideo(lesson);
+
+  renderQuiz(lesson);
+
+  renderLessonsList();
+
+  updateSubjectProgress();
+
+
+  document
+    .getElementById("lockedLessonMessage")
+    .style.display = "none";
+
+
+  document
+    .getElementById("nextLessonBox")
+    .classList.remove("show");
+
+
+  if (
+    isLessonCompleted(
+      subjectKey,
+      index
+    )
+  ) {
+
+    showNextLessonIfAvailable();
+
+  }
+
+}
+
+
+/* =========================
+   VIDEO
+========================= */
+
+function renderVideo(lesson) {
+
+  const container =
+    document.getElementById(
+      "videoContainer"
+    );
+
+
+  if (
+    lesson.video &&
+    lesson.video.trim() !== ""
+  ) {
+
+    container.innerHTML = `
+
+      <video
+        controls
+        controlsList="nodownload"
+        preload="metadata"
+      >
+
+        <source
+          src="${escapeAttribute(lesson.video)}"
+          type="video/mp4"
+        >
+
+        متصفحك لا يدعم تشغيل الفيديو.
+
+      </video>
+
+    `;
+
+  }
+
+  else {
+
+    container.innerHTML = `
+
+      <div class="video-placeholder">
+
+        <i class="fa-solid fa-video-slash"></i>
+
+        <h3>
+          الفيديو غير مضاف بعد
+        </h3>
+
+        <p>
+          أضف رابط الفيديو داخل بيانات الدرس.
+        </p>
+
+      </div>
+
+    `;
+
+  }
+
+}
+
+
+/* =========================
+   QUIZ
+========================= */
+
+function renderQuiz(lesson) {
+
+  const quizBox =
+    document.getElementById(
+      "quizBox"
+    );
+
+  const form =
+    document.getElementById(
+      "quizForm"
+    );
+
+  const result =
+    document.getElementById(
+      "quizResult"
+    );
+
+
+  if (
+    !lesson.questions ||
+    lesson.questions.length === 0
+  ) {
+
+    quizBox.style.display =
+      "none";
+
+    return;
+
+  }
+
+
+  quizBox.style.display =
+    "block";
+
+
+  result.className =
+    "quiz-result";
+
+
+  result.textContent =
+    "";
+
+
+  form.innerHTML = "";
+
+
+  lesson.questions.forEach(
+    (question, qIndex) => {
+
+      const questionDiv =
+        document.createElement(
+          "div"
+        );
+
+
+      questionDiv.className =
+        "question";
+
+
+      let html = `
+
+        <div class="question-title">
+
+          ${qIndex + 1}.
+          ${escapeHTML(question.question)}
+
+        </div>
+
+      `;
+
+
+      question.options.forEach(
+        (option, oIndex) => {
+
+          html += `
+
+            <label class="answer-option">
+
+              <input
+                type="radio"
+                name="question-${qIndex}"
+                value="${oIndex}"
+              >
+
+              <span>
+                ${escapeHTML(option)}
+              </span>
+
+            </label>
+
+          `;
+
+        }
+      );
+
+
+      questionDiv.innerHTML =
+        html;
+
+
+      form.appendChild(
+        questionDiv
+      );
+
+    }
+
+  );
+
+}
+
+
+/* =========================
+   SUBMIT QUIZ
+========================= */
+
+function submitQuiz() {
+
+  if (
+    !currentUser ||
+    currentSubject === null ||
+    currentLessonIndex === null
+  ) {
+
+    showToast(
+      "اختر درسًا أولًا."
+    );
+
+    return;
+
+  }
+
+
+  const lesson =
+    subjectsData[
+      currentSubject
+    ].lessons[
+      currentLessonIndex
+    ];
+
+
+  let score = 0;
+
+  let answered = 0;
+
+
+  lesson.questions.forEach(
+    (_, qIndex) => {
+
+      const selected =
+        document.querySelector(
+          `input[name="question-${qIndex}"]:checked`
+        );
+
+
+      if (selected) {
+
+        answered++;
+
+      }
+
+    }
+  );
+
+
+  if (
+    answered <
+    lesson.questions.length
+  ) {
+
+    showToast(
+      "أجب عن جميع الأسئلة أولًا."
+    );
+
+    return;
+
+  }
+
+
+  lesson.questions.forEach(
+    (question, qIndex) => {
+
+      const selected =
+        document.querySelector(
+          `input[name="question-${qIndex}"]:checked`
+        );
+
+
+      if (
+        selected &&
+        Number(selected.value) ===
+        question.answer
+      ) {
+
+        score++;
+
+      }
+
+    }
+  );
+
+
+  const percentage =
+    Math.round(
+      score /
+      lesson.questions.length *
+      100
+    );
+
+
+  const result =
+    document.getElementById(
+      "quizResult"
+    );
+
+
+  currentUser.quizzes[
+    lesson.id
+  ] = {
+
+    score,
+
+    total:
+      lesson.questions.length,
+
+    percentage,
+
+    date:
+      new Date().toISOString()
+
+  };
+
+
+  /*
+   * النجاح من 70%
+   */
+
+  if (percentage >= 70) {
+
+    currentUser.completed[
+      lesson.id
+    ] = true;
+
+
+    saveUserData();
+
+
+    result.className =
+      "quiz-result success";
+
+
+    result.innerHTML = `
+
+      🎉 ممتاز!
+
+      <br>
+
+      نتيجتك:
+      ${score}/${lesson.questions.length}
+
+      (${percentage}%)
+
+      <br>
+
+      تم فتح الدرس التالي.
+
+    `;
+
+
+    showToast(
+      "مبروك! تم اجتياز الاختبار 🎉"
+    );
+
+
+    renderLessonsList();
+
+    updateSubjectProgress();
+
+    updateDashboard();
+
+    showNextLessonIfAvailable();
+
+  }
+
+  else {
+
+    saveUserData();
+
+
+    result.className =
+      "quiz-result fail";
+
+
+    result.innerHTML = `
+
+      حاول مرة أخرى.
+
+      <br>
+
+      نتيجتك:
+      ${score}/${lesson.questions.length}
+
+      (${percentage}%)
+
+      <br>
+
+      يجب الحصول على 70% على الأقل لفتح الدرس التالي.
+
+    `;
+
+  }
+
+}
+
+
+/* =========================
+   NEXT LESSON
+========================= */
+
+function showNextLessonIfAvailable() {
+
+  const subject =
+    subjectsData[
+      currentSubject
+    ];
+
+
+  const nextIndex =
+    currentLessonIndex + 1;
+
+
+  const box =
+    document.getElementById(
+      "nextLessonBox"
+    );
+
+
+  if (
+    nextIndex <
+    subject.lessons.length
+  ) {
+
+    box.classList.add(
+      "show"
+    );
+
+  }
+
+  else {
+
+    box.classList.remove(
+      "show"
+    );
+
+
+    showToast(
+      "🎉 أكملت جميع دروس المادة!"
+    );
+
+  }
+
+}
+
+
+function openNextLesson() {
+
+  const nextIndex =
+    currentLessonIndex + 1;
+
+
+  const subject =
+    subjectsData[
+      currentSubject
+    ];
+
+
+  if (
+    nextIndex >=
+    subject.lessons.length
+  ) {
+
+    showToast(
+      "لقد أكملت المادة بالكامل 🎉"
+    );
+
+    return;
+
+  }
+
+
+  openLesson(
+    currentSubject,
+    nextIndex
+  );
+
+}
+
+
+/* =========================
+   PROGRESS
+========================= */
+
+function updateSubjectProgress() {
+
+  if (!currentUser) return;
+
+
+  const subject =
+    subjectsData[
+      currentSubject
+    ];
+
+
+  if (!subject) return;
+
+
+  let completed = 0;
+
+
+  subject.lessons.forEach(
+    (_, index) => {
+
+      if (
+        isLessonCompleted(
+          currentSubject,
+          index
+        )
+      ) {
+
+        completed++;
+
+      }
+
+    }
+  );
+
+
+  const percentage =
+    Math.round(
+      completed /
+      subject.lessons.length *
+      100
+    );
+
+
+  setText(
+    "subjectProgressText",
+    `${percentage}%`
+  );
+
+
+  const bar =
+    document.getElementById(
+      "subjectPageProgress"
+    );
+
+
+  if (bar) {
+
+    bar.style.width =
+      `${percentage}%`;
+
+  }
+
+
+  const progressBar =
+    document.getElementById(
+      `progress-${currentSubject}`
+    );
+
+
+  if (progressBar) {
+
+    progressBar.style.width =
+      `${percentage}%`;
+
+  }
+
+}
+
+
+/* =========================
+   SAVE USER DATA
+========================= */
+
+function saveUserData() {
+
+  if (!currentUser) return;
+
+
+  const users =
+    getUsers();
+
+
+  const index =
+    users.findIndex(
+      user =>
+        user.id ===
+        currentUser.id
+    );
+
+
+  if (index !== -1) {
+
+    users[index] =
+      currentUser;
+
+    saveUsers(users);
+
+  }
+
+
+  saveCurrentUser(
+    currentUser
+  );
+
+}
+
+
+/* =========================
+   HOME
+========================= */
+
+function goHome() {
+
+  document
+    .getElementById("homePage")
+    .style.display = "block";
+
+
+  document
+    .getElementById("subjectPage")
+    .style.display = "none";
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+}
+
+
+/* =========================
+   UTILITIES
+========================= */
+
+function setText(
+  id,
+  value
+) {
+
+  const element =
+    document.getElementById(id);
+
+  if (element) {
+
+    element.textContent =
+      value;
+
+  }
+
+}
+
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+
+function escapeAttribute(value) {
+
+  return escapeHTML(value);
+
+}
+
+
+/* =========================
+   CLOSE MODAL ON BACKDROP
+========================= */
+
+document
+  .getElementById("authModal")
+  .addEventListener(
+    "click",
+    function(event) {
+
+      if (
+        event.target === this
+      ) {
+
+        closeModal();
+
+      }
+
+    }
+  );
+
+
+/* =========================
+   ESC KEY
+========================= */
+
+document.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (
+      event.key === "Escape"
+    ) {
+
+      closeModal();
+
+    }
+
+  }
+);
+
+
+/* =========================
+   INITIALIZATION
+========================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
+
+    currentUser =
+      getCurrentUser();
+
+
+    updateUI();
+
+
+    /*
+     * لو فيه مستخدم مسجل
+     * نحدّث نسب المواد
+     */
+
+    if (currentUser) {
+
+      Object.keys(
+        subjectsData
+      ).forEach(
+        subjectKey => {
+
+          let completed = 0;
+
+          const lessons =
+            subjectsData[
+              subjectKey
+            ].lessons;
+
+
+          lessons.forEach(
+            lesson => {
+
+              if (
+                currentUser.completed &&
+                currentUser.completed[
+                  lesson.id
+                ]
+              ) {
+
+                completed++;
+
+              }
+
+            }
+          );
+
+
+          const percentage =
+            Math.round(
+              completed /
+              lessons.length *
+              100
+            );
+
+
+          const bar =
+            document.getElementById(
+              `progress-${subjectKey}`
+            );
+
+
+          if (bar) {
+
+            bar.style.width =
+              `${percentage}%`;
+
+          }
+
+        }
+      );
+
+    }
+
+  }
+);
 
 </script>
+
 
 </body>
 </html>
