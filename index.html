@@ -4906,6 +4906,401 @@ function setAuthLoading(
     );
 
   </script>
+<!-- =========================================================
+     DrNotes - Light / Dark Mode
+     ضع هذا الكود مباشرة قبل <body>
+========================================================= -->
 
+<style>
+  /* ================================
+     الوضع الأساسي
+  ================================= */
+
+  :root {
+    --dr-bg: #f5f7fb;
+    --dr-card: #ffffff;
+    --dr-text: #1f2937;
+    --dr-text-secondary: #6b7280;
+    --dr-border: #e5e7eb;
+    --dr-input: #ffffff;
+    --dr-shadow: rgba(0, 0, 0, 0.08);
+    --dr-overlay: rgba(255, 255, 255, 0.85);
+  }
+
+  /* ================================
+     الوضع الليلي
+  ================================= */
+
+  html.dr-dark {
+    --dr-bg: #0f172a;
+    --dr-card: #1e293b;
+    --dr-text: #f8fafc;
+    --dr-text-secondary: #cbd5e1;
+    --dr-border: #334155;
+    --dr-input: #0f172a;
+    --dr-shadow: rgba(0, 0, 0, 0.35);
+    --dr-overlay: rgba(15, 23, 42, 0.9);
+  }
+
+  /* خلفية الموقع */
+
+  html.dr-dark body {
+    background-color: var(--dr-bg) !important;
+    color: var(--dr-text) !important;
+  }
+
+  /* النصوص */
+
+  html.dr-dark h1,
+  html.dr-dark h2,
+  html.dr-dark h3,
+  html.dr-dark h4,
+  html.dr-dark h5,
+  html.dr-dark h6,
+  html.dr-dark p,
+  html.dr-dark span,
+  html.dr-dark label,
+  html.dr-dark li {
+    color: var(--dr-text);
+  }
+
+  /* الكروت والأقسام */
+
+  html.dr-dark .card,
+  html.dr-dark .lesson-card,
+  html.dr-dark .subject-card,
+  html.dr-dark .unit-card,
+  html.dr-dark .quiz-card,
+  html.dr-dark .modal-content,
+  html.dr-dark .container-card,
+  html.dr-dark .box,
+  html.dr-dark section {
+    background-color: var(--dr-card);
+    border-color: var(--dr-border);
+    color: var(--dr-text);
+    box-shadow: 0 4px 18px var(--dr-shadow);
+  }
+
+  /* الحقول */
+
+  html.dr-dark input,
+  html.dr-dark textarea,
+  html.dr-dark select {
+    background-color: var(--dr-input) !important;
+    color: var(--dr-text) !important;
+    border-color: var(--dr-border) !important;
+  }
+
+  html.dr-dark input::placeholder,
+  html.dr-dark textarea::placeholder {
+    color: var(--dr-text-secondary);
+  }
+
+  /* الروابط */
+
+  html.dr-dark a {
+    color: #60a5fa;
+  }
+
+  /* الجداول */
+
+  html.dr-dark table {
+    background-color: var(--dr-card);
+    color: var(--dr-text);
+  }
+
+  html.dr-dark th,
+  html.dr-dark td {
+    border-color: var(--dr-border);
+    color: var(--dr-text);
+  }
+
+  /* ================================
+     زر تبديل الوضع
+  ================================= */
+
+  #dr-theme-toggle {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+
+    width: 48px;
+    height: 48px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: var(--dr-card);
+    color: var(--dr-text);
+
+    box-shadow: 0 4px 15px var(--dr-shadow);
+
+    cursor: pointer;
+
+    z-index: 99999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 22px;
+
+    transition:
+      transform 0.2s ease,
+      background 0.25s ease,
+      color 0.25s ease;
+  }
+
+  #dr-theme-toggle:hover {
+    transform: scale(1.08);
+  }
+
+  #dr-theme-toggle:active {
+    transform: scale(0.95);
+  }
+
+  /* الموبايل */
+
+  @media (max-width: 600px) {
+
+    #dr-theme-toggle {
+      width: 42px;
+      height: 42px;
+
+      top: 12px;
+      left: 12px;
+
+      font-size: 19px;
+    }
+
+  }
+
+  /* انتقال ناعم */
+
+  body,
+  .card,
+  .lesson-card,
+  .subject-card,
+  .unit-card,
+  .quiz-card,
+  input,
+  textarea,
+  select,
+  section {
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+</style>
+
+<script>
+(function () {
+
+  /* =========================================
+     DrNotes Theme System
+  ========================================= */
+
+  const STORAGE_KEY = "drnotes_theme";
+
+  function getSavedTheme() {
+
+    try {
+
+      return localStorage.getItem(STORAGE_KEY);
+
+    } catch (error) {
+
+      return null;
+
+    }
+
+  }
+
+  function saveTheme(theme) {
+
+    try {
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        theme
+      );
+
+    } catch (error) {}
+
+  }
+
+  function getSystemTheme() {
+
+    return window.matchMedia &&
+      window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches
+        ? "dark"
+        : "light";
+
+  }
+
+  function applyTheme(theme) {
+
+    const html =
+      document.documentElement;
+
+    if (theme === "dark") {
+
+      html.classList.add("dr-dark");
+
+    } else {
+
+      html.classList.remove("dr-dark");
+
+    }
+
+    updateThemeButton();
+
+  }
+
+  function updateThemeButton() {
+
+    const button =
+      document.getElementById(
+        "dr-theme-toggle"
+      );
+
+    if (!button) return;
+
+    const isDark =
+      document.documentElement
+        .classList
+        .contains("dr-dark");
+
+    if (isDark) {
+
+      button.innerHTML = "☀️";
+
+      button.setAttribute(
+        "aria-label",
+        "تفعيل الوضع الصباحي"
+      );
+
+      button.setAttribute(
+        "title",
+        "الوضع الصباحي"
+      );
+
+    } else {
+
+      button.innerHTML = "🌙";
+
+      button.setAttribute(
+        "aria-label",
+        "تفعيل الوضع الليلي"
+      );
+
+      button.setAttribute(
+        "title",
+        "الوضع الليلي"
+      );
+
+    }
+
+  }
+
+  function toggleTheme() {
+
+    const isDark =
+      document.documentElement
+        .classList
+        .contains("dr-dark");
+
+    const newTheme =
+      isDark
+        ? "light"
+        : "dark";
+
+    applyTheme(newTheme);
+
+    saveTheme(newTheme);
+
+  }
+
+  /* =========================================
+     تطبيق الوضع قبل ظهور الصفحة
+  ========================================= */
+
+  const savedTheme =
+    getSavedTheme();
+
+  const initialTheme =
+    savedTheme ||
+    getSystemTheme();
+
+  applyTheme(initialTheme);
+
+  /* =========================================
+     إنشاء زر الوضع
+  ========================================= */
+
+  function createThemeButton() {
+
+    if (
+      document.getElementById(
+        "dr-theme-toggle"
+      )
+    ) {
+      return;
+    }
+
+    const button =
+      document.createElement("button");
+
+    button.id =
+      "dr-theme-toggle";
+
+    button.type =
+      "button";
+
+    button.innerHTML =
+      initialTheme === "dark"
+        ? "☀️"
+        : "🌙";
+
+    button.addEventListener(
+      "click",
+      toggleTheme
+    );
+
+    document.body.appendChild(
+      button
+    );
+
+    updateThemeButton();
+
+  }
+
+  /* =========================================
+     تشغيل بعد تحميل Body
+  ========================================= */
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      createThemeButton
+    );
+
+  } else {
+
+    createThemeButton();
+
+  }
+
+})();
+</script>
+  
 </body>
   </html>
