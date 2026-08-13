@@ -22,7 +22,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- =========================================================
+  <!-- ================ل=========================================
        Font Awesome
        ========================================================= -->
   <link
@@ -2750,616 +2750,426 @@
     });
 
 
-    /* =========================================================
-       AUTHENTICATION
-       ========================================================= */
+  /* =========================================================
+   AUTHENTICATION LOGIC - PostgreSQL API
+   ========================================================= */
 
-    function initializeAuthentication() {
+function initializeAuthentication() {
+  const token = localStorage.getItem("drnotes_token");
+  const savedUser = localStorage.getItem("drnotes_user");
 
-      if (!firebaseReady) {
-        updateAuthUI(null);
-        return;
-      }
+  if (token && savedUser) {
+    try {
+      currentUser = JSON.parse(savedUser);
+      updateAuthUI(currentUser);
+      loadUserProgress();
+      updateDashboard();
+    } catch (error) {
+      console.error("Saved user error:", error);
+      logout();
+    }
+  } else {
+    currentUser = null;
+    updateAuthUI(null);
+  }
+}
 
-      firebase.auth().onAuthStateChanged(async (user) => {
+function updateAuthUI(user) {
+  const authButtons = document.getElementById("auth-buttons");
+  const userProfile = document.getElementById("user-profile");
+  const userName = document.getElementById("user-name");
+  const userAvatar = document.getElementById("user-avatar");
+  const dashboard = document.getElementById("dashboard-section");
 
-        currentUser = user || null;
+  if (!authButtons || !userProfile || !dashboard) return;
 
-        updateAuthUI(currentUser);
+  if (user) {
+    authButtons.style.display = "none";
+    userProfile.style.display = "flex";
 
-        if (currentUser) {
+    const displayName = user.name || user.email || "الطالب";
 
-          closeAuth();
-
-          await loadUserProgress();
-
-          updateDashboard();
-
-          showToast(
-            `مرحبًا بك ${currentUser.displayName || currentUser.email}`,
-            "success"
-          );
-
-        } else {
-
-          userProgress = {
-            subjects: {},
-            completedLessons: [],
-            quizResults: {},
-            favorites: [],
-            lastLesson: null
-          };
-
-          updateDashboard();
-        }
-
-      });
-
+    if (userName) {
+      userName.textContent = displayName;
     }
 
-
-    function updateAuthUI(user) {
-
-      const authButtons =
-        document.getElementById("auth-buttons");
-
-      const userProfile =
-        document.getElementById("user-profile");
-
-      const userName =
-        document.getElementById("user-name");
-
-      const userAvatar =
-        document.getElementById("user-avatar");
-
-      const dashboard =
-        document.getElementById("dashboard-section");
-
-      if (user) {
-
-        authButtons.style.display = "none";
-
-        userProfile.style.display = "flex";
-
-        const displayName =
-          user.displayName ||
-          user.email ||
-          "الطالب";
-
-        userName.textContent = displayName;
-
-        userAvatar.textContent =
-          displayName.charAt(0).toUpperCase();
-
-        dashboard.classList.remove("hidden");
-
-        document.getElementById("dashboard-welcome").textContent =
-          `مرحبًا ${displayName}، واصل رحلتك التعليمية.`;
-
-      } else {
-
-        authButtons.style.display = "flex";
-
-        userProfile.style.display = "none";
-
-        dashboard.classList.add("hidden");
-
-      }
-
+    if (userAvatar) {
+      userAvatar.textContent = displayName.charAt(0).toUpperCase();
     }
 
+    dashboard.classList.remove("hidden");
 
-    function openAuth(mode = "login") {
+    const welcome = document.getElementById("dashboard-welcome");
 
-      const overlay =
-        document.getElementById("auth-overlay");
-
-      overlay.style.display = "flex";
-
-      switchAuthMode(mode);
-
-      setTimeout(() => {
-
-        const email =
-          document.getElementById("auth-email");
-
-        if (email) email.focus();
-
-      }, 100);
-
+    if (welcome) {
+      welcome.textContent =
+        `مرحبًا ${displayName}، واصل رحلتك التعليمية.`;
     }
 
+  } else {
+    authButtons.style.display = "flex";
+    userProfile.style.display = "none";
+    dashboard.classList.add("hidden");
+  }
+}
 
-    function closeAuth() {
+function openAuth(mode = "login") {
+  const overlay = document.getElementById("auth-overlay");
 
-      document.getElementById("auth-overlay").style.display =
-        "none";
+  if (!overlay) return;
 
+  overlay.style.display = "flex";
+
+  switchAuthMode(mode);
+
+  setTimeout(() => {
+    const email = document.getElementById("auth-email");
+
+    if (email) {
+      email.focus();
+    }
+  }, 100);
+}
+
+function closeAuth() {
+  const overlay = document.getElementById("auth-overlay");
+
+  if (overlay) {
+    overlay.style.display = "none";
+  }
+}
+
+function switchAuthMode(mode) {
+  authMode = mode;
+
+  const loginTab = document.getElementById("login-tab");
+  const registerTab = document.getElementById("register-tab");
+  const registerFields = document.getElementById("register-fields");
+  const confirmGroup = document.getElementById("confirm-password-group");
+  const title = document.getElementById("auth-title");
+  const subtitle = document.getElementById("auth-subtitle");
+  const submit = document.getElementById("auth-submit-btn");
+
+  if (mode === "login") {
+
+    loginTab.classList.add("active");
+    registerTab.classList.remove("active");
+
+    registerFields.style.display = "none";
+    confirmGroup.style.display = "none";
+
+    title.textContent = "تسجيل الدخول";
+    subtitle.textContent = "سجل دخولك لمتابعة تقدمك.";
+
+    submit.textContent = "تسجيل الدخول";
+
+  } else {
+
+    loginTab.classList.remove("active");
+    registerTab.classList.add("active");
+
+    registerFields.style.display = "block";
+    confirmGroup.style.display = "block";
+
+    title.textContent = "إنشاء حساب جديد";
+    subtitle.textContent = "أنشئ حسابك وابدأ رحلة التعلم.";
+
+    submit.textContent = "إنشاء الحساب";
+  }
+}
+
+async function handleAuthSubmit(event) {
+  event.preventDefault();
+
+  if (isSubmittingAuth) return;
+
+  const email =
+    document.getElementById("auth-email").value.trim().toLowerCase();
+
+  const password =
+    document.getElementById("auth-password").value;
+
+  if (!email || !password) {
+    showToast(
+      "يرجى إدخال البريد الإلكتروني وكلمة المرور.",
+      "warning"
+    );
+    return;
+  }
+
+  if (authMode === "register") {
+
+    const name =
+      document.getElementById("auth-name").value.trim();
+
+    const grade =
+      document.getElementById("auth-grade").value;
+
+    const confirmPassword =
+      document.getElementById("auth-confirm-password").value;
+
+    if (!name) {
+      showToast("يرجى إدخال الاسم الكامل.", "warning");
+      return;
     }
 
-
-    document.getElementById("auth-overlay")
-      .addEventListener("click", function(event) {
-
-        if (event.target === this) {
-          closeAuth();
-        }
-
-      });
-
-
-    function switchAuthMode(mode) {
-
-      authMode = mode;
-
-      const loginTab =
-        document.getElementById("login-tab");
-
-      const registerTab =
-        document.getElementById("register-tab");
-
-      const registerFields =
-        document.getElementById("register-fields");
-
-      const confirmGroup =
-        document.getElementById("confirm-password-group");
-
-      const title =
-        document.getElementById("auth-title");
-
-      const subtitle =
-        document.getElementById("auth-subtitle");
-
-      const submit =
-        document.getElementById("auth-submit-btn");
-
-      if (mode === "login") {
-
-        loginTab.classList.add("active");
-        registerTab.classList.remove("active");
-
-        registerFields.style.display = "none";
-        confirmGroup.style.display = "none";
-
-        title.textContent = "تسجيل الدخول";
-
-        subtitle.textContent =
-          "سجل دخولك لمتابعة تقدمك.";
-
-        submit.textContent = "تسجيل الدخول";
-
-      } else {
-
-        loginTab.classList.remove("active");
-        registerTab.classList.add("active");
-
-        registerFields.style.display = "block";
-        confirmGroup.style.display = "block";
-
-        title.textContent = "إنشاء حساب جديد";
-
-        subtitle.textContent =
-          "أنشئ حسابك وابدأ رحلة التعلم.";
-
-        submit.textContent = "إنشاء الحساب";
-
-      }
-
+    if (!grade) {
+      showToast("يرجى اختيار الصف الدراسي.", "warning");
+      return;
     }
 
-
-    async function handleAuthSubmit(event) {
-
-      event.preventDefault();
-
-      if (isSubmittingAuth) return;
-
-      if (!firebaseReady) {
-
-        showToast(
-          "خدمة تسجيل الدخول غير متاحة حاليًا.",
-          "error"
-        );
-
-        return;
-      }
-
-      const email =
-        document.getElementById("auth-email").value.trim();
-
-      const password =
-        document.getElementById("auth-password").value;
-
-      if (!email || !password) {
-
-        showToast(
-          "يرجى إدخال البريد الإلكتروني وكلمة المرور.",
-          "warning"
-        );
-
-        return;
-      }
-
-      if (authMode === "register") {
-
-        const name =
-          document.getElementById("auth-name").value.trim();
-
-        const grade =
-          document.getElementById("auth-grade").value;
-
-        const phone =
-          document.getElementById("auth-phone").value.trim();
-
-        const confirmPassword =
-          document.getElementById("auth-confirm-password").value;
-
-        if (!name) {
-
-          showToast(
-            "يرجى إدخال الاسم الكامل.",
-            "warning"
-          );
-
-          return;
-        }
-
-        if (!grade) {
-
-          showToast(
-            "يرجى اختيار الصف الدراسي.",
-            "warning"
-          );
-
-          return;
-        }
-
-        if (password.length < 6) {
-
-          showToast(
-            "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
-            "warning"
-          );
-
-          return;
-        }
-
-        if (password !== confirmPassword) {
-
-          showToast(
-            "كلمتا المرور غير متطابقتين.",
-            "error"
-          );
-
-          return;
-        }
-
-        await registerWithEmail(
-          name,
-          email,
-          password,
-          grade,
-          phone
-        );
-
-      } else {
-
-        await loginWithEmail(
-          email,
-          password
-        );
-
-      }
-
-    }
-
-
-    async function loginWithEmail(
-      providedEmail = null,
-      providedPassword = null
-    ) {
-
-      if (!firebaseReady) {
-
-        showToast(
-          "خدمة تسجيل الدخول غير متاحة حاليًا.",
-          "error"
-        );
-
-        return;
-      }
-
-      const email =
-        providedEmail ??
-        document.getElementById("auth-email").value.trim();
-
-      const password =
-        providedPassword ??
-        document.getElementById("auth-password").value;
-
-      if (!email || !password) {
-
-        showToast(
-          "يرجى إدخال البريد الإلكتروني وكلمة المرور.",
-          "warning"
-        );
-
-        return;
-      }
-
-      setAuthLoading(true, "جاري تسجيل الدخول...");
-
-      try {
-
-        await firebase.auth()
-          .signInWithEmailAndPassword(
-            email,
-            password
-          );
-
-        showToast(
-          "تم تسجيل الدخول بنجاح.",
-          "success"
-        );
-
-      } catch (error) {
-
-        handleFirebaseAuthError(error);
-
-      } finally {
-
-        setAuthLoading(false);
-
-      }
-
-    }
-
-
-    async function registerWithEmail(
-      name = null,
-      email = null,
-      password = null,
-      grade = null,
-      phone = null
-    ) {
-
-      if (!firebaseReady) {
-
-        showToast(
-          "خدمة إنشاء الحساب غير متاحة حاليًا.",
-          "error"
-        );
-
-        return;
-      }
-
-      if (name === null) {
-        name =
-          document.getElementById("auth-name").value.trim();
-
-        email =
-          document.getElementById("auth-email").value.trim();
-
-        password =
-          document.getElementById("auth-password").value;
-
-        grade =
-          document.getElementById("auth-grade").value;
-
-        phone =
-          document.getElementById("auth-phone").value.trim();
-      }
-
-      setAuthLoading(true, "جاري إنشاء الحساب...");
-
-      try {
-
-        const credential =
-          await firebase.auth()
-            .createUserWithEmailAndPassword(
-              email,
-              password
-            );
-
-        const user =
-          credential.user;
-
-        if (user && name) {
-
-          await user.updateProfile({
-            displayName: name
-          });
-
-        }
-
-        /*
-          حفظ البيانات الإضافية في Backend عند توفره.
-        */
-
-        await saveProfileToBackend({
-          name,
-          email,
-          grade,
-          phone
-        });
-
-        showToast(
-          "تم إنشاء الحساب بنجاح.",
-          "success"
-        );
-
-        switchAuthMode("login");
-
-      } catch (error) {
-
-        handleFirebaseAuthError(error);
-
-      } finally {
-
-        setAuthLoading(false);
-
-      }
-
-    }
-
-
-    async function loginWithGoogle() {
-
-      if (!firebaseReady) {
-
-        showToast(
-          "خدمة Google غير متاحة حاليًا.",
-          "error"
-        );
-
-        return;
-      }
-
-      setAuthLoading(true, "جاري تسجيل الدخول بواسطة Google...");
-
-      try {
-
-        const provider =
-          new firebase.auth.GoogleAuthProvider();
-
-        await firebase.auth()
-          .signInWithPopup(provider);
-
-        showToast(
-          "تم تسجيل الدخول بنجاح.",
-          "success"
-        );
-
-      } catch (error) {
-
-        handleFirebaseAuthError(error);
-
-      } finally {
-
-        setAuthLoading(false);
-
-      }
-
-    }
-
-
-    async function logout() {
-
-      try {
-
-        if (firebaseReady) {
-          await firebase.auth().signOut();
-        }
-
-        currentUser = null;
-
-        updateAuthUI(null);
-
-        showHome();
-
-        showToast(
-          "تم تسجيل الخروج بنجاح.",
-          "success"
-        );
-
-      } catch (error) {
-
-        console.error(error);
-
-        showToast(
-          "تعذر تسجيل الخروج، حاول مرة أخرى.",
-          "error"
-        );
-
-      }
-
-    }
-
-
-    function handleFirebaseAuthError(error) {
-
-      console.error(error);
-
-      const code =
-        error && error.code
-          ? error.code
-          : "";
-
-      const messages = {
-
-        "auth/user-not-found":
-          "لا يوجد حساب بهذا البريد الإلكتروني.",
-
-        "auth/wrong-password":
-          "كلمة المرور غير صحيحة.",
-
-        "auth/invalid-credential":
-          "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
-
-        "auth/email-already-in-use":
-          "البريد الإلكتروني مستخدم بالفعل.",
-
-        "auth/invalid-email":
-          "البريد الإلكتروني غير صحيح.",
-
-        "auth/weak-password":
-          "كلمة المرور ضعيفة. استخدم كلمة مرور أقوى.",
-
-        "auth/popup-closed-by-user":
-          "تم إغلاق نافذة تسجيل الدخول.",
-
-        "auth/popup-blocked":
-          "المتصفح منع نافذة تسجيل الدخول. اسمح بالنوافذ المنبثقة.",
-
-        "auth/network-request-failed":
-          "حدث خطأ في الاتصال بالإنترنت."
-
-      };
-
+    if (password.length < 6) {
       showToast(
-        messages[code] ||
-        "حدث خطأ أثناء عملية تسجيل الدخول.",
+        "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
+        "warning"
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showToast(
+        "كلمتا المرور غير متطابقتين.",
         "error"
       );
-
+      return;
     }
 
+    await registerWithAPI(
+      name,
+      email,
+      password,
+      grade
+    );
 
-    function setAuthLoading(
-      loading,
-      text = "جاري التنفيذ..."
-    ) {
+  } else {
 
-      isSubmittingAuth = loading;
+    await loginWithAPI(
+      email,
+      password
+    );
+  }
+}
 
-      const button =
-        document.getElementById("auth-submit-btn");
+async function loginWithAPI(email, password) {
 
-      if (!button) return;
+  setAuthLoading(true, "جاري تسجيل الدخول...");
 
-      if (loading) {
+  try {
 
-        button.disabled = true;
+    const response = await fetch(
+      `${API_BASE_URL}/auth/login`,
+      {
+        method: "POST",
 
-        button.innerHTML = `
-          <span class="loading">
-            <span class="spinner"></span>
-            ${text}
-          </span>
-        `;
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-      } else {
-
-        button.disabled = false;
-
-        button.textContent =
-          authMode === "login"
-            ? "تسجيل الدخول"
-            : "إنشاء الحساب";
-
+        body: JSON.stringify({
+          email,
+          password
+        })
       }
+    );
 
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "فشل تسجيل الدخول."
+      );
     }
+
+    localStorage.setItem(
+      "drnotes_token",
+      data.token
+    );
+
+    localStorage.setItem(
+      "drnotes_user",
+      JSON.stringify(data.user)
+    );
+
+    currentUser = data.user;
+
+    updateAuthUI(currentUser);
+
+    await loadUserProgress();
+
+    updateDashboard();
+
+    closeAuth();
+
+    showToast(
+      "تم تسجيل الدخول بنجاح.",
+      "success"
+    );
+
+  } catch (error) {
+
+    console.error("Login error:", error);
+
+    showToast(
+      error.message || "حدث خطأ أثناء تسجيل الدخول.",
+      "error"
+    );
+
+  } finally {
+
+    setAuthLoading(false);
+  }
+}
+
+async function registerWithAPI(
+  name,
+  email,
+  password,
+  grade
+) {
+
+  setAuthLoading(true, "جاري إنشاء الحساب...");
+
+  try {
+
+    const response = await fetch(
+      `${API_BASE_URL}/auth/register`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          name,
+          email,
+          grade,
+          password
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "فشل إنشاء الحساب."
+      );
+    }
+
+    localStorage.setItem(
+      "drnotes_token",
+      data.token
+    );
+
+    localStorage.setItem(
+      "drnotes_user",
+      JSON.stringify(data.user)
+    );
+
+    currentUser = data.user;
+
+    updateAuthUI(currentUser);
+
+    await loadUserProgress();
+
+    updateDashboard();
+
+    closeAuth();
+
+    showToast(
+      "تم إنشاء الحساب بنجاح!",
+      "success"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Registration error:",
+      error
+    );
+
+    showToast(
+      error.message ||
+      "حدث خطأ أثناء إنشاء الحساب.",
+      "error"
+    );
+
+  } finally {
+
+    setAuthLoading(false);
+  }
+}
+
+function loginWithGoogle() {
+  showToast(
+    "تسجيل الدخول بواسطة Google غير مفعّل حاليًا. استخدم البريد الإلكتروني وكلمة المرور.",
+    "warning"
+  );
+}
+
+function logout() {
+
+  localStorage.removeItem("drnotes_token");
+  localStorage.removeItem("drnotes_user");
+
+  currentUser = null;
+
+  userProgress = {
+    subjects: {},
+    completedLessons: [],
+    quizResults: {},
+    favorites: [],
+    lastLesson: null
+  };
+
+  updateAuthUI(null);
+
+  showHome();
+
+  showToast(
+    "تم تسجيل الخروج بنجاح.",
+    "success"
+  );
+}
+
+function setAuthLoading(
+  isLoading,
+  text = "جاري التحميل..."
+) {
+
+  isSubmittingAuth = isLoading;
+
+  const submitBtn =
+    document.getElementById("auth-submit-btn");
+
+  if (!submitBtn) return;
+
+  if (isLoading) {
+
+    submitBtn.disabled = true;
+
+    submitBtn.innerHTML =
+      `<span class="loading">
+        <span class="spinner"></span>
+        ${text}
+      </span>`;
+
+  } else {
+
+    submitBtn.disabled = false;
+
+    submitBtn.textContent =
+      authMode === "login"
+        ? "تسجيل الدخول"
+        : "إنشاء الحساب";
+  }
+  }  
+        
+        
+          
+
+      
 
 
     /* =========================================================
