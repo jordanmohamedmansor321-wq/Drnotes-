@@ -36,6 +36,10 @@ app.use(express.urlencoded({ extended: true }));
 async function initializeDatabase() {
   try {
 
+    // -----------------------------------------------------
+    // USERS
+    // -----------------------------------------------------
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -47,6 +51,10 @@ async function initializeDatabase() {
       );
     `);
 
+    // -----------------------------------------------------
+    // SUBJECTS
+    // -----------------------------------------------------
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS subjects (
         id SERIAL PRIMARY KEY,
@@ -56,6 +64,10 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // -----------------------------------------------------
+    // UNITS
+    // -----------------------------------------------------
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS units (
@@ -70,6 +82,10 @@ async function initializeDatabase() {
       );
     `);
 
+    // -----------------------------------------------------
+    // LESSONS
+    // -----------------------------------------------------
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lessons (
         id SERIAL PRIMARY KEY,
@@ -83,36 +99,81 @@ async function initializeDatabase() {
       );
     `);
 
+    // -----------------------------------------------------
+    // LESSON CONTENT
+    // شرح الدرس
+    // -----------------------------------------------------
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lesson_content (
         id SERIAL PRIMARY KEY,
+
         lesson_id INTEGER UNIQUE NOT NULL
           REFERENCES lessons(id)
           ON DELETE CASCADE,
+
         video_url TEXT,
         pdf_url TEXT,
         explanation TEXT,
+
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
+    // -----------------------------------------------------
+    // LESSON SOLUTION
+    // حل الدرس
+    // فيديو + PDF
+    // -----------------------------------------------------
+
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS quizzes (
+      CREATE TABLE IF NOT EXISTS lesson_solution (
         id SERIAL PRIMARY KEY,
+
         lesson_id INTEGER UNIQUE NOT NULL
           REFERENCES lessons(id)
           ON DELETE CASCADE,
+
+        video_url TEXT,
+        pdf_url TEXT,
+        explanation TEXT,
+
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // -----------------------------------------------------
+    // QUIZZES
+    // -----------------------------------------------------
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS quizzes (
+        id SERIAL PRIMARY KEY,
+
+        lesson_id INTEGER UNIQUE NOT NULL
+          REFERENCES lessons(id)
+          ON DELETE CASCADE,
+
         title VARCHAR(200) NOT NULL,
+
         description TEXT,
+
         passing_percentage INTEGER DEFAULT 50,
+
         questions_per_page INTEGER DEFAULT 10,
+
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
+    // -----------------------------------------------------
+    // QUIZ QUESTIONS
+    // -----------------------------------------------------
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_questions (
         id SERIAL PRIMARY KEY,
+
         quiz_id INTEGER NOT NULL
           REFERENCES quizzes(id)
           ON DELETE CASCADE,
@@ -125,7 +186,9 @@ async function initializeDatabase() {
         option_d TEXT NOT NULL,
 
         correct_answer VARCHAR(1) NOT NULL
-          CHECK (correct_answer IN ('A', 'B', 'C', 'D')),
+          CHECK (
+            correct_answer IN ('A', 'B', 'C', 'D')
+          ),
 
         explanation TEXT,
 
@@ -134,6 +197,10 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    // -----------------------------------------------------
+    // QUIZ ATTEMPTS
+    // -----------------------------------------------------
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_attempts (
@@ -171,6 +238,10 @@ async function initializeDatabase() {
         UNIQUE(user_id, quiz_id)
       );
     `);
+
+    // -----------------------------------------------------
+    // QUIZ ANSWERS
+    // -----------------------------------------------------
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_answers (
@@ -1625,12 +1696,23 @@ app.get(
             l.name,
             l.description,
             l.lesson_order,
-            lc.video_url,
-            lc.pdf_url,
-            lc.explanation
+
+            lc.video_url AS explanation_video_url,
+            lc.pdf_url AS explanation_pdf_url,
+            lc.explanation AS explanation_text,
+
+            ls.video_url AS solution_video_url,
+            ls.pdf_url AS solution_pdf_url,
+            ls.explanation AS solution_text
+
           FROM lessons l
+
           LEFT JOIN lesson_content lc
             ON lc.lesson_id = l.id
+
+          LEFT JOIN lesson_solution ls
+            ON ls.lesson_id = l.id
+
           WHERE l.id = $1
           `,
           [lessonId]
@@ -1700,7 +1782,8 @@ app.get(
 );
 
 // =========================================================
-// ADMIN - LESSON CONTENT
+// ADMIN - SAVE LESSON CONTENT
+// شرح الدرس
 // =========================================================
 
 app.post(
@@ -1712,6 +1795,19 @@ app.post(
 
       const lessonId =
         Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف الدرس غير صحيح."
+
+        });
+
+      }
 
       const {
         video_url,
@@ -1753,6 +1849,9 @@ app.post(
 
         success: true,
 
+        message:
+          "تم حفظ شرح الدرس بنجاح.",
+
         content:
           result.rows[0]
 
@@ -1771,6 +1870,189 @@ app.post(
 
         message:
           "تعذر حفظ محتوى الدرس."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - SAVE LESSON SOLUTION
+// حل الدرس: فيديو + PDF
+// =========================================================
+
+app.post(
+  "/api/admin/lessons/:lessonId/solution",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف الدرس غير صحيح."
+
+        });
+
+      }
+
+      const {
+        video_url,
+        pdf_url,
+        explanation
+      } = req.body;
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO lesson_solution
+          (
+            lesson_id,
+            video_url,
+            pdf_url,
+            explanation
+          )
+
+          VALUES ($1, $2, $3, $4)
+
+          ON CONFLICT (lesson_id)
+
+          DO UPDATE SET
+            video_url = EXCLUDED.video_url,
+            pdf_url = EXCLUDED.pdf_url,
+            explanation = EXCLUDED.explanation,
+            updated_at = CURRENT_TIMESTAMP
+
+          RETURNING *
+          `,
+          [
+            lessonId,
+            video_url || null,
+            pdf_url || null,
+            explanation || null
+          ]
+        );
+
+      res.json({
+
+        success: true,
+
+        message:
+          "تم حفظ حل الدرس بنجاح.",
+
+        solution:
+          result.rows[0]
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Lesson solution error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر حفظ حل الدرس."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - GET LESSON CONTENT
+// =========================================================
+
+app.get(
+  "/api/admin/lessons/:lessonId/content",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            l.id,
+            l.name,
+
+            lc.video_url AS explanation_video_url,
+            lc.pdf_url AS explanation_pdf_url,
+            lc.explanation AS explanation_text,
+
+            ls.video_url AS solution_video_url,
+            ls.pdf_url AS solution_pdf_url,
+            ls.explanation AS solution_text
+
+          FROM lessons l
+
+          LEFT JOIN lesson_content lc
+            ON lc.lesson_id = l.id
+
+          LEFT JOIN lesson_solution ls
+            ON ls.lesson_id = l.id
+
+          WHERE l.id = $1
+          `,
+          [lessonId]
+        );
+
+      if (result.rows.length === 0) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "الدرس غير موجود."
+
+        });
+
+      }
+
+      res.json({
+
+        success: true,
+
+        content:
+          result.rows[0]
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get admin lesson content error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل محتوى الدرس."
 
       });
 
@@ -1857,6 +2139,9 @@ app.post(
       res.status(201).json({
 
         success: true,
+
+        message:
+          "تم إنشاء أو تحديث الاختبار بنجاح.",
 
         quiz:
           result.rows[0]
@@ -1970,6 +2255,9 @@ app.post(
 
         success: true,
 
+        message:
+          "تمت إضافة السؤال بنجاح.",
+
         question:
           result.rows[0]
 
@@ -2060,7 +2348,10 @@ app.post(
 
       }
 
-      // الطالب له محاولة واحدة فقط
+      // -----------------------------------------------------
+      // محاولة واحدة فقط
+      // -----------------------------------------------------
+
       const existingAttempt =
         await client.query(
           `
@@ -2321,7 +2612,6 @@ app.post(
       const attempt =
         attemptResult.rows[0];
 
-      // لا يمكن إرسال الاختبار مرة ثانية
       if (
         attempt.status !== "started"
       ) {
@@ -2352,8 +2642,11 @@ app.post(
             correct_answer,
             explanation,
             question_order
+
           FROM quiz_questions
+
           WHERE quiz_id = $1
+
           ORDER BY question_order ASC, id ASC
           `,
           [attempt.quiz_id]
@@ -2377,10 +2670,6 @@ app.post(
 
       }
 
-      // =====================================================
-      // يجب إرسال كل الأسئلة
-      // =====================================================
-
       if (answers.length !== questions.length) {
 
         await client.query("ROLLBACK");
@@ -2402,11 +2691,8 @@ app.post(
 
       }
 
-      // =====================================================
-      // تجهيز الإجابات
-      // =====================================================
-
-      const answerMap = new Map();
+      const answerMap =
+        new Map();
 
       for (const item of answers) {
 
@@ -2458,10 +2744,6 @@ app.post(
 
       }
 
-      // =====================================================
-      // التأكد أن كل الأسئلة موجودة
-      // =====================================================
-
       for (const question of questions) {
 
         if (!answerMap.has(question.id)) {
@@ -2480,10 +2762,6 @@ app.post(
         }
 
       }
-
-      // =====================================================
-      // التصحيح
-      // =====================================================
 
       let score = 0;
 
@@ -2511,15 +2789,19 @@ app.post(
             selected_answer,
             is_correct
           )
+
           VALUES ($1, $2, $3, $4)
 
-          ON CONFLICT (attempt_id, question_id)
+          ON CONFLICT
+          (attempt_id, question_id)
 
           DO UPDATE SET
             selected_answer =
               EXCLUDED.selected_answer,
+
             is_correct =
               EXCLUDED.is_correct,
+
             answered_at =
               CURRENT_TIMESTAMP
           `,
@@ -2560,10 +2842,6 @@ app.post(
 
       }
 
-      // =====================================================
-      // النتيجة
-      // =====================================================
-
       const totalQuestions =
         questions.length;
 
@@ -2581,21 +2859,28 @@ app.post(
       const passed =
         percentage >= passingPercentage;
 
-      // =====================================================
-      // إنهاء المحاولة
-      // =====================================================
-
       await client.query(
         `
         UPDATE quiz_attempts
 
         SET
-          finished_at = CURRENT_TIMESTAMP,
-          score = $1,
-          total_questions = $2,
-          percentage = $3,
-          passed = $4,
-          status = 'finished'
+          finished_at =
+            CURRENT_TIMESTAMP,
+
+          score =
+            $1,
+
+          total_questions =
+            $2,
+
+          percentage =
+            $3,
+
+          passed =
+            $4,
+
+          status =
+            'finished'
 
         WHERE id = $5
         `,
@@ -3067,6 +3352,166 @@ app.get(
 
         message:
           "تعذر تحميل الاختبارات."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - DELETE QUESTION
+// =========================================================
+
+app.delete(
+  "/api/admin/quizzes/questions/:questionId",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const questionId =
+        Number(req.params.questionId);
+
+      if (!Number.isInteger(questionId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف السؤال غير صحيح."
+
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          DELETE FROM quiz_questions
+          WHERE id = $1
+          RETURNING id
+          `,
+          [questionId]
+        );
+
+      if (result.rows.length === 0) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "السؤال غير موجود."
+
+        });
+
+      }
+
+      res.json({
+
+        success: true,
+
+        message:
+          "تم حذف السؤال بنجاح."
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Delete question error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر حذف السؤال."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - DELETE QUIZ
+// =========================================================
+
+app.delete(
+  "/api/admin/quizzes/:quizId",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const quizId =
+        Number(req.params.quizId);
+
+      if (!Number.isInteger(quizId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف الاختبار غير صحيح."
+
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          DELETE FROM quizzes
+          WHERE id = $1
+          RETURNING id
+          `,
+          [quizId]
+        );
+
+      if (result.rows.length === 0) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "الاختبار غير موجود."
+
+        });
+
+      }
+
+      res.json({
+
+        success: true,
+
+        message:
+          "تم حذف الاختبار بنجاح."
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Delete quiz error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر حذف الاختبار."
 
       });
 
