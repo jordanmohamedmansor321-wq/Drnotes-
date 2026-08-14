@@ -123,7 +123,6 @@ async function initializeDatabase() {
     // -----------------------------------------------------
     // LESSON SOLUTION
     // حل الدرس
-    // فيديو + PDF
     // -----------------------------------------------------
 
     await pool.query(`
@@ -282,7 +281,6 @@ async function initializeDatabase() {
 // =========================================================
 
 function createUserToken(user) {
-
   return jwt.sign(
     {
       id: user.id,
@@ -294,11 +292,9 @@ function createUserToken(user) {
       expiresIn: "7d"
     }
   );
-
 }
 
 function createAdminToken() {
-
   return jwt.sign(
     {
       role: "admin"
@@ -308,7 +304,6 @@ function createAdminToken() {
       expiresIn: "7d"
     }
   );
-
 }
 
 // =========================================================
@@ -1257,6 +1252,10 @@ app.delete(
 // SUBJECTS
 // =========================================================
 
+// ---------------------------------------------------------
+// GET ALL SUBJECTS
+// ---------------------------------------------------------
+
 app.get(
   "/api/subjects",
   async (req, res) => {
@@ -1306,6 +1305,324 @@ app.get(
 );
 
 // =========================================================
+// ADMIN - COMPLETE COURSE TREE
+// المواد → الوحدات → الدروس
+// =========================================================
+
+app.get(
+  "/api/admin/course-tree",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const subjectsResult =
+        await pool.query(`
+          SELECT
+            id,
+            name,
+            description,
+            image_url,
+            created_at
+          FROM subjects
+          ORDER BY id ASC
+        `);
+
+      const unitsResult =
+        await pool.query(`
+          SELECT
+            id,
+            subject_id,
+            name,
+            description,
+            unit_order,
+            created_at
+          FROM units
+          ORDER BY
+            subject_id ASC,
+            unit_order ASC,
+            id ASC
+        `);
+
+      const lessonsResult =
+        await pool.query(`
+          SELECT
+            id,
+            unit_id,
+            name,
+            description,
+            lesson_order,
+            created_at
+          FROM lessons
+          ORDER BY
+            unit_id ASC,
+            lesson_order ASC,
+            id ASC
+        `);
+
+      const unitsBySubject =
+        new Map();
+
+      for (const unit of unitsResult.rows) {
+
+        if (!unitsBySubject.has(unit.subject_id)) {
+          unitsBySubject.set(
+            unit.subject_id,
+            []
+          );
+        }
+
+        unitsBySubject
+          .get(unit.subject_id)
+          .push({
+            ...unit,
+            lessons: []
+          });
+
+      }
+
+      const lessonsByUnit =
+        new Map();
+
+      for (const lesson of lessonsResult.rows) {
+
+        if (!lessonsByUnit.has(lesson.unit_id)) {
+          lessonsByUnit.set(
+            lesson.unit_id,
+            []
+          );
+        }
+
+        lessonsByUnit
+          .get(lesson.unit_id)
+          .push(lesson);
+
+      }
+
+      const tree =
+        subjectsResult.rows.map(subject => {
+
+          const subjectUnits =
+            unitsBySubject.get(subject.id) || [];
+
+          const units =
+            subjectUnits.map(unit => {
+
+              return {
+                ...unit,
+                lessons:
+                  lessonsByUnit.get(unit.id) || []
+              };
+
+            });
+
+          return {
+            ...subject,
+            units
+          };
+
+        });
+
+      res.json({
+
+        success: true,
+
+        subjects:
+          tree
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Course tree error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل شجرة المواد والوحدات والدروس."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - GET SINGLE SUBJECT
+// المادة → الوحدات → الدروس
+// =========================================================
+
+app.get(
+  "/api/admin/subjects/:subjectId",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const subjectId =
+        Number(req.params.subjectId);
+
+      if (!Number.isInteger(subjectId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف المادة غير صحيح."
+
+        });
+
+      }
+
+      const subjectResult =
+        await pool.query(
+          `
+          SELECT
+            id,
+            name,
+            description,
+            image_url,
+            created_at
+          FROM subjects
+          WHERE id = $1
+          `,
+          [subjectId]
+        );
+
+      if (subjectResult.rows.length === 0) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "المادة غير موجودة."
+
+        });
+
+      }
+
+      const unitsResult =
+        await pool.query(
+          `
+          SELECT
+            id,
+            subject_id,
+            name,
+            description,
+            unit_order,
+            created_at
+          FROM units
+          WHERE subject_id = $1
+          ORDER BY
+            unit_order ASC,
+            id ASC
+          `,
+          [subjectId]
+        );
+
+      const unitIds =
+        unitsResult.rows.map(
+          unit => unit.id
+        );
+
+      let lessons = [];
+
+      if (unitIds.length > 0) {
+
+        const lessonsResult =
+          await pool.query(
+            `
+            SELECT
+              id,
+              unit_id,
+              name,
+              description,
+              lesson_order,
+              created_at
+            FROM lessons
+            WHERE unit_id = ANY($1::int[])
+            ORDER BY
+              unit_id ASC,
+              lesson_order ASC,
+              id ASC
+            `,
+            [unitIds]
+          );
+
+        lessons =
+          lessonsResult.rows;
+
+      }
+
+      const lessonsByUnit =
+        new Map();
+
+      for (const lesson of lessons) {
+
+        if (!lessonsByUnit.has(lesson.unit_id)) {
+          lessonsByUnit.set(
+            lesson.unit_id,
+            []
+          );
+        }
+
+        lessonsByUnit
+          .get(lesson.unit_id)
+          .push(lesson);
+
+      }
+
+      const units =
+        unitsResult.rows.map(unit => ({
+          ...unit,
+          lessons:
+            lessonsByUnit.get(unit.id) || []
+        }));
+
+      res.json({
+
+        success: true,
+
+        subject: {
+
+          ...subjectResult.rows[0],
+
+          units
+
+        }
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get admin subject error:",
+        error
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "تعذر تحميل المادة."
+
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
 // ADMIN - ADD SUBJECT
 // =========================================================
 
@@ -1322,7 +1639,7 @@ app.post(
         image_url
       } = req.body;
 
-      if (!name) {
+      if (!name || !name.trim()) {
 
         return res.status(400).json({
 
@@ -1357,6 +1674,9 @@ app.post(
       res.status(201).json({
 
         success: true,
+
+        message:
+          "تمت إضافة المادة بنجاح.",
 
         subject:
           result.rows[0]
@@ -1397,6 +1717,19 @@ app.get(
       const subjectId =
         Number(req.params.subjectId);
 
+      if (!Number.isInteger(subjectId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف المادة غير صحيح."
+
+        });
+
+      }
+
       const result =
         await pool.query(
           `
@@ -1409,7 +1742,9 @@ app.get(
             created_at
           FROM units
           WHERE subject_id = $1
-          ORDER BY unit_order ASC, id ASC
+          ORDER BY
+            unit_order ASC,
+            id ASC
           `,
           [subjectId]
         );
@@ -1462,9 +1797,13 @@ app.post(
         unit_order
       } = req.body;
 
+      const subjectId =
+        Number(subject_id);
+
       if (
-        !subject_id ||
-        !name
+        !Number.isInteger(subjectId) ||
+        !name ||
+        !name.trim()
       ) {
 
         return res.status(400).json({
@@ -1473,6 +1812,29 @@ app.post(
 
           message:
             "المادة واسم الوحدة مطلوبان."
+
+        });
+
+      }
+
+      const subjectExists =
+        await pool.query(
+          `
+          SELECT id
+          FROM subjects
+          WHERE id = $1
+          `,
+          [subjectId]
+        );
+
+      if (subjectExists.rows.length === 0) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "المادة غير موجودة."
 
         });
 
@@ -1492,7 +1854,7 @@ app.post(
           RETURNING *
           `,
           [
-            subject_id,
+            subjectId,
             name.trim(),
             description || null,
             Number(unit_order) || 0
@@ -1502,6 +1864,9 @@ app.post(
       res.status(201).json({
 
         success: true,
+
+        message:
+          "تمت إضافة الوحدة بنجاح.",
 
         unit:
           result.rows[0]
@@ -1542,6 +1907,19 @@ app.get(
       const unitId =
         Number(req.params.unitId);
 
+      if (!Number.isInteger(unitId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف الوحدة غير صحيح."
+
+        });
+
+      }
+
       const result =
         await pool.query(
           `
@@ -1554,7 +1932,9 @@ app.get(
             created_at
           FROM lessons
           WHERE unit_id = $1
-          ORDER BY lesson_order ASC, id ASC
+          ORDER BY
+            lesson_order ASC,
+            id ASC
           `,
           [unitId]
         );
@@ -1607,9 +1987,13 @@ app.post(
         lesson_order
       } = req.body;
 
+      const unitId =
+        Number(unit_id);
+
       if (
-        !unit_id ||
-        !name
+        !Number.isInteger(unitId) ||
+        !name ||
+        !name.trim()
       ) {
 
         return res.status(400).json({
@@ -1618,6 +2002,29 @@ app.post(
 
           message:
             "الوحدة واسم الدرس مطلوبان."
+
+        });
+
+      }
+
+      const unitExists =
+        await pool.query(
+          `
+          SELECT id
+          FROM units
+          WHERE id = $1
+          `,
+          [unitId]
+        );
+
+      if (unitExists.rows.length === 0) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "الوحدة غير موجودة."
 
         });
 
@@ -1637,7 +2044,7 @@ app.post(
           RETURNING *
           `,
           [
-            unit_id,
+            unitId,
             name.trim(),
             description || null,
             Number(lesson_order) || 0
@@ -1647,6 +2054,9 @@ app.post(
       res.status(201).json({
 
         success: true,
+
+        message:
+          "تمت إضافة الدرس بنجاح.",
 
         lesson:
           result.rows[0]
@@ -1686,6 +2096,19 @@ app.get(
 
       const lessonId =
         Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف الدرس غير صحيح."
+
+        });
+
+      }
 
       const lessonResult =
         await pool.query(
@@ -1783,7 +2206,6 @@ app.get(
 
 // =========================================================
 // ADMIN - SAVE LESSON CONTENT
-// شرح الدرس
 // =========================================================
 
 app.post(
@@ -1804,6 +2226,29 @@ app.post(
 
           message:
             "معرف الدرس غير صحيح."
+
+        });
+
+      }
+
+      const lessonExists =
+        await pool.query(
+          `
+          SELECT id
+          FROM lessons
+          WHERE id = $1
+          `,
+          [lessonId]
+        );
+
+      if (lessonExists.rows.length === 0) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "الدرس غير موجود."
 
         });
 
@@ -1880,7 +2325,6 @@ app.post(
 
 // =========================================================
 // ADMIN - SAVE LESSON SOLUTION
-// حل الدرس: فيديو + PDF
 // =========================================================
 
 app.post(
@@ -1901,6 +2345,29 @@ app.post(
 
           message:
             "معرف الدرس غير صحيح."
+
+        });
+
+      }
+
+      const lessonExists =
+        await pool.query(
+          `
+          SELECT id
+          FROM lessons
+          WHERE id = $1
+          `,
+          [lessonId]
+        );
+
+      if (lessonExists.rows.length === 0) {
+
+        return res.status(404).json({
+
+          success: false,
+
+          message:
+            "الدرس غير موجود."
 
         });
 
@@ -1989,6 +2456,19 @@ app.get(
 
       const lessonId =
         Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف الدرس غير صحيح."
+
+        });
+
+      }
 
       const result =
         await pool.query(
@@ -2080,9 +2560,13 @@ app.post(
         questions_per_page
       } = req.body;
 
+      const lessonId =
+        Number(lesson_id);
+
       if (
-        !lesson_id ||
-        !title
+        !Number.isInteger(lessonId) ||
+        !title ||
+        !title.trim()
       ) {
 
         return res.status(400).json({
@@ -2128,7 +2612,7 @@ app.post(
           RETURNING *
           `,
           [
-            lesson_id,
+            lessonId,
             title.trim(),
             description || null,
             passing,
@@ -2199,6 +2683,7 @@ app.post(
           .toUpperCase();
 
       if (
+        !Number.isInteger(quizId) ||
         !question_text ||
         !option_a ||
         !option_b ||
@@ -2347,10 +2832,6 @@ app.post(
         });
 
       }
-
-      // -----------------------------------------------------
-      // محاولة واحدة فقط
-      // -----------------------------------------------------
 
       const existingAttempt =
         await client.query(
@@ -2974,6 +3455,19 @@ app.get(
       const attemptId =
         Number(req.params.attemptId);
 
+      if (!Number.isInteger(attemptId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف المحاولة غير صحيح."
+
+        });
+
+      }
+
       const attemptResult =
         await pool.query(
           `
@@ -3240,6 +3734,19 @@ app.get(
 
       const quizId =
         Number(req.params.quizId);
+
+      if (!Number.isInteger(quizId)) {
+
+        return res.status(400).json({
+
+          success: false,
+
+          message:
+            "معرف الاختبار غير صحيح."
+
+        });
+
+      }
 
       const result =
         await pool.query(
