@@ -401,6 +401,98 @@
   // Load Initial Subjects
   loadSubjects();
 </script>
+// --- 1. مصادقة وتسجيل دخول الأدمن ---
+async function adminLogin(email, password) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.message || "فشل تسجيل دخول الأدمن");
+    
+    localStorage.setItem("drnotes_admin_token", data.token);
+    showAdminDashboard();
+    loadDashboardStats();
+    showToast("تم تسجيل الدخول كأدمن بنجاح", "success");
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+function checkAdminAuth() {
+  const token = localStorage.getItem("drnotes_admin_token");
+  if (!token) {
+    // إظهار نافذة/صفحة تسجيل دخول الأدمن وإخفاء اللوحة
+    document.getElementById("admin-login-overlay")?.classList.remove("hidden");
+  } else {
+    document.getElementById("admin-login-overlay")?.classList.add("hidden");
+    loadDashboardStats();
+    loadSubjectsIntoAdmin();
+    loadStudentsTable();
+  }
+}
+
+// --- 2. إدارة الطلاب والتحكم بأعدادهم وكلمات المرور ---
+async function loadStudentsTable() {
+  const token = localStorage.getItem("drnotes_admin_token");
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/students`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    
+    if (data.success && data.students) {
+      // تحديث عداد الطلاب
+      const countEl = document.getElementById("total-students-count");
+      if (countEl) countEl.textContent = data.students.length;
+
+      // رسم جدول الطلاب
+      const tableBody = document.getElementById("students-table-body");
+      if (!tableBody) return;
+
+      tableBody.innerHTML = data.students.map(std => `
+        <tr>
+          <td>${std.name}</td>
+          <td>${std.email}</td>
+          <td>${std.grade || 'غير محدد'}</td>
+          <td>
+            <button class="btn btn-outline" onclick="resetStudentPassword('${std.id}')">تغيير كلمة المرور</button>
+            <button class="btn btn-danger" onclick="deleteStudent('${std.id}')">حذف</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+  } catch (err) {
+    console.error("خطأ في جلب قائمة الطلاب:", err);
+  }
+}
+
+async function resetStudentPassword(studentId) {
+  const newPassword = prompt("أدخل كلمة المرور الجديدة للطالب:");
+  if (!newPassword) return;
+
+  const token = localStorage.getItem("drnotes_admin_token");
+  try {
+    const res = await fetch(`${API_BASE_URL}/admin/students/${studentId}/reset-password`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ password: newPassword })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast("تم تحديث كلمة مرور الطالب بنجاح", "success");
+    } else {
+      throw new Error(data.message);
+    }
+  } catch (err) {
+    showToast("فشل تغيير كلمة المرور: " + err.message, "error");
+  }
+}
 
 </body>
 </html>
