@@ -453,3 +453,30 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
+// ----------------------------------------------------
+// Serves Static Files (يقبل الملفات من المجلد الرئيسي ومن public)
+// ----------------------------------------------------
+app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ----------------------------------------------------
+// Fallback Route & Server Start
+// ----------------------------------------------------
+app.get('*', (req, res) => {
+    // يحاول أولاً فتح index.html من المجلد الرئيسي، وإن لم يجد يفتحه من public
+    const rootIndex = path.join(__dirname, 'index.html');
+    const publicIndex = path.join(__dirname, 'public', 'index.html');
+
+    const fs = require('fs');
+    if (fs.existsSync(rootIndex)) {
+        res.sendFile(rootIndex);
+    } else if (fs.existsSync(publicIndex)) {
+        res.sendFile(publicIndex);
+    } else {
+        res.status(404).send('لم يتم العثور على ملف index.html في المشروع');
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+});
