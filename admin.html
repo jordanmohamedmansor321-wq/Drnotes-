@@ -198,19 +198,28 @@
             loadStudents();
         });
 
-        // 1. جلب قائمة المواد المتاحة
+        // 1. جلب قائمة المواد المتاحة مع قائمة افتراضية لتفادي أي خطأ
         async function loadSubjects() {
+            const select = document.getElementById('selectSubject');
+            const defaultSubjects = ['الأحياء', 'الكيمياء', 'الفيزياء'];
+
             try {
                 const res = await fetch('/api/subjects');
-                const subjects = await res.json();
-                const select = document.getElementById('selectSubject');
-                select.innerHTML = '<option value="">اختر المادة...</option>';
+                let subjects = await res.json();
+                
+                if (!Array.isArray(subjects) || subjects.length === 0) {
+                    subjects = defaultSubjects;
+                }
 
+                select.innerHTML = '<option value="">اختر المادة...</option>';
                 subjects.forEach(sub => {
                     select.innerHTML += `<option value="${sub}">${sub}</option>`;
                 });
             } catch (err) {
-                document.getElementById('selectSubject').innerHTML = '<option value="">خطأ في جلب المواد</option>';
+                select.innerHTML = '<option value="">اختر المادة...</option>';
+                defaultSubjects.forEach(sub => {
+                    select.innerHTML += `<option value="${sub}">${sub}</option>`;
+                });
             }
         }
 
