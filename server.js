@@ -36,9 +36,9 @@ app.use(express.urlencoded({ extended: true }));
 async function initializeDatabase() {
   try {
 
-    // -----------------------------------------------------
+    // =====================================================
     // USERS
-    // -----------------------------------------------------
+    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -51,9 +51,9 @@ async function initializeDatabase() {
       );
     `);
 
-    // -----------------------------------------------------
+    // =====================================================
     // SUBJECTS
-    // -----------------------------------------------------
+    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS subjects (
@@ -65,44 +65,80 @@ async function initializeDatabase() {
       );
     `);
 
-    // -----------------------------------------------------
+    // =====================================================
+    // DEFAULT SUBJECTS
+    // المواد الأساسية الستة
+    // =====================================================
+
+    await pool.query(`
+      INSERT INTO subjects
+        (name, description)
+      SELECT *
+      FROM (
+        VALUES
+          ('الفيزياء', 'مادة الفيزياء'),
+          ('الكيمياء', 'مادة الكيمياء'),
+          ('الأحياء', 'مادة الأحياء'),
+          ('العربي', 'مادة اللغة العربية'),
+          ('الإنجليزي', 'مادة اللغة الإنجليزية'),
+          ('الحاسوب', 'مادة الحاسوب')
+      ) AS default_subjects(name, description)
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM subjects s
+        WHERE LOWER(TRIM(s.name)) =
+              LOWER(TRIM(default_subjects.name))
+      );
+    `);
+
+    // =====================================================
     // UNITS
-    // -----------------------------------------------------
+    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS units (
         id SERIAL PRIMARY KEY,
+
         subject_id INTEGER NOT NULL
           REFERENCES subjects(id)
           ON DELETE CASCADE,
+
         name VARCHAR(150) NOT NULL,
+
         description TEXT,
+
         unit_order INTEGER DEFAULT 0,
+
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
-    // -----------------------------------------------------
+    // =====================================================
     // LESSONS
-    // -----------------------------------------------------
+    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lessons (
         id SERIAL PRIMARY KEY,
+
         unit_id INTEGER NOT NULL
           REFERENCES units(id)
           ON DELETE CASCADE,
+
         name VARCHAR(200) NOT NULL,
+
         description TEXT,
+
         lesson_order INTEGER DEFAULT 0,
+
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
-    // -----------------------------------------------------
+    // =====================================================
     // LESSON CONTENT
     // شرح الدرس
-    // -----------------------------------------------------
+    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lesson_content (
@@ -113,17 +149,19 @@ async function initializeDatabase() {
           ON DELETE CASCADE,
 
         video_url TEXT,
+
         pdf_url TEXT,
+
         explanation TEXT,
 
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
-    // -----------------------------------------------------
+    // =====================================================
     // LESSON SOLUTION
     // حل الدرس
-    // -----------------------------------------------------
+    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lesson_solution (
@@ -134,16 +172,18 @@ async function initializeDatabase() {
           ON DELETE CASCADE,
 
         video_url TEXT,
+
         pdf_url TEXT,
+
         explanation TEXT,
 
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
-    // -----------------------------------------------------
+    // =====================================================
     // QUIZZES
-    // -----------------------------------------------------
+    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quizzes (
@@ -165,9 +205,9 @@ async function initializeDatabase() {
       );
     `);
 
-    // -----------------------------------------------------
+    // =====================================================
     // QUIZ QUESTIONS
-    // -----------------------------------------------------
+    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_questions (
@@ -180,8 +220,11 @@ async function initializeDatabase() {
         question_text TEXT NOT NULL,
 
         option_a TEXT NOT NULL,
+
         option_b TEXT NOT NULL,
+
         option_c TEXT NOT NULL,
+
         option_d TEXT NOT NULL,
 
         correct_answer VARCHAR(1) NOT NULL
@@ -197,9 +240,9 @@ async function initializeDatabase() {
       );
     `);
 
-    // -----------------------------------------------------
+    // =====================================================
     // QUIZ ATTEMPTS
-    // -----------------------------------------------------
+    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_attempts (
@@ -238,9 +281,9 @@ async function initializeDatabase() {
       );
     `);
 
-    // -----------------------------------------------------
+    // =====================================================
     // QUIZ ANSWERS
-    // -----------------------------------------------------
+    // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_answers (
@@ -311,7 +354,7 @@ function createAdminToken() {
 }
 
 // =========================================================
-// ADMIN AUTHENTICATION
+// ADMIN AUTH
 // =========================================================
 
 function requireAdmin(req, res, next) {
@@ -368,7 +411,7 @@ function requireAdmin(req, res, next) {
 }
 
 // =========================================================
-// USER AUTHENTICATION
+// USER AUTH
 // =========================================================
 
 function requireUser(req, res, next) {
@@ -598,7 +641,7 @@ app.post(
 );
 
 // =========================================================
-// USER LOGIN
+// LOGIN
 // =========================================================
 
 app.post(
@@ -864,7 +907,7 @@ app.post(
 );
 
 // =========================================================
-// ADMIN - GET USERS
+// ADMIN - USERS
 // =========================================================
 
 app.get(
@@ -910,10 +953,6 @@ app.get(
   }
 );
 
-// =========================================================
-// ADMIN - USERS COUNT
-// =========================================================
-
 app.get(
   "/api/admin/users/count",
   requireAdmin,
@@ -924,8 +963,7 @@ app.get(
       const result =
         await pool.query(
           `
-          SELECT
-            COUNT(*)::int AS count
+          SELECT COUNT(*)::int AS count
           FROM users
           `
         );
@@ -1009,6 +1047,7 @@ app.post(
           UPDATE users
           SET password_hash = $1
           WHERE id = $2
+
           RETURNING
             id,
             name,
@@ -1089,6 +1128,7 @@ app.delete(
           `
           DELETE FROM users
           WHERE id = $1
+
           RETURNING
             id,
             name,
@@ -1136,7 +1176,7 @@ app.delete(
 );
 
 // =========================================================
-// SUBJECTS
+// SUBJECTS - PUBLIC
 // =========================================================
 
 app.get(
@@ -1153,7 +1193,9 @@ app.get(
             description,
             image_url,
             created_at
+
           FROM subjects
+
           ORDER BY id ASC
         `);
 
@@ -1182,15 +1224,86 @@ app.get(
 );
 
 // =========================================================
-// ADMIN - ADD SUBJECT
+// ADMIN - SUBJECTS
 // =========================================================
 
-app.post(
+// الحصول على المواد نفسها من قاعدة البيانات
+// لا نحتاج لإضافة المواد يدويًا من لوحة الإدارة.
+
+app.get(
   "/api/admin/subjects",
   requireAdmin,
   async (req, res) => {
 
     try {
+
+      const result =
+        await pool.query(`
+          SELECT
+            s.id,
+            s.name,
+            s.description,
+            s.image_url,
+            s.created_at,
+
+            COUNT(DISTINCT u.id)::int
+              AS units_count,
+
+            COUNT(DISTINCT l.id)::int
+              AS lessons_count
+
+          FROM subjects s
+
+          LEFT JOIN units u
+            ON u.subject_id = s.id
+
+          LEFT JOIN lessons l
+            ON l.unit_id = u.id
+
+          GROUP BY
+            s.id
+
+          ORDER BY
+            s.id ASC
+        `);
+
+      res.json({
+        success: true,
+        subjects:
+          result.rows
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Admin subjects error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحميل مواد الإدارة."
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - UPDATE SUBJECT
+// =========================================================
+
+app.put(
+  "/api/admin/subjects/:subjectId",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const subjectId =
+        Number(req.params.subjectId);
 
       const {
         name,
@@ -1198,7 +1311,17 @@ app.post(
         image_url
       } = req.body;
 
-      if (!name) {
+      if (!Number.isInteger(subjectId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف المادة غير صحيح."
+        });
+
+      }
+
+      if (!name || !name.trim()) {
 
         return res.status(400).json({
           success: false,
@@ -1211,24 +1334,39 @@ app.post(
       const result =
         await pool.query(
           `
-          INSERT INTO subjects
-          (
-            name,
-            description,
-            image_url
-          )
-          VALUES ($1, $2, $3)
+          UPDATE subjects
+
+          SET
+            name = $1,
+            description = $2,
+            image_url = $3
+
+          WHERE id = $4
+
           RETURNING *
           `,
           [
             name.trim(),
             description || null,
-            image_url || null
+            image_url || null,
+            subjectId
           ]
         );
 
-      res.status(201).json({
+      if (result.rows.length === 0) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "المادة غير موجودة."
+        });
+
+      }
+
+      res.json({
         success: true,
+        message:
+          "تم تحديث المادة بنجاح.",
         subject:
           result.rows[0]
       });
@@ -1236,14 +1374,14 @@ app.post(
     } catch (error) {
 
       console.error(
-        "Create subject error:",
+        "Update subject error:",
         error
       );
 
       res.status(500).json({
         success: false,
         message:
-          "تعذر إنشاء المادة."
+          "تعذر تحديث المادة."
       });
 
     }
@@ -1252,7 +1390,7 @@ app.post(
 );
 
 // =========================================================
-// UNITS
+// UNITS - PUBLIC
 // =========================================================
 
 app.get(
@@ -1264,6 +1402,16 @@ app.get(
       const subjectId =
         Number(req.params.subjectId);
 
+      if (!Number.isInteger(subjectId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف المادة غير صحيح."
+        });
+
+      }
+
       const result =
         await pool.query(
           `
@@ -1274,9 +1422,14 @@ app.get(
             description,
             unit_order,
             created_at
+
           FROM units
+
           WHERE subject_id = $1
-          ORDER BY unit_order ASC, id ASC
+
+          ORDER BY
+            unit_order ASC,
+            id ASC
           `,
           [subjectId]
         );
@@ -1323,15 +1476,41 @@ app.post(
         unit_order
       } = req.body;
 
+      const subjectId =
+        Number(subject_id);
+
       if (
-        !subject_id ||
-        !name
+        !Number.isInteger(subjectId) ||
+        !name ||
+        !name.trim()
       ) {
 
         return res.status(400).json({
           success: false,
           message:
             "المادة واسم الوحدة مطلوبان."
+        });
+
+      }
+
+      const subjectCheck =
+        await pool.query(
+          `
+          SELECT id
+          FROM subjects
+          WHERE id = $1
+          `,
+          [subjectId]
+        );
+
+      if (
+        subjectCheck.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "المادة غير موجودة."
         });
 
       }
@@ -1346,11 +1525,14 @@ app.post(
             description,
             unit_order
           )
-          VALUES ($1, $2, $3, $4)
+
+          VALUES
+          ($1, $2, $3, $4)
+
           RETURNING *
           `,
           [
-            subject_id,
+            subjectId,
             name.trim(),
             description || null,
             Number(unit_order) || 0
@@ -1359,6 +1541,8 @@ app.post(
 
       res.status(201).json({
         success: true,
+        message:
+          "تم إنشاء الوحدة بنجاح.",
         unit:
           result.rows[0]
       });
@@ -1382,7 +1566,167 @@ app.post(
 );
 
 // =========================================================
-// LESSONS
+// ADMIN - UPDATE UNIT
+// =========================================================
+
+app.put(
+  "/api/admin/units/:unitId",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const unitId =
+        Number(req.params.unitId);
+
+      const {
+        name,
+        description,
+        unit_order
+      } = req.body;
+
+      if (
+        !Number.isInteger(unitId) ||
+        !name ||
+        !name.trim()
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "بيانات الوحدة غير صحيحة."
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          UPDATE units
+
+          SET
+            name = $1,
+            description = $2,
+            unit_order = $3
+
+          WHERE id = $4
+
+          RETURNING *
+          `,
+          [
+            name.trim(),
+            description || null,
+            Number(unit_order) || 0,
+            unitId
+          ]
+        );
+
+      if (result.rows.length === 0) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الوحدة غير موجودة."
+        });
+
+      }
+
+      res.json({
+        success: true,
+        message:
+          "تم تحديث الوحدة بنجاح.",
+        unit:
+          result.rows[0]
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Update unit error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحديث الوحدة."
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - DELETE UNIT
+// =========================================================
+
+app.delete(
+  "/api/admin/units/:unitId",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const unitId =
+        Number(req.params.unitId);
+
+      if (!Number.isInteger(unitId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الوحدة غير صحيح."
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          DELETE FROM units
+          WHERE id = $1
+          RETURNING id
+          `,
+          [unitId]
+        );
+
+      if (result.rows.length === 0) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الوحدة غير موجودة."
+        });
+
+      }
+
+      res.json({
+        success: true,
+        message:
+          "تم حذف الوحدة بنجاح."
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Delete unit error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر حذف الوحدة."
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// LESSONS - PUBLIC
 // =========================================================
 
 app.get(
@@ -1394,6 +1738,16 @@ app.get(
       const unitId =
         Number(req.params.unitId);
 
+      if (!Number.isInteger(unitId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الوحدة غير صحيح."
+        });
+
+      }
+
       const result =
         await pool.query(
           `
@@ -1404,9 +1758,14 @@ app.get(
             description,
             lesson_order,
             created_at
+
           FROM lessons
+
           WHERE unit_id = $1
-          ORDER BY lesson_order ASC, id ASC
+
+          ORDER BY
+            lesson_order ASC,
+            id ASC
           `,
           [unitId]
         );
@@ -1453,15 +1812,41 @@ app.post(
         lesson_order
       } = req.body;
 
+      const unitId =
+        Number(unit_id);
+
       if (
-        !unit_id ||
-        !name
+        !Number.isInteger(unitId) ||
+        !name ||
+        !name.trim()
       ) {
 
         return res.status(400).json({
           success: false,
           message:
             "الوحدة واسم الدرس مطلوبان."
+        });
+
+      }
+
+      const unitCheck =
+        await pool.query(
+          `
+          SELECT id
+          FROM units
+          WHERE id = $1
+          `,
+          [unitId]
+        );
+
+      if (
+        unitCheck.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الوحدة غير موجودة."
         });
 
       }
@@ -1476,11 +1861,14 @@ app.post(
             description,
             lesson_order
           )
-          VALUES ($1, $2, $3, $4)
+
+          VALUES
+          ($1, $2, $3, $4)
+
           RETURNING *
           `,
           [
-            unit_id,
+            unitId,
             name.trim(),
             description || null,
             Number(lesson_order) || 0
@@ -1489,6 +1877,8 @@ app.post(
 
       res.status(201).json({
         success: true,
+        message:
+          "تم إنشاء الدرس بنجاح.",
         lesson:
           result.rows[0]
       });
@@ -1512,6 +1902,166 @@ app.post(
 );
 
 // =========================================================
+// ADMIN - UPDATE LESSON
+// =========================================================
+
+app.put(
+  "/api/admin/lessons/:lessonId",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      const {
+        name,
+        description,
+        lesson_order
+      } = req.body;
+
+      if (
+        !Number.isInteger(lessonId) ||
+        !name ||
+        !name.trim()
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "بيانات الدرس غير صحيحة."
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          UPDATE lessons
+
+          SET
+            name = $1,
+            description = $2,
+            lesson_order = $3
+
+          WHERE id = $4
+
+          RETURNING *
+          `,
+          [
+            name.trim(),
+            description || null,
+            Number(lesson_order) || 0,
+            lessonId
+          ]
+        );
+
+      if (result.rows.length === 0) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الدرس غير موجود."
+        });
+
+      }
+
+      res.json({
+        success: true,
+        message:
+          "تم تحديث الدرس بنجاح.",
+        lesson:
+          result.rows[0]
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Update lesson error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحديث الدرس."
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - DELETE LESSON
+// =========================================================
+
+app.delete(
+  "/api/admin/lessons/:lessonId",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الدرس غير صحيح."
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          DELETE FROM lessons
+          WHERE id = $1
+          RETURNING id
+          `,
+          [lessonId]
+        );
+
+      if (result.rows.length === 0) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الدرس غير موجود."
+        });
+
+      }
+
+      res.json({
+        success: true,
+        message:
+          "تم حذف الدرس بنجاح."
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Delete lesson error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر حذف الدرس."
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
 // GET COMPLETE LESSON
 // =========================================================
 
@@ -1524,23 +2074,48 @@ app.get(
       const lessonId =
         Number(req.params.lessonId);
 
+      if (!Number.isInteger(lessonId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الدرس غير صحيح."
+        });
+
+      }
+
       const lessonResult =
         await pool.query(
           `
           SELECT
+
             l.id,
+
             l.unit_id,
+
             l.name,
+
             l.description,
+
             l.lesson_order,
 
-            lc.video_url AS explanation_video_url,
-            lc.pdf_url AS explanation_pdf_url,
-            lc.explanation AS explanation_text,
+            lc.video_url
+              AS explanation_video_url,
 
-            ls.video_url AS solution_video_url,
-            ls.pdf_url AS solution_pdf_url,
-            ls.explanation AS solution_text
+            lc.pdf_url
+              AS explanation_pdf_url,
+
+            lc.explanation
+              AS explanation_text,
+
+            ls.video_url
+              AS solution_video_url,
+
+            ls.pdf_url
+              AS solution_pdf_url,
+
+            ls.explanation
+              AS solution_text
 
           FROM lessons l
 
@@ -1576,7 +2151,9 @@ app.get(
             description,
             passing_percentage,
             questions_per_page
+
           FROM quizzes
+
           WHERE lesson_id = $1
           `,
           [lessonId]
@@ -1601,6 +2178,108 @@ app.get(
         success: false,
         message:
           "تعذر تحميل الدرس."
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - GET LESSON CONTENT
+// =========================================================
+
+app.get(
+  "/api/admin/lessons/:lessonId/content",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الدرس غير صحيح."
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+
+            l.id,
+
+            l.name,
+
+            l.description,
+
+            lc.video_url
+              AS explanation_video_url,
+
+            lc.pdf_url
+              AS explanation_pdf_url,
+
+            lc.explanation
+              AS explanation_text,
+
+            ls.video_url
+              AS solution_video_url,
+
+            ls.pdf_url
+              AS solution_pdf_url,
+
+            ls.explanation
+              AS solution_text
+
+          FROM lessons l
+
+          LEFT JOIN lesson_content lc
+            ON lc.lesson_id = l.id
+
+          LEFT JOIN lesson_solution ls
+            ON ls.lesson_id = l.id
+
+          WHERE l.id = $1
+          `,
+          [lessonId]
+        );
+
+      if (
+        result.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الدرس غير موجود."
+        });
+
+      }
+
+      res.json({
+        success: true,
+        content:
+          result.rows[0]
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get admin lesson content error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحميل محتوى الدرس."
       });
 
     }
@@ -1638,6 +2317,28 @@ app.post(
         explanation
       } = req.body;
 
+      const lessonCheck =
+        await pool.query(
+          `
+          SELECT id
+          FROM lessons
+          WHERE id = $1
+          `,
+          [lessonId]
+        );
+
+      if (
+        lessonCheck.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الدرس غير موجود."
+        });
+
+      }
+
       const result =
         await pool.query(
           `
@@ -1648,15 +2349,25 @@ app.post(
             pdf_url,
             explanation
           )
-          VALUES ($1, $2, $3, $4)
+
+          VALUES
+          ($1, $2, $3, $4)
 
           ON CONFLICT (lesson_id)
 
           DO UPDATE SET
-            video_url = EXCLUDED.video_url,
-            pdf_url = EXCLUDED.pdf_url,
-            explanation = EXCLUDED.explanation,
-            updated_at = CURRENT_TIMESTAMP
+
+            video_url =
+              EXCLUDED.video_url,
+
+            pdf_url =
+              EXCLUDED.pdf_url,
+
+            explanation =
+              EXCLUDED.explanation,
+
+            updated_at =
+              CURRENT_TIMESTAMP
 
           RETURNING *
           `,
@@ -1724,6 +2435,28 @@ app.post(
         explanation
       } = req.body;
 
+      const lessonCheck =
+        await pool.query(
+          `
+          SELECT id
+          FROM lessons
+          WHERE id = $1
+          `,
+          [lessonId]
+        );
+
+      if (
+        lessonCheck.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الدرس غير موجود."
+        });
+
+      }
+
       const result =
         await pool.query(
           `
@@ -1735,15 +2468,24 @@ app.post(
             explanation
           )
 
-          VALUES ($1, $2, $3, $4)
+          VALUES
+          ($1, $2, $3, $4)
 
           ON CONFLICT (lesson_id)
 
           DO UPDATE SET
-            video_url = EXCLUDED.video_url,
-            pdf_url = EXCLUDED.pdf_url,
-            explanation = EXCLUDED.explanation,
-            updated_at = CURRENT_TIMESTAMP
+
+            video_url =
+              EXCLUDED.video_url,
+
+            pdf_url =
+              EXCLUDED.pdf_url,
+
+            explanation =
+              EXCLUDED.explanation,
+
+            updated_at =
+              CURRENT_TIMESTAMP
 
           RETURNING *
           `,
@@ -1782,82 +2524,6 @@ app.post(
 );
 
 // =========================================================
-// ADMIN - GET LESSON CONTENT
-// =========================================================
-
-app.get(
-  "/api/admin/lessons/:lessonId/content",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const lessonId =
-        Number(req.params.lessonId);
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            l.id,
-            l.name,
-
-            lc.video_url AS explanation_video_url,
-            lc.pdf_url AS explanation_pdf_url,
-            lc.explanation AS explanation_text,
-
-            ls.video_url AS solution_video_url,
-            ls.pdf_url AS solution_pdf_url,
-            ls.explanation AS solution_text
-
-          FROM lessons l
-
-          LEFT JOIN lesson_content lc
-            ON lc.lesson_id = l.id
-
-          LEFT JOIN lesson_solution ls
-            ON ls.lesson_id = l.id
-
-          WHERE l.id = $1
-          `,
-          [lessonId]
-        );
-
-      if (result.rows.length === 0) {
-
-        return res.status(404).json({
-          success: false,
-          message:
-            "الدرس غير موجود."
-        });
-
-      }
-
-      res.json({
-        success: true,
-        content:
-          result.rows[0]
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get admin lesson content error:",
-        error
-      );
-
-      res.status(500).json({
-        success: false,
-        message:
-          "تعذر تحميل محتوى الدرس."
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
 // ADMIN - CREATE / UPDATE QUIZ
 // =========================================================
 
@@ -1876,9 +2542,13 @@ app.post(
         questions_per_page
       } = req.body;
 
+      const lessonId =
+        Number(lesson_id);
+
       if (
-        !lesson_id ||
-        !title
+        !Number.isInteger(lessonId) ||
+        !title ||
+        !title.trim()
       ) {
 
         return res.status(400).json({
@@ -1889,11 +2559,48 @@ app.post(
 
       }
 
-      const passing =
-        Number(passing_percentage) || 50;
+      const lessonCheck =
+        await pool.query(
+          `
+          SELECT id
+          FROM lessons
+          WHERE id = $1
+          `,
+          [lessonId]
+        );
 
-      const perPage =
-        Number(questions_per_page) || 10;
+      if (
+        lessonCheck.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الدرس غير موجود."
+        });
+
+      }
+
+      let passing =
+        Number(passing_percentage);
+
+      if (
+        !Number.isFinite(passing) ||
+        passing < 0 ||
+        passing > 100
+      ) {
+        passing = 50;
+      }
+
+      let perPage =
+        Number(questions_per_page);
+
+      if (
+        !Number.isFinite(perPage) ||
+        perPage < 1
+      ) {
+        perPage = 10;
+      }
 
       const result =
         await pool.query(
@@ -1906,22 +2613,30 @@ app.post(
             passing_percentage,
             questions_per_page
           )
-          VALUES ($1, $2, $3, $4, $5)
+
+          VALUES
+          ($1, $2, $3, $4, $5)
 
           ON CONFLICT (lesson_id)
 
           DO UPDATE SET
-            title = EXCLUDED.title,
-            description = EXCLUDED.description,
+
+            title =
+              EXCLUDED.title,
+
+            description =
+              EXCLUDED.description,
+
             passing_percentage =
               EXCLUDED.passing_percentage,
+
             questions_per_page =
               EXCLUDED.questions_per_page
 
           RETURNING *
           `,
           [
-            lesson_id,
+            lessonId,
             title.trim(),
             description || null,
             passing,
@@ -1956,6 +2671,72 @@ app.post(
 );
 
 // =========================================================
+// ADMIN - GET QUIZZES
+// =========================================================
+
+app.get(
+  "/api/admin/quizzes",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+
+            q.id,
+
+            q.lesson_id,
+
+            q.title,
+
+            q.description,
+
+            q.passing_percentage,
+
+            q.questions_per_page,
+
+            q.created_at,
+
+            l.name AS lesson_name
+
+          FROM quizzes q
+
+          JOIN lessons l
+            ON l.id = q.lesson_id
+
+          ORDER BY
+            q.id DESC
+          `
+        );
+
+      res.json({
+        success: true,
+        quizzes:
+          result.rows
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get admin quizzes error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحميل الاختبارات."
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
 // ADMIN - ADD QUESTION
 // =========================================================
 
@@ -1981,10 +2762,12 @@ app.post(
       } = req.body;
 
       const correct =
-        String(correct_answer || "")
-          .toUpperCase();
+        String(
+          correct_answer || ""
+        ).toUpperCase();
 
       if (
+        !Number.isInteger(quizId) ||
         !question_text ||
         !option_a ||
         !option_b ||
@@ -1997,6 +2780,28 @@ app.post(
           success: false,
           message:
             "بيانات السؤال غير مكتملة."
+        });
+
+      }
+
+      const quizCheck =
+        await pool.query(
+          `
+          SELECT id
+          FROM quizzes
+          WHERE id = $1
+          `,
+          [quizId]
+        );
+
+      if (
+        quizCheck.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الاختبار غير موجود."
         });
 
       }
@@ -2016,6 +2821,7 @@ app.post(
             explanation,
             question_order
           )
+
           VALUES
           ($1,$2,$3,$4,$5,$6,$7,$8,$9)
 
@@ -2061,6 +2867,236 @@ app.post(
 );
 
 // =========================================================
+// ADMIN - GET QUESTIONS
+// =========================================================
+
+app.get(
+  "/api/admin/quizzes/:quizId/questions",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const quizId =
+        Number(req.params.quizId);
+
+      if (!Number.isInteger(quizId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الاختبار غير صحيح."
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+
+            id,
+
+            quiz_id,
+
+            question_text,
+
+            option_a,
+
+            option_b,
+
+            option_c,
+
+            option_d,
+
+            correct_answer,
+
+            explanation,
+
+            question_order,
+
+            created_at
+
+          FROM quiz_questions
+
+          WHERE quiz_id = $1
+
+          ORDER BY
+            question_order ASC,
+            id ASC
+          `,
+          [quizId]
+        );
+
+      res.json({
+        success: true,
+        questions:
+          result.rows
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get admin questions error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحميل أسئلة الاختبار."
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - DELETE QUESTION
+// =========================================================
+
+app.delete(
+  "/api/admin/quizzes/questions/:questionId",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const questionId =
+        Number(req.params.questionId);
+
+      if (!Number.isInteger(questionId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف السؤال غير صحيح."
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          DELETE FROM quiz_questions
+
+          WHERE id = $1
+
+          RETURNING id
+          `,
+          [questionId]
+        );
+
+      if (
+        result.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "السؤال غير موجود."
+        });
+
+      }
+
+      res.json({
+        success: true,
+        message:
+          "تم حذف السؤال بنجاح."
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Delete question error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر حذف السؤال."
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
+// ADMIN - DELETE QUIZ
+// =========================================================
+
+app.delete(
+  "/api/admin/quizzes/:quizId",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const quizId =
+        Number(req.params.quizId);
+
+      if (!Number.isInteger(quizId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الاختبار غير صحيح."
+        });
+
+      }
+
+      const result =
+        await pool.query(
+          `
+          DELETE FROM quizzes
+
+          WHERE id = $1
+
+          RETURNING id
+          `,
+          [quizId]
+        );
+
+      if (
+        result.rows.length === 0
+      ) {
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "الاختبار غير موجود."
+        });
+
+      }
+
+      res.json({
+        success: true,
+        message:
+          "تم حذف الاختبار بنجاح."
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Delete quiz error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر حذف الاختبار."
+      });
+
+    }
+
+  }
+);
+
+// =========================================================
 // START QUIZ
 // =========================================================
 
@@ -2093,12 +3129,19 @@ app.post(
         await client.query(
           `
           SELECT
+
             id,
+
             title,
+
             description,
+
             passing_percentage,
+
             questions_per_page
+
           FROM quizzes
+
           WHERE id = $1
           `,
           [quizId]
@@ -2122,8 +3165,11 @@ app.post(
         await client.query(
           `
           SELECT *
+
           FROM quiz_attempts
+
           WHERE user_id = $1
+
           AND quiz_id = $2
           `,
           [
@@ -2168,19 +3214,28 @@ app.post(
         await client.query(
           `
           SELECT
+
             id,
+
             question_text,
+
             option_a,
+
             option_b,
+
             option_c,
+
             option_d,
+
             question_order
 
           FROM quiz_questions
 
           WHERE quiz_id = $1
 
-          ORDER BY question_order ASC, id ASC
+          ORDER BY
+            question_order ASC,
+            id ASC
           `,
           [quizId]
         );
@@ -2311,13 +3366,20 @@ app.post(
         await client.query(
           `
           SELECT
+
             a.*,
+
             q.passing_percentage
+
           FROM quiz_attempts a
+
           JOIN quizzes q
             ON q.id = a.quiz_id
+
           WHERE a.id = $1
+
           AND a.user_id = $2
+
           FOR UPDATE
           `,
           [
@@ -2361,21 +3423,32 @@ app.post(
         await client.query(
           `
           SELECT
+
             id,
+
             question_text,
+
             option_a,
+
             option_b,
+
             option_c,
+
             option_d,
+
             correct_answer,
+
             explanation,
+
             question_order
 
           FROM quiz_questions
 
           WHERE quiz_id = $1
 
-          ORDER BY question_order ASC, id ASC
+          ORDER BY
+            question_order ASC,
+            id ASC
           `,
           [attempt.quiz_id]
         );
@@ -2395,7 +3468,9 @@ app.post(
 
       }
 
-      if (answers.length !== questions.length) {
+      if (
+        answers.length !== questions.length
+      ) {
 
         await client.query("ROLLBACK");
 
@@ -2439,7 +3514,9 @@ app.post(
 
         }
 
-        if (answerMap.has(questionId)) {
+        if (
+          answerMap.has(questionId)
+        ) {
 
           await client.query("ROLLBACK");
 
@@ -2460,7 +3537,9 @@ app.post(
 
       for (const question of questions) {
 
-        if (!answerMap.has(question.id)) {
+        if (
+          !answerMap.has(question.id)
+        ) {
 
           await client.query("ROLLBACK");
 
@@ -2501,12 +3580,14 @@ app.post(
             is_correct
           )
 
-          VALUES ($1, $2, $3, $4)
+          VALUES
+          ($1, $2, $3, $4)
 
           ON CONFLICT
           (attempt_id, question_id)
 
           DO UPDATE SET
+
             selected_answer =
               EXCLUDED.selected_answer,
 
@@ -2558,7 +3639,9 @@ app.post(
         );
 
       const passingPercentage =
-        Number(attempt.passing_percentage) || 50;
+        Number(
+          attempt.passing_percentage
+        ) || 50;
 
       const passed =
         percentage >= passingPercentage;
@@ -2568,6 +3651,7 @@ app.post(
         UPDATE quiz_attempts
 
         SET
+
           finished_at =
             CURRENT_TIMESTAMP,
 
@@ -2662,20 +3746,41 @@ app.get(
       const attemptId =
         Number(req.params.attemptId);
 
+      if (!Number.isInteger(attemptId)) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف المحاولة غير صحيح."
+        });
+
+      }
+
       const attemptResult =
         await pool.query(
           `
           SELECT
+
             a.id,
+
             a.quiz_id,
+
             a.started_at,
+
             a.finished_at,
+
             a.score,
+
             a.total_questions,
+
             a.percentage,
+
             a.passed,
+
             a.status,
+
             q.title,
+
             q.passing_percentage
 
           FROM quiz_attempts a
@@ -2684,6 +3789,7 @@ app.get(
             ON q.id = a.quiz_id
 
           WHERE a.id = $1
+
           AND a.user_id = $2
           `,
           [
@@ -2711,17 +3817,27 @@ app.get(
         await pool.query(
           `
           SELECT
+
             qa.question_id,
+
             qa.selected_answer,
+
             qa.is_correct,
 
             qq.question_text,
+
             qq.option_a,
+
             qq.option_b,
+
             qq.option_c,
+
             qq.option_d,
+
             qq.correct_answer,
+
             qq.explanation,
+
             qq.question_order
 
           FROM quiz_answers qa
@@ -2732,7 +3848,9 @@ app.get(
           WHERE qa.attempt_id = $1
 
           ORDER BY
+
             qq.question_order ASC,
+
             qq.id ASC
           `,
           [attemptId]
@@ -2742,8 +3860,10 @@ app.get(
         answersResult.rows.map(item => ({
           question_id:
             item.question_id,
+
           question_text:
             item.question_text,
+
           options: {
             A:
               item.option_a,
@@ -2754,12 +3874,16 @@ app.get(
             D:
               item.option_d
           },
+
           selected_answer:
             item.selected_answer,
+
           correct_answer:
             item.correct_answer,
+
           is_correct:
             item.is_correct,
+
           explanation:
             item.explanation ||
             "لم تتم إضافة شرح لهذا السؤال بعد."
@@ -2767,31 +3891,45 @@ app.get(
 
       res.json({
         success: true,
+
         result: {
+
           id:
             attempt.id,
+
           quiz_id:
             attempt.quiz_id,
+
           title:
             attempt.title,
+
           started_at:
             attempt.started_at,
+
           finished_at:
             attempt.finished_at,
+
           score:
             attempt.score,
+
           total_questions:
             attempt.total_questions,
+
           percentage:
             attempt.percentage,
+
           passing_percentage:
             attempt.passing_percentage,
+
           passed:
             attempt.passed,
+
           status:
             attempt.status
         },
+
         questions
+
       });
 
     } catch (error) {
@@ -2827,15 +3965,25 @@ app.get(
         await pool.query(
           `
           SELECT
+
             a.id,
+
             a.quiz_id,
+
             q.title,
+
             a.started_at,
+
             a.finished_at,
+
             a.score,
+
             a.total_questions,
+
             a.percentage,
+
             a.passed,
+
             a.status
 
           FROM quiz_attempts a
@@ -2845,7 +3993,8 @@ app.get(
 
           WHERE a.user_id = $1
 
-          ORDER BY a.started_at DESC
+          ORDER BY
+            a.started_at DESC
           `,
           [req.user.id]
         );
@@ -2867,263 +4016,6 @@ app.get(
         success: false,
         message:
           "تعذر تحميل اختباراتك."
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// GET QUIZ QUESTIONS FOR ADMIN
-// =========================================================
-
-app.get(
-  "/api/admin/quizzes/:quizId/questions",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const quizId =
-        Number(req.params.quizId);
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            id,
-            quiz_id,
-            question_text,
-            option_a,
-            option_b,
-            option_c,
-            option_d,
-            correct_answer,
-            explanation,
-            question_order,
-            created_at
-
-          FROM quiz_questions
-
-          WHERE quiz_id = $1
-
-          ORDER BY question_order ASC, id ASC
-          `,
-          [quizId]
-        );
-
-      res.json({
-        success: true,
-        questions:
-          result.rows
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get admin questions error:",
-        error
-      );
-
-      res.status(500).json({
-        success: false,
-        message:
-          "تعذر تحميل أسئلة الاختبار."
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - GET QUIZZES
-// =========================================================
-
-app.get(
-  "/api/admin/quizzes",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            q.id,
-            q.lesson_id,
-            q.title,
-            q.description,
-            q.passing_percentage,
-            q.questions_per_page,
-            q.created_at,
-
-            l.name AS lesson_name
-
-          FROM quizzes q
-
-          JOIN lessons l
-            ON l.id = q.lesson_id
-
-          ORDER BY q.id DESC
-          `
-        );
-
-      res.json({
-        success: true,
-        quizzes:
-          result.rows
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get admin quizzes error:",
-        error
-      );
-
-      res.status(500).json({
-        success: false,
-        message:
-          "تعذر تحميل الاختبارات."
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - DELETE QUESTION
-// =========================================================
-
-app.delete(
-  "/api/admin/quizzes/questions/:questionId",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const questionId =
-        Number(req.params.questionId);
-
-      if (!Number.isInteger(questionId)) {
-
-        return res.status(400).json({
-          success: false,
-          message:
-            "معرف السؤال غير صحيح."
-        });
-
-      }
-
-      const result =
-        await pool.query(
-          `
-          DELETE FROM quiz_questions
-          WHERE id = $1
-          RETURNING id
-          `,
-          [questionId]
-        );
-
-      if (result.rows.length === 0) {
-
-        return res.status(404).json({
-          success: false,
-          message:
-            "السؤال غير موجود."
-        });
-
-      }
-
-      res.json({
-        success: true,
-        message:
-          "تم حذف السؤال بنجاح."
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Delete question error:",
-        error
-      );
-
-      res.status(500).json({
-        success: false,
-        message:
-          "تعذر حذف السؤال."
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - DELETE QUIZ
-// =========================================================
-
-app.delete(
-  "/api/admin/quizzes/:quizId",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const quizId =
-        Number(req.params.quizId);
-
-      if (!Number.isInteger(quizId)) {
-
-        return res.status(400).json({
-          success: false,
-          message:
-            "معرف الاختبار غير صحيح."
-        });
-
-      }
-
-      const result =
-        await pool.query(
-          `
-          DELETE FROM quizzes
-          WHERE id = $1
-          RETURNING id
-          `,
-          [quizId]
-        );
-
-      if (result.rows.length === 0) {
-
-        return res.status(404).json({
-          success: false,
-          message:
-            "الاختبار غير موجود."
-        });
-
-      }
-
-      res.json({
-        success: true,
-        message:
-          "تم حذف الاختبار بنجاح."
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Delete quiz error:",
-        error
-      );
-
-      res.status(500).json({
-        success: false,
-        message:
-          "تعذر حذف الاختبار."
       });
 
     }
