@@ -2332,409 +2332,107 @@
        سهلة بدون إعادة بناء الواجهة.
     */
 
-    const subjects = [
+    // =========================================================
+    // SUBJECTS FROM POSTGRESQL API
+    // =========================================================
+    // المواد والدروس التي تظهر للطالب يتم تحميلها من قاعدة البيانات
+    // التي يديرها admin.html، وليس من بيانات ثابتة داخل index.html.
+    let subjects = [];
 
-      {
-        id: "biology",
-        name: "الأحياء",
-        description: "دراسة الكائنات الحية وأجهزة الجسم والعمليات الحيوية.",
-        icon: "fa-dna",
-        lessons: [
-          {
-            id: "biology-1",
-            title: "مدخل إلى علم الأحياء",
-            description: "مقدمة في علم الأحياء ومجالاته وأهم المفاهيم الأساسية.",
-            video: "",
-            quiz: [
-              {
-                question: "ما الذي يهتم علم الأحياء بدراسته؟",
-                options: [
-                  "الكائنات الحية",
-                  "حركة الكواكب فقط",
-                  "المعادلات الرياضية فقط",
-                  "الظواهر الجوية فقط"
-                ],
-                answer: 0
-              },
-              {
-                question: "أي مما يلي يعد كائنًا حيًا؟",
-                options: [
-                  "الصخرة",
-                  "النبات",
-                  "الماء",
-                  "الهواء"
-                ],
-                answer: 1
-              }
-            ]
-          },
-          {
-            id: "biology-2",
-            title: "الخلية",
-            description: "مكونات الخلية ووظائف أهم العضيات.",
-            video: "",
-            quiz: [
-              {
-                question: "ما الوحدة الأساسية في بناء الكائن الحي؟",
-                options: [
-                  "النسيج",
-                  "العضو",
-                  "الخلية",
-                  "الجهاز"
-                ],
-                answer: 2
-              }
-            ]
-          },
-          {
-            id: "biology-3",
-            title: "الأنسجة",
-            description: "مقدمة في الأنسجة وأنواعها ووظائفها.",
-            video: "",
-            quiz: [
-              {
-                question: "مجموعة من الخلايا المتشابهة تؤدي وظيفة معينة تسمى:",
-                options: [
-                  "نسيج",
-                  "عضو",
-                  "جهاز",
-                  "كائن"
-                ],
-                answer: 0
-              }
-            ]
-          }
-        ]
-      },
+    const SUBJECT_ICONS = {
+      "الأحياء": "fa-dna",
+      "الكيمياء": "fa-flask",
+      "الفيزياء": "fa-atom",
+      "العربي": "fa-book-open",
+      "اللغة العربية": "fa-book-open",
+      "الإنجليزي": "fa-language",
+      "اللغة الإنجليزية": "fa-language",
+      "الحاسوب": "fa-computer"
+    };
 
-      {
-        id: "chemistry",
-        name: "الكيمياء",
-        description: "المفاهيم الأساسية في الكيمياء والتفاعلات والمواد.",
-        icon: "fa-flask",
-        lessons: [
-          {
-            id: "chemistry-1",
-            title: "مقدمة في الكيمياء",
-            description: "مفاهيم أساسية تساعد الطالب على فهم علم الكيمياء.",
-            video: "",
-            quiz: [
-              {
-                question: "الكيمياء تدرس بشكل أساسي:",
-                options: [
-                  "المادة وتغيراتها",
-                  "اللغة",
-                  "التاريخ",
-                  "الجغرافيا"
-                ],
-                answer: 0
-              }
-            ]
-          },
-          {
-            id: "chemistry-2",
-            title: "الذرة",
-            description: "مكونات الذرة والجسيمات الأساسية.",
-            video: "",
-            quiz: [
-              {
-                question: "أي جسيم يحمل شحنة سالبة؟",
-                options: [
-                  "البروتون",
-                  "النيوترون",
-                  "الإلكترون",
-                  "النواة"
-                ],
-                answer: 2
-              }
-            ]
-          },
-          {
-            id: "chemistry-3",
-            title: "الروابط الكيميائية",
-            description: "مقدمة في الروابط الكيميائية وأنواعها.",
-            video: "",
-            quiz: [
-              {
-                question: "الرابطة التي تنتج عن انتقال الإلكترونات تسمى:",
-                options: [
-                  "أيونية",
-                  "فلزية",
-                  "هيدروجينية",
-                  "نووية"
-                ],
-                answer: 0
-              }
-            ]
-          }
-        ]
-      },
+    function getSubjectIcon(name) {
+      return SUBJECT_ICONS[String(name || '').trim()] || "fa-book";
+    }
 
-      {
-        id: "physics",
-        name: "الفيزياء",
-        description: "فهم القوانين الفيزيائية وتطبيقها على المسائل.",
-        icon: "fa-atom",
-        lessons: [
-          {
-            id: "physics-1",
-            title: "مقدمة في الفيزياء",
-            description: "المفاهيم الأساسية والقياسات والكميات الفيزيائية.",
-            video: "",
-            quiz: [
-              {
-                question: "ما العلم الذي يدرس المادة والطاقة والتفاعلات بينهما؟",
-                options: [
-                  "الفيزياء",
-                  "الأحياء",
-                  "التاريخ",
-                  "الأدب"
-                ],
-                answer: 0
-              }
-            ]
-          },
-          {
-            id: "physics-2",
-            title: "الحركة",
-            description: "مفهوم الحركة والسرعة والتغير في الحركة.",
-            video: "",
-            quiz: [
-              {
-                question: "معدل تغير المسافة بالنسبة للزمن يسمى:",
-                options: [
-                  "القوة",
-                  "السرعة",
-                  "الكتلة",
-                  "الطاقة"
-                ],
-                answer: 1
-              }
-            ]
-          },
-          {
-            id: "physics-3",
-            title: "القوة",
-            description: "مفهوم القوة وتأثيرها في حركة الأجسام.",
-            video: "",
-            quiz: [
-              {
-                question: "ما الوحدة الأساسية للقوة في النظام الدولي؟",
-                options: [
-                  "جول",
-                  "واط",
-                  "نيوتن",
-                  "باسكال"
-                ],
-                answer: 2
-              }
-            ]
-          }
-        ]
-      },
+    async function loadSubjectsFromAPI() {
+      try {
+        const data = await apiRequest('/subjects');
+        const apiSubjects = Array.isArray(data.subjects) ? data.subjects : [];
 
-      {
-        id: "mathematics",
-        name: "الرياضيات",
-        description: "تدريب على المفاهيم الرياضية والمسائل والتطبيقات.",
-        icon: "fa-square-root-variable",
-        lessons: [
-          {
-            id: "mathematics-1",
-            title: "المفاهيم الأساسية",
-            description: "مراجعة المفاهيم والعمليات الأساسية.",
-            video: "",
-            quiz: [
-              {
-                question: "ناتج 2 + 3 يساوي:",
-                options: [
-                  "4",
-                  "5",
-                  "6",
-                  "7"
-                ],
-                answer: 1
-              }
-            ]
-          },
-          {
-            id: "mathematics-2",
-            title: "المعادلات",
-            description: "مقدمة في حل المعادلات الرياضية.",
-            video: "",
-            quiz: [
-              {
-                question: "إذا كان x + 2 = 5 فإن x تساوي:",
-                options: [
-                  "2",
-                  "3",
-                  "4",
-                  "5"
-                ],
-                answer: 1
-              }
-            ]
-          },
-          {
-            id: "mathematics-3",
-            title: "الدوال",
-            description: "مفهوم الدوال وتمثيلها.",
-            video: "",
-            quiz: [
-              {
-                question: "الدالة تربط بين:",
-                options: [
-                  "مدخلات ومخرجات",
-                  "لونين",
-                  "كتابين",
-                  "وحدتين فقط"
-                ],
-                answer: 0
-              }
-            ]
-          }
-        ]
-      },
+        const loaded = await Promise.all(
+          apiSubjects.map(async (subject) => {
+            let lessons = [];
 
-      {
-        id: "english",
-        name: "اللغة الإنجليزية",
-        description: "تطوير مهارات اللغة الإنجليزية للثانوية العامة.",
-        icon: "fa-language",
-        lessons: [
-          {
-            id: "english-1",
-            title: "أساسيات اللغة",
-            description: "مراجعة الأساسيات اللازمة لفهم اللغة الإنجليزية.",
-            video: "",
-            quiz: [
-              {
-                question: "Choose the correct word: I ___ a student.",
-                options: [
-                  "am",
-                  "is",
-                  "are",
-                  "be"
-                ],
-                answer: 0
-              }
-            ]
-          },
-          {
-            id: "english-2",
-            title: "الأزمنة",
-            description: "مقدمة في استخدام الأزمنة الأساسية.",
-            video: "",
-            quiz: [
-              {
-                question: "Which sentence is in the present simple?",
-                options: [
-                  "I played yesterday.",
-                  "I am playing now.",
-                  "I play football.",
-                  "I will play tomorrow."
-                ],
-                answer: 2
-              }
-            ]
-          },
-          {
-            id: "english-3",
-            title: "المفردات",
-            description: "مجموعة من المفردات المهمة للطالب.",
-            video: "",
-            quiz: [
-              {
-                question: "The opposite of 'easy' is:",
-                options: [
-                  "small",
-                  "hard",
-                  "fast",
-                  "early"
-                ],
-                answer: 1
-              }
-            ]
-          }
-        ]
-      },
+            try {
+              const unitsData = await apiRequest(`/subjects/${subject.id}/units`);
+              const units = Array.isArray(unitsData.units) ? unitsData.units : [];
 
-      {
-        id: "computer",
-        name: "الحاسوب",
-        description: "أساسيات الحاسوب والتقنية ومهارات التعامل مع المعلومات.",
-        icon: "fa-computer",
-        lessons: [
-          {
-            id: "computer-1",
-            title: "مقدمة في الحاسوب",
-            description: "تعرف على مفهوم الحاسوب ومكوناته الأساسية.",
-            video: "",
-            quiz: [
-              {
-                question: "أي مما يلي يعد من مكونات الحاسوب؟",
-                options: [
-                  "المعالج",
-                  "الكتاب",
-                  "القلم",
-                  "السبورة"
-                ],
-                answer: 0
+              for (const unit of units) {
+                try {
+                  const lessonsData = await apiRequest(`/units/${unit.id}/lessons`);
+                  const unitLessons = Array.isArray(lessonsData.lessons) ? lessonsData.lessons : [];
+
+                  lessons.push(
+                    ...unitLessons.map((lesson) => ({
+                      id: lesson.id,
+                      title: lesson.name,
+                      name: lesson.name,
+                      description: lesson.description || '',
+                      unitId: unit.id,
+                      unitName: unit.name
+                    }))
+                  );
+                } catch (lessonError) {
+                  console.warn('Could not load lessons for unit:', unit.id, lessonError);
+                }
               }
-            ]
-          },
-          {
-            id: "computer-2",
-            title: "أنظمة التشغيل",
-            description: "مقدمة في أنظمة التشغيل ووظائفها.",
-            video: "",
-            quiz: [
-              {
-                question: "ما وظيفة نظام التشغيل؟",
-                options: [
-                  "إدارة موارد الحاسوب",
-                  "صناعة الورق",
-                  "قياس الحرارة",
-                  "رسم الخرائط فقط"
-                ],
-                answer: 0
-              }
-            ]
-          },
-          {
-            id: "computer-3",
-            title: "الإنترنت",
-            description: "مفاهيم أساسية حول الإنترنت والشبكات.",
-            video: "",
-            quiz: [
-              {
-                question: "الإنترنت هو:",
-                options: [
-                  "شبكة عالمية من الشبكات",
-                  "برنامج رسم فقط",
-                  "جهاز حاسوب واحد",
-                  "ملف نصي"
-                ],
-                answer: 0
-              }
-            ]
-          }
-        ]
+            } catch (unitError) {
+              console.warn('Could not load units for subject:', subject.id, unitError);
+            }
+
+            return {
+              id: subject.id,
+              name: subject.name,
+              description: subject.description || '',
+              image_url: subject.image_url || '',
+              icon: getSubjectIcon(subject.name),
+              lessons
+            };
+          })
+        );
+
+        subjects = loaded;
+        renderSubjects(subjects);
+        return subjects;
+      } catch (error) {
+        console.error('Load subjects from API error:', error);
+        subjects = [];
+
+        const grid = document.getElementById('subjects-grid');
+        if (grid) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <h3>تعذر تحميل المواد</h3>
+              <p>${escapeHtml(error.message || 'تعذر الاتصال بالخادم.')}</p>
+            </div>
+          `;
+        }
+
+        return [];
       }
-
-    ];
-
+    }
 
     /* =========================================================
        INITIALIZATION
        ========================================================= */
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
 
       document.getElementById("current-year").textContent =
         new Date().getFullYear();
 
-      renderSubjects();
+      await loadSubjectsFromAPI();
 
       switchAuthMode("login");
 
@@ -5793,6 +5491,10 @@ body * {
   let drUnits = [];
   let drLessons = [];
 
+  window.drReloadSubjects = async function () {
+    await loadSubjectsFromAPI();
+  };
+
   /* =========================================================
      تحميل الوحدات
   ========================================================= */
@@ -6075,6 +5777,15 @@ body * {
       drCurrentLessonId =
         lesson.id;
 
+      if (currentSubject && Array.isArray(currentSubject.lessons)) {
+        const foundIndex = currentSubject.lessons.findIndex(
+          item => String(item.id) === String(lesson.id)
+        );
+        if (foundIndex >= 0) {
+          currentLessonIndex = foundIndex;
+        }
+      }
+
       content.innerHTML = `
 
         <div class="dr-content-box">
@@ -6108,9 +5819,9 @@ body * {
           </div>
 
           ${
-            lesson.video_url
+            lesson.explanation_video_url
               ? drRenderVideo(
-                  lesson.video_url
+                  lesson.explanation_video_url
                 )
               : `
                 <div class="empty-state">
@@ -6121,7 +5832,7 @@ body * {
           }
 
           ${
-            lesson.pdf_url
+            lesson.explanation_pdf_url
               ? `
                 <div class="dr-pdf-box">
 
@@ -6135,7 +5846,7 @@ body * {
                   <a
                     class="btn btn-primary"
                     href="${escapeAttribute(
-                      lesson.pdf_url
+                      lesson.explanation_pdf_url
                     )}"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -6150,7 +5861,7 @@ body * {
           }
 
           ${
-            lesson.explanation
+            lesson.explanation_text
               ? `
                 <div class="dr-explanation">
 
@@ -6162,7 +5873,7 @@ body * {
                   <br><br>
 
                   ${escapeHtml(
-                    lesson.explanation
+                    lesson.explanation_text
                   )}
 
                 </div>
@@ -6958,40 +6669,27 @@ body * {
 
   window.drGoNextLesson = function () {
 
-    if (
-      typeof currentSubject ===
-      "undefined" ||
-      !currentSubject
-    ) {
+    if (!currentSubject || !Array.isArray(currentSubject.lessons)) {
       return;
     }
 
-    if (
-      typeof currentLessonIndex ===
-      "undefined"
-    ) {
-      return;
-    }
+    const nextIndex = currentLessonIndex + 1;
 
-    const nextIndex =
-      currentLessonIndex + 1;
-
-    if (
-      nextIndex >=
-      currentSubject.lessons.length
-    ) {
-
+    if (nextIndex >= currentSubject.lessons.length) {
       showToast(
         "أكملت جميع دروس المادة 🎉",
         "success"
       );
-
       return;
     }
 
-    selectLesson(
-      nextIndex
-    );
+    currentLessonIndex = nextIndex;
+
+    const nextLesson = currentSubject.lessons[nextIndex];
+
+    if (nextLesson && nextLesson.id) {
+      drOpenLesson(nextLesson.id);
+    }
 
   };
 
@@ -7037,6 +6735,9 @@ body * {
         );
 
       if (subject) {
+
+        currentSubject = subject;
+        currentLessonIndex = 0;
 
         document.getElementById(
           "course-title"
