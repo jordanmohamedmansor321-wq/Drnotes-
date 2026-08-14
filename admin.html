@@ -19,36 +19,40 @@
 
     body {
       font-family: Arial, Tahoma, sans-serif;
-      background: #f5f7fa;
+      background: #f4f7fb;
       color: #1f2937;
       min-height: 100vh;
     }
 
     button,
     input,
-    select,
-    textarea {
+    textarea,
+    select {
       font-family: inherit;
+    }
+
+    button {
+      cursor: pointer;
     }
 
     .hidden {
       display: none !important;
     }
 
-    /* =========================
+    /* =====================================================
        LOGIN
-    ========================= */
+    ===================================================== */
 
-    .login-page {
+    #loginPage {
       min-height: 100vh;
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       padding: 20px;
       background: linear-gradient(
         135deg,
-        #eef6ff,
-        #f8fafc
+        #0f172a,
+        #1d4ed8
       );
     }
 
@@ -56,395 +60,337 @@
       width: 100%;
       max-width: 430px;
       background: white;
-      border-radius: 20px;
-      padding: 32px;
-      box-shadow:
-        0 15px 45px rgba(0, 0, 0, 0.08);
+      border-radius: 22px;
+      padding: 35px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
     }
 
     .logo {
       text-align: center;
-      font-size: 32px;
+      font-size: 38px;
       font-weight: 800;
-      color: #1769aa;
-      margin-bottom: 8px;
-    }
-
-    .login-title {
-      text-align: center;
-      font-size: 22px;
+      color: #2563eb;
       margin-bottom: 8px;
     }
 
     .login-subtitle {
       text-align: center;
-      color: #6b7280;
-      margin-bottom: 25px;
-      line-height: 1.7;
+      color: #64748b;
+      margin-bottom: 30px;
     }
 
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .form-group label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 7px;
       font-weight: 700;
+      color: #334155;
     }
 
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
+    input,
+    textarea,
+    select {
       width: 100%;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      padding: 13px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 12px 14px;
       font-size: 15px;
       outline: none;
-      transition: 0.2s;
       background: white;
+      transition: .2s;
     }
 
-    .form-group textarea {
-      min-height: 130px;
+    textarea {
+      min-height: 100px;
       resize: vertical;
-      line-height: 1.7;
     }
 
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      border-color: #1769aa;
-      box-shadow:
-        0 0 0 3px rgba(23, 105, 170, 0.1);
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
     }
 
     .btn {
       border: none;
-      border-radius: 12px;
-      padding: 13px 18px;
-      cursor: pointer;
-      font-size: 15px;
+      border-radius: 10px;
+      padding: 11px 17px;
+      font-size: 14px;
       font-weight: 700;
-      transition: 0.2s;
+      transition: .2s;
     }
 
     .btn:hover {
       transform: translateY(-1px);
+      opacity: .93;
     }
 
     .btn-primary {
-      width: 100%;
-      background: #1769aa;
+      background: #2563eb;
       color: white;
     }
 
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
+    .btn-success {
+      background: #16a34a;
+      color: white;
     }
 
-    .error-message {
-      background: #fee2e2;
-      color: #991b1b;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 15px;
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
+
+    .btn-warning {
+      background: #f59e0b;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #64748b;
+      color: white;
+    }
+
+    .btn-light {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .full {
+      width: 100%;
+    }
+
+    .message {
+      margin-top: 15px;
+      padding: 11px;
+      border-radius: 9px;
+      display: none;
+      font-size: 14px;
       line-height: 1.6;
     }
 
-    /* =========================
-       ADMIN APP
-    ========================= */
+    .message.success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+    }
 
-    .admin-app {
+    .message.error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* =====================================================
+       ADMIN LAYOUT
+    ===================================================== */
+
+    #adminPage {
       min-height: 100vh;
     }
 
     .topbar {
-      background: white;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 16px 24px;
+      height: 70px;
+      background: #0f172a;
+      color: white;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 15px;
+      padding: 0 25px;
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(0,0,0,.12);
     }
 
-    .brand {
-      font-size: 24px;
+    .topbar-title {
+      font-size: 22px;
       font-weight: 800;
-      color: #1769aa;
     }
 
-    .admin-label {
-      color: #6b7280;
-      font-size: 14px;
-      margin-top: 4px;
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-badge {
+      background: rgba(255,255,255,.1);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
     }
 
     .logout-btn {
-      background: #fee2e2;
-      color: #991b1b;
+      background: #dc2626;
+      color: white;
       border: none;
-      border-radius: 10px;
-      padding: 10px 15px;
-      cursor: pointer;
+      border-radius: 8px;
+      padding: 9px 14px;
       font-weight: 700;
     }
 
-    .container {
-      width: 100%;
-      max-width: 1250px;
-      margin: auto;
-      padding: 25px 20px 50px;
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 70px);
     }
 
-    /* =========================
-       STATS
-    ========================= */
+    .sidebar {
+      width: 250px;
+      background: white;
+      border-left: 1px solid #e2e8f0;
+      padding: 20px 12px;
+      flex-shrink: 0;
+    }
 
-    .stats {
+    .nav-title {
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 800;
+      margin: 10px 12px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      text-align: right;
+      background: transparent;
+      border: none;
+      padding: 13px 14px;
+      border-radius: 9px;
+      margin-bottom: 5px;
+      color: #475569;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .nav-btn:hover,
+    .nav-btn.active {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .content {
+      flex: 1;
+      padding: 25px;
+      min-width: 0;
+    }
+
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: block;
+    }
+
+    .page-header {
+      margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+      font-size: 27px;
+      margin-bottom: 6px;
+    }
+
+    .page-header p {
+      color: #64748b;
+    }
+
+    /* =====================================================
+       DASHBOARD
+    ===================================================== */
+
+    .stats-grid {
       display: grid;
-      grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 18px;
       margin-bottom: 25px;
     }
 
     .stat-card {
       background: white;
-      border-radius: 16px;
+      border-radius: 15px;
       padding: 22px;
-      box-shadow:
-        0 5px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
     }
 
-    .stat-title {
-      color: #6b7280;
+    .stat-label {
+      color: #64748b;
       font-size: 14px;
       margin-bottom: 10px;
     }
 
-    .stat-value {
+    .stat-number {
       font-size: 30px;
       font-weight: 800;
-      color: #1769aa;
+      color: #0f172a;
     }
 
-    /* =========================
-       CONTENT MANAGEMENT
-    ========================= */
+    /* =====================================================
+       CARDS
+    ===================================================== */
 
-    .content-card {
+    .card {
       background: white;
-      border-radius: 18px;
-      box-shadow:
-        0 5px 20px rgba(0, 0, 0, 0.05);
-      padding: 25px;
-      margin-bottom: 25px;
-    }
-
-    .content-header {
-      margin-bottom: 22px;
-    }
-
-    .content-header h2 {
-      font-size: 23px;
-      margin-bottom: 8px;
-    }
-
-    .content-header p {
-      color: #6b7280;
-      line-height: 1.7;
-    }
-
-    .content-selectors {
-      display: grid;
-      grid-template-columns:
-        repeat(3, minmax(0, 1fr));
-      gap: 15px;
+      border: 1px solid #e2e8f0;
+      border-radius: 15px;
+      padding: 20px;
       margin-bottom: 20px;
     }
 
-    .selector-box {
-      background: #f8fafc;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 15px;
+    .card-title {
+      font-size: 19px;
+      font-weight: 800;
+      margin-bottom: 17px;
     }
 
-    .selector-box label {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .selector-box select {
-      width: 100%;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      padding: 12px;
-      background: white;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .selector-box select:focus {
-      border-color: #1769aa;
-    }
-
-    .lesson-content-box {
-      border-top: 1px solid #e5e7eb;
-      padding-top: 22px;
-    }
-
-    .lesson-selected {
-      background: #eef6ff;
-      border: 1px solid #bfdbfe;
-      color: #1e40af;
-      padding: 13px 15px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      font-weight: 700;
-    }
-
-    .content-grid {
+    .grid-2 {
       display: grid;
-      grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-      gap: 15px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
     }
 
-    .content-field {
-      margin-bottom: 5px;
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
     }
 
-    .content-field.full {
-      grid-column: 1 / -1;
-    }
-
-    .content-field label {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .content-field input,
-    .content-field textarea {
-      width: 100%;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      padding: 13px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    .content-field textarea {
-      min-height: 150px;
-      resize: vertical;
-      line-height: 1.7;
-    }
-
-    .content-field input:focus,
-    .content-field textarea:focus {
-      border-color: #1769aa;
-      box-shadow:
-        0 0 0 3px rgba(23, 105, 170, 0.1);
-    }
-
-    .field-hint {
-      color: #6b7280;
-      font-size: 12px;
-      margin-top: 6px;
-      line-height: 1.5;
-    }
-
-    .content-actions {
+    .actions {
       display: flex;
-      gap: 10px;
-      margin-top: 20px;
       flex-wrap: wrap;
+      gap: 8px;
     }
 
-    .save-content-btn {
-      background: #1769aa;
-      color: white;
-    }
-
-    .clear-content-btn {
-      background: #e5e7eb;
-      color: #374151;
-    }
-
-    .content-loading {
-      text-align: center;
-      color: #6b7280;
-      padding: 20px;
-    }
-
-    /* =========================
-       USERS
-    ========================= */
-
-    .users-card {
-      background: white;
-      border-radius: 18px;
-      box-shadow:
-        0 5px 20px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-    }
-
-    .users-header {
-      padding: 20px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-
-    .users-header h2 {
-      margin-bottom: 15px;
-    }
-
-    .search-box {
-      width: 100%;
-      max-width: 500px;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      padding: 13px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    .search-box:focus {
-      border-color: #1769aa;
-    }
+    /* =====================================================
+       TABLE
+    ===================================================== */
 
     .table-wrapper {
-      width: 100%;
       overflow-x: auto;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 800px;
+      min-width: 700px;
     }
 
     th,
     td {
-      padding: 15px;
+      padding: 12px 10px;
+      border-bottom: 1px solid #e2e8f0;
       text-align: right;
-      border-bottom: 1px solid #eef0f3;
+      vertical-align: middle;
     }
 
     th {
       background: #f8fafc;
-      color: #4b5563;
-      font-size: 14px;
+      color: #475569;
+      font-size: 13px;
     }
 
     td {
@@ -452,556 +398,1194 @@
     }
 
     tr:hover td {
-      background: #fafafa;
+      background: #f8fafc;
     }
 
-    .action-buttons {
+    /* =====================================================
+       CONTENT MANAGEMENT
+    ===================================================== */
+
+    .tree-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 15px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .tree-header {
+      padding: 16px;
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #f8fafc;
     }
 
-    .action-btn {
-      border: none;
-      border-radius: 8px;
-      padding: 8px 11px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 700;
+    .tree-name {
+      font-weight: 800;
     }
 
-    .reset-btn {
-      background: #dbeafe;
-      color: #1e40af;
+    .tree-body {
+      padding: 15px;
     }
 
-    .delete-btn {
-      background: #fee2e2;
-      color: #991b1b;
+    .unit-box {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
     }
 
-    .empty {
-      padding: 35px;
-      text-align: center;
-      color: #6b7280;
+    .unit-header {
+      padding: 13px;
+      background: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
     }
 
-    /* =========================
+    .lesson-list {
+      padding: 10px;
+    }
+
+    .lesson-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 11px;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .lesson-row:last-child {
+      border-bottom: none;
+    }
+
+    /* =====================================================
        MODAL
-    ========================= */
+    ===================================================== */
 
-    .modal-overlay {
+    .modal {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      display: flex;
+      background: rgba(15,23,42,.65);
+      display: none;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      z-index: 100;
+      z-index: 2000;
     }
 
-    .modal {
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-box {
       width: 100%;
-      max-width: 430px;
+      max-width: 760px;
+      max-height: 92vh;
+      overflow-y: auto;
       background: white;
       border-radius: 18px;
       padding: 25px;
-      box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.2);
+      position: relative;
     }
 
-    .modal h3 {
-      margin-bottom: 10px;
-    }
-
-    .modal p {
-      color: #6b7280;
-      line-height: 1.7;
-      margin-bottom: 18px;
-    }
-
-    .modal-actions {
+    .modal-header {
       display: flex;
-      gap: 10px;
-      margin-top: 15px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 15px;
     }
 
-    .modal-actions button {
-      flex: 1;
+    .modal-header h2 {
+      font-size: 21px;
     }
 
-    .cancel-btn {
-      background: #e5e7eb;
-      color: #374151;
+    .close-modal {
+      width: 35px;
+      height: 35px;
+      border: none;
+      border-radius: 8px;
+      background: #fee2e2;
+      color: #dc2626;
+      font-size: 20px;
+      font-weight: bold;
     }
 
-    .confirm-btn {
-      background: #1769aa;
-      color: white;
+    .section-divider {
+      border: none;
+      border-top: 1px solid #e2e8f0;
+      margin: 22px 0;
     }
 
-    /* =========================
-       TOAST
-    ========================= */
+    /* =====================================================
+       LOADING
+    ===================================================== */
 
-    #toast {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
-      max-width: 450px;
-      margin: auto;
-      padding: 14px 18px;
-      border-radius: 12px;
-      color: white;
+    .loading {
       text-align: center;
-      z-index: 200;
-      display: none;
-      line-height: 1.6;
+      padding: 30px;
+      color: #64748b;
     }
 
-    #toast.success {
-      background: #15803d;
+    .empty {
+      text-align: center;
+      padding: 30px;
+      color: #94a3b8;
     }
 
-    #toast.error {
-      background: #b91c1c;
-    }
+    /* =====================================================
+       RESPONSIVE
+    ===================================================== */
 
-    #toast.warning {
-      background: #b45309;
-    }
-
-    /* =========================
-       MOBILE
-    ========================= */
-
-    @media (max-width: 800px) {
-
-      .content-selectors {
-        grid-template-columns: 1fr;
+    @media (max-width: 1000px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
 
-      .content-grid {
-        grid-template-columns: 1fr;
+      .grid-3 {
+        grid-template-columns: 1fr 1fr;
       }
-
-      .content-field.full {
-        grid-column: auto;
-      }
-
     }
 
-    @media (max-width: 700px) {
-
+    @media (max-width: 750px) {
       .topbar {
-        padding: 14px 15px;
+        padding: 0 12px;
       }
 
-      .brand {
-        font-size: 20px;
+      .topbar-title {
+        font-size: 17px;
       }
 
-      .stats {
+      .admin-badge {
+        display: none;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .sidebar {
+        width: 100%;
+        border-left: none;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        overflow-x: auto;
+        padding: 8px;
+      }
+
+      .nav-title {
+        display: none;
+      }
+
+      .nav-btn {
+        width: auto;
+        white-space: nowrap;
+        margin: 0 3px;
+      }
+
+      .content {
+        padding: 15px;
+      }
+
+      .grid-2,
+      .grid-3 {
         grid-template-columns: 1fr;
       }
 
-      .container {
-        padding: 18px 12px 40px;
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .page-header h1 {
+        font-size: 22px;
+      }
+
+      .lesson-row,
+      .unit-header,
+      .tree-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 450px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
       }
 
       .login-card {
-        padding: 25px 20px;
+        padding: 25px 18px;
       }
-
-      .content-card {
-        padding: 18px;
-      }
-
     }
   </style>
 </head>
 
 <body>
 
-  <!-- =====================================================
-       ADMIN LOGIN
-  ====================================================== -->
+<!-- =========================================================
+     LOGIN PAGE
+========================================================= -->
 
-  <section id="login-page" class="login-page">
+<div id="loginPage">
 
-    <div class="login-card">
+  <div class="login-card">
 
-      <div class="logo">
-        DrNotes 🇱🇾
-      </div>
-
-      <h1 class="login-title">
-        لوحة الإدارة
-      </h1>
-
-      <p class="login-subtitle">
-        تسجيل دخول المدير لإدارة الطلاب والمحتوى التعليمي.
-      </p>
-
-      <div
-        id="login-error"
-        class="error-message hidden"
-      ></div>
-
-      <form id="admin-login-form">
-
-        <div class="form-group">
-
-          <label for="admin-email">
-            البريد الإلكتروني
-          </label>
-
-          <input
-            id="admin-email"
-            type="email"
-            placeholder="admin@example.com"
-            autocomplete="username"
-            required
-          >
-
-        </div>
-
-        <div class="form-group">
-
-          <label for="admin-password">
-            كلمة مرور المدير
-          </label>
-
-          <input
-            id="admin-password"
-            type="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required
-          >
-
-        </div>
-
-        <button
-          id="login-button"
-          class="btn btn-primary"
-          type="submit"
-        >
-          تسجيل الدخول
-        </button>
-
-      </form>
-
+    <div class="logo">
+      DrNotes
     </div>
 
-  </section>
+    <div class="login-subtitle">
+      لوحة إدارة المنصة
+    </div>
+
+    <form id="loginForm">
+
+      <div class="form-group">
+        <label>
+          البريد الإلكتروني
+        </label>
+
+        <input
+          type="email"
+          id="adminEmail"
+          placeholder="أدخل بريد المدير"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label>
+          كلمة المرور
+        </label>
+
+        <input
+          type="password"
+          id="adminPassword"
+          placeholder="أدخل كلمة المرور"
+          required
+        >
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary full"
+      >
+        تسجيل الدخول
+      </button>
+
+    </form>
+
+    <div
+      id="loginMessage"
+      class="message"
+    ></div>
+
+  </div>
+
+</div>
 
 
-  <!-- =====================================================
-       ADMIN APP
-  ====================================================== -->
+<!-- =========================================================
+     ADMIN PAGE
+========================================================= -->
 
-  <section
-    id="admin-app"
-    class="admin-app hidden"
-  >
+<div
+  id="adminPage"
+  class="hidden"
+>
 
-    <header class="topbar">
+  <!-- TOPBAR -->
 
-      <div>
-        <div class="brand">
-          DrNotes 🇱🇾
-        </div>
+  <header class="topbar">
 
-        <div class="admin-label">
-          لوحة تحكم المدير
-        </div>
+    <div class="topbar-title">
+      DrNotes - لوحة الإدارة
+    </div>
+
+    <div class="topbar-right">
+
+      <div class="admin-badge">
+        المدير
       </div>
 
       <button
         class="logout-btn"
-        onclick="adminLogout()"
+        onclick="logout()"
       >
         تسجيل الخروج
       </button>
 
-    </header>
+    </div>
+
+  </header>
 
 
-    <main class="container">
+  <div class="layout">
 
-      <!-- =================================================
-           STATS
-      ================================================== -->
+    <!-- SIDEBAR -->
 
-      <div class="stats">
+    <aside class="sidebar">
 
-        <div class="stat-card">
-
-          <div class="stat-title">
-            إجمالي الطلاب
-          </div>
-
-          <div
-            id="users-count"
-            class="stat-value"
-          >
-            0
-          </div>
-
-        </div>
-
-
-        <div class="stat-card">
-
-          <div class="stat-title">
-            حالة قاعدة البيانات
-          </div>
-
-          <div
-            id="database-status"
-            class="stat-value"
-            style="font-size:20px;"
-          >
-            جارٍ التحقق...
-          </div>
-
-        </div>
-
-
-        <div class="stat-card">
-
-          <div class="stat-title">
-            لوحة الإدارة
-          </div>
-
-          <div
-            class="stat-value"
-            style="font-size:20px;"
-          >
-            آمنة 🔐
-          </div>
-
-        </div>
-
+      <div class="nav-title">
+        الإدارة
       </div>
 
+      <button
+        class="nav-btn active"
+        data-section="dashboard"
+        onclick="showSection('dashboard')"
+      >
+        📊 لوحة التحكم
+      </button>
 
-      <!-- =================================================
-           CONTENT MANAGEMENT
-      ================================================== -->
+      <button
+        class="nav-btn"
+        data-section="users"
+        onclick="showSection('users')"
+      >
+        👥 المستخدمون
+      </button>
 
-      <section class="content-card">
+      <button
+        class="nav-btn"
+        data-section="content"
+        onclick="showSection('content')"
+      >
+        📚 المواد والدروس
+      </button>
 
-        <div class="content-header">
+      <button
+        class="nav-btn"
+        data-section="quizzes"
+        onclick="showSection('quizzes')"
+      >
+        📝 الاختبارات
+      </button>
 
-          <h2>
-            📚 إدارة المحتوى التعليمي
-          </h2>
+    </aside>
+
+
+    <!-- CONTENT -->
+
+    <main class="content">
+
+      <!-- ===================================================
+           DASHBOARD
+      =================================================== -->
+
+      <section
+        id="dashboard"
+        class="page-section active"
+      >
+
+        <div class="page-header">
+
+          <h1>
+            لوحة التحكم
+          </h1>
 
           <p>
-            اختر المادة ثم الوحدة ثم الدرس لإضافة أو تحديث
-            فيديو الشرح وملف الـ PDF والشرح النصي.
+            إدارة منصة DrNotes
           </p>
 
         </div>
 
+        <div class="stats-grid">
 
-        <div class="content-selectors">
+          <div class="stat-card">
 
-          <div class="selector-box">
+            <div class="stat-label">
+              عدد المستخدمين
+            </div>
 
-            <label for="content-subject">
-              📚 المادة
-            </label>
-
-            <select
-              id="content-subject"
-              onchange="loadUnitsForContent()"
+            <div
+              class="stat-number"
+              id="usersCount"
             >
-
-              <option value="">
-                اختر المادة
-              </option>
-
-            </select>
+              0
+            </div>
 
           </div>
 
+          <div class="stat-card">
 
-          <div class="selector-box">
+            <div class="stat-label">
+              عدد المواد
+            </div>
 
-            <label for="content-unit">
-              📖 الوحدة
-            </label>
-
-            <select
-              id="content-unit"
-              onchange="loadLessonsForContent()"
-              disabled
+            <div
+              class="stat-number"
+              id="subjectsCount"
             >
-
-              <option value="">
-                اختر الوحدة
-              </option>
-
-            </select>
+              0
+            </div>
 
           </div>
 
+          <div class="stat-card">
 
-          <div class="selector-box">
+            <div class="stat-label">
+              عدد الدروس
+            </div>
 
-            <label for="content-lesson">
-              📝 الدرس
-            </label>
-
-            <select
-              id="content-lesson"
-              onchange="loadLessonContent()"
-              disabled
+            <div
+              class="stat-number"
+              id="lessonsCount"
             >
+              0
+            </div>
 
-              <option value="">
-                اختر الدرس
-              </option>
+          </div>
 
-            </select>
+          <div class="stat-card">
+
+            <div class="stat-label">
+              عدد الاختبارات
+            </div>
+
+            <div
+              class="stat-number"
+              id="quizzesCount"
+            >
+              0
+            </div>
 
           </div>
 
         </div>
 
+        <div class="card">
 
-        <div
-          id="lesson-content-area"
-          class="lesson-content-box hidden"
-        >
-
-          <div
-            id="selected-lesson-name"
-            class="lesson-selected"
-          >
-            لم يتم اختيار درس.
+          <div class="card-title">
+            حالة الخادم
           </div>
 
-
-          <div class="content-grid">
-
-            <div class="content-field">
-
-              <label for="video-url">
-                🎥 رابط فيديو الشرح
-              </label>
-
-              <input
-                id="video-url"
-                type="url"
-                placeholder="https://..."
-              >
-
-              <div class="field-hint">
-                ضع رابط الفيديو الذي سيظهر للطالب داخل الدرس.
-              </div>
-
-            </div>
-
-
-            <div class="content-field">
-
-              <label for="pdf-url">
-                📄 رابط ملف PDF
-              </label>
-
-              <input
-                id="pdf-url"
-                type="url"
-                placeholder="https://..."
-              >
-
-              <div class="field-hint">
-                ضع رابط ملف الـPDF الخاص بالدرس.
-              </div>
-
-            </div>
-
-
-            <div class="content-field full">
-
-              <label for="lesson-explanation">
-                📝 شرح إضافي للدرس
-              </label>
-
-              <textarea
-                id="lesson-explanation"
-                placeholder="اكتب شرحًا أو ملاحظات إضافية للدرس هنا..."
-              ></textarea>
-
-              <div class="field-hint">
-                هذا الحقل اختياري ويمكن تركه فارغًا.
-              </div>
-
-            </div>
-
+          <div id="serverStatus">
+            جاري التحقق...
           </div>
 
-
-          <div class="content-actions">
-
-            <button
-              id="save-content-button"
-              class="btn save-content-btn"
-              onclick="saveLessonContent()"
-            >
-              💾 حفظ / تحديث المحتوى
-            </button>
-
-            <button
-              class="btn clear-content-btn"
-              onclick="clearLessonContentForm()"
-            >
-              🧹 مسح الحقول
-            </button>
-
-          </div>
-
-        </div>
-
-
-        <div
-          id="content-loading"
-          class="content-loading hidden"
-        >
-          جارٍ تحميل المحتوى...
         </div>
 
       </section>
 
 
-      <!-- =================================================
+      <!-- ===================================================
            USERS
-      ================================================== -->
+      =================================================== -->
 
-      <section class="users-card">
+      <section
+        id="users"
+        class="page-section"
+      >
 
-        <div class="users-header">
+        <div class="page-header">
 
-          <h2>
-            الطلاب المسجلون
-          </h2>
+          <h1>
+            المستخدمون
+          </h1>
 
-          <input
-            id="search-input"
-            class="search-box"
-            type="search"
-            placeholder="ابحث بالاسم أو البريد الإلكتروني أو الصف..."
-            oninput="filterUsers()"
-          >
+          <p>
+            إدارة حسابات الطلاب
+          </p>
 
         </div>
 
+        <div class="card">
+
+          <div class="actions">
+            <button
+              class="btn btn-primary"
+              onclick="loadUsers()"
+            >
+              🔄 تحديث
+            </button>
+          </div>
+
+          <br>
+
+          <div
+            id="usersContainer"
+            class="loading"
+          >
+            جاري تحميل المستخدمين...
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           CONTENT
+      =================================================== -->
+
+      <section
+        id="content"
+        class="page-section"
+      >
+
+        <div class="page-header">
+
+          <h1>
+            المواد والدروس
+          </h1>
+
+          <p>
+            إدارة المواد والوحدات والدروس ومحتوى الدروس
+          </p>
+
+        </div>
+
+        <div class="card">
+
+          <div class="actions">
+
+            <button
+              class="btn btn-primary"
+              onclick="openSubjectModal()"
+            >
+              ➕ إضافة مادة
+            </button>
+
+            <button
+              class="btn btn-secondary"
+              onclick="loadContentTree()"
+            >
+              🔄 تحديث
+            </button>
+
+          </div>
+
+        </div>
+
+        <div id="contentTree">
+          <div class="loading">
+            جاري تحميل المحتوى...
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           QUIZZES
+      =================================================== -->
+
+      <section
+        id="quizzes"
+        class="page-section"
+      >
+
+        <div class="page-header">
+
+          <h1>
+            الاختبارات
+          </h1>
+
+          <p>
+            إنشاء الاختبارات وإدارة الأسئلة
+          </p>
+
+        </div>
+
+        <div class="card">
+
+          <div class="actions">
+
+            <button
+              class="btn btn-primary"
+              onclick="openQuizModal()"
+            >
+              ➕ إنشاء اختبار
+            </button>
+
+            <button
+              class="btn btn-secondary"
+              onclick="loadQuizzes()"
+            >
+              🔄 تحديث
+            </button>
+
+          </div>
+
+        </div>
+
+        <div id="quizzesContainer">
+          <div class="loading">
+            جاري تحميل الاختبارات...
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     MODAL
+========================================================= -->
+
+<div
+  id="modal"
+  class="modal"
+>
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <h2 id="modalTitle">
+        إدارة
+      </h2>
+
+      <button
+        class="close-modal"
+        onclick="closeModal()"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div id="modalContent"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  /* =========================================================
+     CONFIG
+  ========================================================= */
+
+  const API_BASE = window.location.origin;
+
+  let adminToken =
+    localStorage.getItem("drnotes_admin_token");
+
+
+  /* =========================================================
+     HELPERS
+  ========================================================= */
+
+  function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  function showMessage(
+    elementId,
+    message,
+    type = "success"
+  ) {
+
+    const element =
+      document.getElementById(elementId);
+
+    if (!element) return;
+
+    element.textContent = message;
+
+    element.className =
+      "message " + type;
+
+  }
+
+
+  async function api(
+    endpoint,
+    options = {}
+  ) {
+
+    const headers = {
+      ...(options.headers || {})
+    };
+
+    if (
+      options.body &&
+      typeof options.body !== "string"
+    ) {
+
+      headers["Content-Type"] =
+        "application/json";
+
+      options.body =
+        JSON.stringify(options.body);
+
+    }
+
+    if (adminToken) {
+
+      headers["Authorization"] =
+        `Bearer ${adminToken}`;
+
+    }
+
+    const response =
+      await fetch(
+        API_BASE + endpoint,
+        {
+          ...options,
+          headers
+        }
+      );
+
+    let data = {};
+
+    try {
+      data = await response.json();
+    } catch (_) {}
+
+    if (response.status === 401) {
+
+      logout();
+
+      throw new Error(
+        data.message ||
+        "جلسة المدير انتهت."
+      );
+
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message ||
+        "حدث خطأ في الطلب."
+      );
+
+    }
+
+    return data;
+
+  }
+
+
+  /* =========================================================
+     LOGIN
+  ========================================================= */
+
+  document
+    .getElementById("loginForm")
+    .addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+        const email =
+          document
+            .getElementById("adminEmail")
+            .value
+            .trim();
+
+        const password =
+          document
+            .getElementById("adminPassword")
+            .value;
+
+        try {
+
+          const response =
+            await fetch(
+              API_BASE + "/api/admin/login",
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body: JSON.stringify({
+                  email,
+                  password
+                })
+              }
+            );
+
+          const data =
+            await response.json();
+
+          if (!response.ok) {
+
+            throw new Error(
+              data.message ||
+              "بيانات الدخول غير صحيحة."
+            );
+
+          }
+
+          adminToken =
+            data.token;
+
+          localStorage.setItem(
+            "drnotes_admin_token",
+            adminToken
+          );
+
+          showAdminPage();
+
+        } catch (error) {
+
+          showMessage(
+            "loginMessage",
+            error.message,
+            "error"
+          );
+
+        }
+
+      }
+    );
+
+
+  /* =========================================================
+     AUTH STATE
+  ========================================================= */
+
+  function showAdminPage() {
+
+    document
+      .getElementById("loginPage")
+      .classList.add("hidden");
+
+    document
+      .getElementById("adminPage")
+      .classList.remove("hidden");
+
+    loadDashboard();
+
+  }
+
+
+  function logout() {
+
+    localStorage.removeItem(
+      "drnotes_admin_token"
+    );
+
+    adminToken = null;
+
+    document
+      .getElementById("adminPage")
+      .classList.add("hidden");
+
+    document
+      .getElementById("loginPage")
+      .classList.remove("hidden");
+
+  }
+
+
+  /* =========================================================
+     NAVIGATION
+  ========================================================= */
+
+  function showSection(sectionId) {
+
+    document
+      .querySelectorAll(".page-section")
+      .forEach(section => {
+
+        section.classList.remove("active");
+
+      });
+
+    const target =
+      document.getElementById(sectionId);
+
+    if (target) {
+      target.classList.add("active");
+    }
+
+    document
+      .querySelectorAll(".nav-btn")
+      .forEach(button => {
+
+        button.classList.remove("active");
+
+        if (
+          button.dataset.section ===
+          sectionId
+        ) {
+
+          button.classList.add("active");
+
+        }
+
+      });
+
+    if (sectionId === "dashboard") {
+      loadDashboard();
+    }
+
+    if (sectionId === "users") {
+      loadUsers();
+    }
+
+    if (sectionId === "content") {
+      loadContentTree();
+    }
+
+    if (sectionId === "quizzes") {
+      loadQuizzes();
+    }
+
+  }
+
+
+  /* =========================================================
+     MODAL
+  ========================================================= */
+
+  function openModal(
+    title,
+    html
+  ) {
+
+    document
+      .getElementById("modalTitle")
+      .textContent = title;
+
+    document
+      .getElementById("modalContent")
+      .innerHTML = html;
+
+    document
+      .getElementById("modal")
+      .classList.add("show");
+
+  }
+
+
+  function closeModal() {
+
+    document
+      .getElementById("modal")
+      .classList.remove("show");
+
+    document
+      .getElementById("modalContent")
+      .innerHTML = "";
+
+  }
+
+
+  document
+    .getElementById("modal")
+    .addEventListener(
+      "click",
+      function(event) {
+
+        if (
+          event.target ===
+          this
+        ) {
+
+          closeModal();
+
+        }
+
+      }
+    );
+
+
+  /* =========================================================
+     DASHBOARD
+  ========================================================= */
+
+  async function loadDashboard() {
+
+    try {
+
+      const users =
+        await api(
+          "/api/admin/users/count"
+        );
+
+      document
+        .getElementById("usersCount")
+        .textContent =
+          users.count || 0;
+
+    } catch (_) {
+
+      document
+        .getElementById("usersCount")
+        .textContent = "-";
+
+    }
+
+
+    try {
+
+      const subjects =
+        await api(
+          "/api/subjects"
+        );
+
+      document
+        .getElementById("subjectsCount")
+        .textContent =
+          subjects.subjects.length;
+
+      let lessonsCount = 0;
+
+      for (
+        const subject
+        of subjects.subjects
+      ) {
+
+        const units =
+          await api(
+            `/api/subjects/${subject.id}/units`
+          );
+
+        for (
+          const unit
+          of units.units
+        ) {
+
+          const lessons =
+            await api(
+              `/api/units/${unit.id}/lessons`
+            );
+
+          lessonsCount +=
+            lessons.lessons.length;
+
+        }
+
+      }
+
+      document
+        .getElementById("lessonsCount")
+        .textContent =
+          lessonsCount;
+
+    } catch (_) {
+
+      document
+        .getElementById("subjectsCount")
+        .textContent = "-";
+
+      document
+        .getElementById("lessonsCount")
+        .textContent = "-";
+
+    }
+
+
+    try {
+
+      const quizzes =
+        await api(
+          "/api/admin/quizzes"
+        );
+
+      document
+        .getElementById("quizzesCount")
+        .textContent =
+          quizzes.quizzes.length;
+
+    } catch (_) {
+
+      document
+        .getElementById("quizzesCount")
+        .textContent = "-";
+
+    }
+
+
+    try {
+
+      const health =
+        await fetch(
+          API_BASE + "/api/health"
+        );
+
+      if (health.ok) {
+
+        document
+          .getElementById("serverStatus")
+          .innerHTML =
+            "🟢 الخادم وقاعدة البيانات يعملان بشكل طبيعي.";
+
+      } else {
+
+        throw new Error();
+
+      }
+
+    } catch (_) {
+
+      document
+        .getElementById("serverStatus")
+        .innerHTML =
+          "🔴 تعذر الاتصال بالخادم.";
+
+    }
+
+  }
+
+
+  /* =========================================================
+     USERS
+  ========================================================= */
+
+  async function loadUsers() {
+
+    const container =
+      document.getElementById(
+        "usersContainer"
+      );
+
+    container.innerHTML =
+      `<div class="loading">جاري التحميل...</div>`;
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/users"
+        );
+
+      if (
+        !data.users ||
+        data.users.length === 0
+      ) {
+
+        container.innerHTML =
+          `<div class="empty">لا يوجد مستخدمون.</div>`;
+
+        return;
+
+      }
+
+      container.innerHTML = `
 
         <div class="table-wrapper">
 
@@ -1010,1948 +1594,2141 @@
             <thead>
 
               <tr>
-
                 <th>#</th>
-
                 <th>الاسم</th>
-
-                <th>البريد الإلكتروني</th>
-
+                <th>البريد</th>
                 <th>الصف</th>
-
                 <th>تاريخ التسجيل</th>
-
                 <th>الإجراءات</th>
-
               </tr>
 
             </thead>
 
-            <tbody id="users-table-body"></tbody>
+            <tbody>
+
+              ${data.users.map(user => `
+
+                <tr>
+
+                  <td>
+                    ${user.id}
+                  </td>
+
+                  <td>
+                    ${escapeHtml(user.name)}
+                  </td>
+
+                  <td dir="ltr">
+                    ${escapeHtml(user.email)}
+                  </td>
+
+                  <td>
+                    ${escapeHtml(user.grade)}
+                  </td>
+
+                  <td>
+                    ${escapeHtml(user.created_at)}
+                  </td>
+
+                  <td>
+
+                    <div class="actions">
+
+                      <button
+                        class="btn btn-warning"
+                        onclick="openResetPasswordModal(${user.id}, '${escapeJs(user.name)}')"
+                      >
+                        🔑 كلمة المرور
+                      </button>
+
+                      <button
+                        class="btn btn-danger"
+                        onclick="deleteUser(${user.id}, '${escapeJs(user.name)}')"
+                      >
+                        🗑 حذف
+                      </button>
+
+                    </div>
+
+                  </td>
+
+                </tr>
+
+              `).join("")}
+
+            </tbody>
 
           </table>
 
         </div>
 
-      </section>
+      `;
 
-    </main>
+    } catch (error) {
 
-  </section>
+      container.innerHTML =
+        `<div class="empty">
+          ${escapeHtml(error.message)}
+        </div>`;
 
+    }
 
-  <!-- =====================================================
-       RESET PASSWORD MODAL
-  ====================================================== -->
-
-  <div
-    id="reset-modal"
-    class="modal-overlay hidden"
-  >
-
-    <div class="modal">
-
-      <h3>
-        إعادة تعيين كلمة المرور
-      </h3>
-
-      <p id="reset-user-info">
-        تغيير كلمة مرور الطالب.
-      </p>
-
-      <div class="form-group">
-
-        <label for="new-password">
-          كلمة المرور الجديدة
-        </label>
-
-        <input
-          id="new-password"
-          type="password"
-          placeholder="6 أحرف على الأقل"
-          minlength="6"
-        >
-
-      </div>
-
-      <div class="modal-actions">
-
-        <button
-          class="btn cancel-btn"
-          onclick="closeResetModal()"
-        >
-          إلغاء
-        </button>
-
-        <button
-          id="reset-confirm-button"
-          class="btn confirm-btn"
-          onclick="confirmResetPassword()"
-        >
-          تغيير كلمة المرور
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
+  }
 
 
-  <!-- =====================================================
-       DELETE MODAL
-  ====================================================== -->
+  function escapeJs(value) {
 
-  <div
-    id="delete-modal"
-    class="modal-overlay hidden"
-  >
+    return String(value || "")
+      .replace(/\\/g, "\\\\")
+      .replace(/'/g, "\\'")
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, "\\n")
+      .replace(/\r/g, "\\r");
 
-    <div class="modal">
-
-      <h3>
-        حذف الحساب
-      </h3>
-
-      <p id="delete-user-info">
-        هل أنت متأكد من حذف هذا الحساب؟
-      </p>
-
-      <div class="modal-actions">
-
-        <button
-          class="btn cancel-btn"
-          onclick="closeDeleteModal()"
-        >
-          إلغاء
-        </button>
-
-        <button
-          id="delete-confirm-button"
-          class="btn delete-btn"
-          onclick="confirmDeleteUser()"
-        >
-          حذف الحساب
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
+  }
 
 
-  <div id="toast"></div>
+  function openResetPasswordModal(
+    userId,
+    userName
+  ) {
+
+    openModal(
+      "تغيير كلمة المرور",
+      `
+
+        <div class="card">
+
+          <p style="margin-bottom:15px;">
+            تغيير كلمة مرور:
+            <strong>
+              ${escapeHtml(userName)}
+            </strong>
+          </p>
+
+          <div class="form-group">
+
+            <label>
+              كلمة المرور الجديدة
+            </label>
+
+            <input
+              type="password"
+              id="newUserPassword"
+              minlength="6"
+              placeholder="6 أحرف على الأقل"
+            >
+
+          </div>
+
+          <button
+            class="btn btn-warning"
+            onclick="resetUserPassword(${userId})"
+          >
+            حفظ كلمة المرور
+          </button>
+
+          <div
+            id="resetPasswordMessage"
+            class="message"
+          ></div>
+
+        </div>
+
+      `
+    );
+
+  }
 
 
-  <!-- =====================================================
-       JAVASCRIPT
-  ====================================================== -->
+  async function resetUserPassword(
+    userId
+  ) {
 
-  <script>
+    const password =
+      document
+        .getElementById("newUserPassword")
+        .value;
 
-    /*
-      =====================================================
-      IMPORTANT:
-      تم تغيير رابط API هنا فقط ليشير مباشرة إلى Render
-      =====================================================
-    */
+    if (
+      !password ||
+      password.length < 6
+    ) {
 
-    const API_BASE_URL =
-      "https://drnotes-apii.onrender.com/api";
-
-
-    let adminToken =
-      localStorage.getItem(
-        "drnotes_admin_token"
+      showMessage(
+        "resetPasswordMessage",
+        "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
+        "error"
       );
 
+      return;
 
-    let allUsers = [];
+    }
 
-    let selectedUserId = null;
+    try {
+
+      await api(
+        `/api/admin/users/${userId}/reset-password`,
+        {
+          method: "POST",
+
+          body: {
+            newPassword: password
+          }
+        }
+      );
+
+      showMessage(
+        "resetPasswordMessage",
+        "تم تغيير كلمة المرور بنجاح.",
+        "success"
+      );
+
+      setTimeout(
+        closeModal,
+        900
+      );
+
+    } catch (error) {
+
+      showMessage(
+        "resetPasswordMessage",
+        error.message,
+        "error"
+      );
+
+    }
+
+  }
 
 
-    // =====================================================
-    // INITIALIZATION
-    // =====================================================
+  async function deleteUser(
+    userId,
+    userName
+  ) {
 
-    document.addEventListener(
-      "DOMContentLoaded",
-      () => {
+    const confirmed =
+      confirm(
+        `هل أنت متأكد من حذف المستخدم "${userName}"؟`
+      );
 
-        if (adminToken) {
+    if (!confirmed) return;
 
-          showAdminApp();
+    try {
 
-          loadDashboard();
+      await api(
+        `/api/admin/users/${userId}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      await loadUsers();
+
+      await loadDashboard();
+
+    } catch (error) {
+
+      alert(error.message);
+
+    }
+
+  }
+
+
+  /* =========================================================
+     SUBJECTS / UNITS / LESSONS
+  ========================================================= */
+
+  async function loadContentTree() {
+
+    const container =
+      document.getElementById(
+        "contentTree"
+      );
+
+    container.innerHTML =
+      `<div class="loading">جاري تحميل المواد...</div>`;
+
+    try {
+
+      const data =
+        await api(
+          "/api/subjects"
+        );
+
+      if (
+        !data.subjects ||
+        data.subjects.length === 0
+      ) {
+
+        container.innerHTML =
+          `<div class="empty">
+            لا توجد مواد حتى الآن.
+          </div>`;
+
+        return;
+
+      }
+
+      const htmlParts = [];
+
+      for (
+        const subject
+        of data.subjects
+      ) {
+
+        const units =
+          await api(
+            `/api/subjects/${subject.id}/units`
+          );
+
+        let unitsHtml = "";
+
+        if (
+          units.units.length === 0
+        ) {
+
+          unitsHtml =
+            `<div class="empty">
+              لا توجد وحدات لهذه المادة.
+            </div>`;
 
         } else {
 
-          showLoginPage();
+          const unitParts = [];
 
-        }
+          for (
+            const unit
+            of units.units
+          ) {
 
-      }
-    );
-
-
-    // =====================================================
-    // LOGIN
-    // =====================================================
-
-    document
-      .getElementById("admin-login-form")
-      .addEventListener(
-        "submit",
-        async function(event) {
-
-          event.preventDefault();
-
-          const email =
-            document
-              .getElementById("admin-email")
-              .value
-              .trim();
-
-          const password =
-            document
-              .getElementById("admin-password")
-              .value;
-
-          const button =
-            document.getElementById(
-              "login-button"
-            );
-
-          const errorBox =
-            document.getElementById(
-              "login-error"
-            );
-
-          errorBox.classList.add(
-            "hidden"
-          );
-
-          button.disabled = true;
-
-          button.textContent =
-            "جاري تسجيل الدخول...";
-
-          try {
-
-            const response =
-              await fetch(
-                `${API_BASE_URL}/admin/login`,
-                {
-                  method: "POST",
-
-                  headers: {
-                    "Content-Type":
-                      "application/json"
-                  },
-
-                  body: JSON.stringify({
-                    email,
-                    password
-                  })
-                }
+            const lessons =
+              await api(
+                `/api/units/${unit.id}/lessons`
               );
 
-            const data =
-              await response.json();
+            let lessonsHtml = "";
 
             if (
-              !response.ok ||
-              !data.success
+              lessons.lessons.length === 0
             ) {
 
-              throw new Error(
-                data.message ||
-                "فشل تسجيل الدخول."
-              );
+              lessonsHtml =
+                `<div class="empty">
+                  لا توجد دروس.
+                </div>`;
+
+            } else {
+
+              lessonsHtml =
+                lessons.lessons
+                  .map(
+                    lesson => `
+
+                      <div class="lesson-row">
+
+                        <div>
+
+                          <strong>
+                            ${escapeHtml(lesson.name)}
+                          </strong>
+
+                          ${
+                            lesson.description
+                              ? `
+                                <div
+                                  style="
+                                    color:#64748b;
+                                    font-size:12px;
+                                    margin-top:4px;
+                                  "
+                                >
+                                  ${escapeHtml(lesson.description)}
+                                </div>
+                              `
+                              : ""
+                          }
+
+                        </div>
+
+                        <div class="actions">
+
+                          <button
+                            class="btn btn-primary"
+                            onclick="openLessonContentModal(${lesson.id}, '${escapeJs(lesson.name)}')"
+                          >
+                            📚 المحتوى
+                          </button>
+
+                        </div>
+
+                      </div>
+
+                    `
+                  )
+                  .join("");
 
             }
 
-            adminToken =
-              data.token;
+            unitParts.push(`
 
-            localStorage.setItem(
-              "drnotes_admin_token",
-              adminToken
-            );
+              <div class="unit-box">
 
-            document
-              .getElementById(
-                "admin-password"
-              )
-              .value = "";
+                <div class="unit-header">
 
-            showAdminApp();
+                  <div>
+                    <strong>
+                      ${escapeHtml(unit.name)}
+                    </strong>
 
-            await loadDashboard();
+                    <div
+                      style="
+                        color:#64748b;
+                        font-size:12px;
+                        margin-top:3px;
+                      "
+                    >
+                      ترتيب: ${unit.unit_order}
+                    </div>
+                  </div>
 
-            showToast(
-              "تم تسجيل دخول المدير بنجاح.",
-              "success"
-            );
+                  <button
+                    class="btn btn-success"
+                    onclick="openLessonModal(${unit.id}, '${escapeJs(unit.name)}')"
+                  >
+                    ➕ إضافة درس
+                  </button>
 
-          } catch (error) {
+                </div>
 
-            console.error(
-              "Admin login error:",
-              error
-            );
+                <div class="lesson-list">
 
-            errorBox.textContent =
-              error.message ||
-              "حدث خطأ أثناء تسجيل الدخول.";
+                  ${lessonsHtml}
 
-            errorBox.classList.remove(
-              "hidden"
-            );
+                </div>
 
-          } finally {
+              </div>
 
-            button.disabled = false;
+            `);
 
-            button.textContent =
-              "تسجيل الدخول";
+          }
+
+          unitsHtml =
+            unitParts.join("");
+
+        }
+
+        htmlParts.push(`
+
+          <div class="tree-card">
+
+            <div class="tree-header">
+
+              <div>
+
+                <div class="tree-name">
+                  ${escapeHtml(subject.name)}
+                </div>
+
+                ${
+                  subject.description
+                    ? `
+                      <div
+                        style="
+                          color:#64748b;
+                          font-size:13px;
+                          margin-top:5px;
+                        "
+                      >
+                        ${escapeHtml(subject.description)}
+                      </div>
+                    `
+                    : ""
+                }
+
+              </div>
+
+              <button
+                class="btn btn-success"
+                onclick="openUnitModal(${subject.id}, '${escapeJs(subject.name)}')"
+              >
+                ➕ إضافة وحدة
+              </button>
+
+            </div>
+
+            <div class="tree-body">
+
+              ${unitsHtml}
+
+            </div>
+
+          </div>
+
+        `);
+
+      }
+
+      container.innerHTML =
+        htmlParts.join("");
+
+    } catch (error) {
+
+      container.innerHTML =
+        `<div class="empty">
+          ${escapeHtml(error.message)}
+        </div>`;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     ADD SUBJECT
+  ========================================================= */
+
+  function openSubjectModal() {
+
+    openModal(
+      "إضافة مادة",
+      `
+
+        <form
+          id="subjectForm"
+          onsubmit="createSubject(event)"
+        >
+
+          <div class="form-group">
+
+            <label>
+              اسم المادة
+            </label>
+
+            <input
+              id="subjectName"
+              required
+              placeholder="مثال: الأحياء"
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              وصف المادة
+            </label>
+
+            <textarea
+              id="subjectDescription"
+              placeholder="وصف مختصر للمادة"
+            ></textarea>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              رابط صورة المادة
+            </label>
+
+            <input
+              id="subjectImage"
+              type="url"
+              placeholder="https://..."
+            >
+
+          </div>
+
+          <button
+            class="btn btn-primary"
+            type="submit"
+          >
+            إضافة المادة
+          </button>
+
+          <div
+            id="subjectMessage"
+            class="message"
+          ></div>
+
+        </form>
+
+      `
+    );
+
+  }
+
+
+  async function createSubject(event) {
+
+    event.preventDefault();
+
+    try {
+
+      await api(
+        "/api/admin/subjects",
+        {
+          method: "POST",
+
+          body: {
+
+            name:
+              document
+                .getElementById("subjectName")
+                .value
+                .trim(),
+
+            description:
+              document
+                .getElementById("subjectDescription")
+                .value
+                .trim(),
+
+            image_url:
+              document
+                .getElementById("subjectImage")
+                .value
+                .trim()
+
           }
 
         }
       );
 
+      closeModal();
 
-    // =====================================================
-    // SHOW / HIDE
-    // =====================================================
+      await loadContentTree();
 
-    function showLoginPage() {
+      await loadDashboard();
 
-      document
-        .getElementById("login-page")
-        .classList.remove("hidden");
+    } catch (error) {
 
-      document
-        .getElementById("admin-app")
-        .classList.add("hidden");
-
-    }
-
-
-    function showAdminApp() {
-
-      document
-        .getElementById("login-page")
-        .classList.add("hidden");
-
-      document
-        .getElementById("admin-app")
-        .classList.remove("hidden");
+      showMessage(
+        "subjectMessage",
+        error.message,
+        "error"
+      );
 
     }
 
-
-    // =====================================================
-    // LOAD DASHBOARD
-    // =====================================================
-
-    async function loadDashboard() {
-
-      try {
-
-        await Promise.all([
-          loadUsers(),
-          checkDatabase(),
-          loadSubjectsForContent()
-        ]);
-
-      } catch (error) {
-
-        console.error(
-          "Dashboard error:",
-          error
-        );
-
-      }
-
-    }
+  }
 
 
-    // =====================================================
-    // CONTENT MANAGEMENT
-    // =====================================================
+  /* =========================================================
+     ADD UNIT
+  ========================================================= */
 
-    async function loadSubjectsForContent() {
+  function openUnitModal(
+    subjectId,
+    subjectName
+  ) {
 
-      const subjectSelect =
-        document.getElementById(
-          "content-subject"
-        );
+    openModal(
+      "إضافة وحدة",
+      `
 
-      try {
+        <form
+          onsubmit="createUnit(event, ${subjectId})"
+        >
 
-        subjectSelect.innerHTML = `
-          <option value="">
-            جارٍ تحميل المواد...
-          </option>
-        `;
+          <p
+            style="
+              margin-bottom:15px;
+              color:#64748b;
+            "
+          >
+            المادة:
+            <strong>
+              ${escapeHtml(subjectName)}
+            </strong>
+          </p>
 
-        subjectSelect.disabled = true;
+          <div class="form-group">
 
-        const response =
-          await fetch(
-            `${API_BASE_URL}/subjects`
-          );
+            <label>
+              اسم الوحدة
+            </label>
 
-        const data =
-          await response.json();
+            <input
+              id="unitName"
+              required
+              placeholder="مثال: الوحدة الأولى"
+            >
 
-        if (
-          !response.ok ||
-          !data.success
-        ) {
+          </div>
 
-          throw new Error(
-            data.message ||
-            "تعذر تحميل المواد."
-          );
+          <div class="form-group">
 
-        }
+            <label>
+              وصف الوحدة
+            </label>
 
-        const subjects =
-          data.subjects || [];
+            <textarea
+              id="unitDescription"
+              placeholder="وصف الوحدة"
+            ></textarea>
 
-        subjectSelect.innerHTML = `
-          <option value="">
-            اختر المادة
-          </option>
-        `;
+          </div>
 
-        subjects.forEach(
-          subject => {
+          <div class="form-group">
 
-            const option =
-              document.createElement(
-                "option"
-              );
+            <label>
+              ترتيب الوحدة
+            </label>
 
-            option.value =
-              subject.id;
+            <input
+              id="unitOrder"
+              type="number"
+              value="0"
+            >
 
-            option.textContent =
-              subject.name;
+          </div>
 
-            subjectSelect.appendChild(
-              option
-            );
+          <button
+            class="btn btn-primary"
+            type="submit"
+          >
+            إضافة الوحدة
+          </button>
+
+          <div
+            id="unitMessage"
+            class="message"
+          ></div>
+
+        </form>
+
+      `
+    );
+
+  }
+
+
+  async function createUnit(
+    event,
+    subjectId
+  ) {
+
+    event.preventDefault();
+
+    try {
+
+      await api(
+        "/api/admin/units",
+        {
+          method: "POST",
+
+          body: {
+
+            subject_id:
+              subjectId,
+
+            name:
+              document
+                .getElementById("unitName")
+                .value
+                .trim(),
+
+            description:
+              document
+                .getElementById("unitDescription")
+                .value
+                .trim(),
+
+            unit_order:
+              Number(
+                document
+                  .getElementById("unitOrder")
+                  .value
+              ) || 0
 
           }
-        );
 
-        subjectSelect.disabled =
-          false;
+        }
+      );
 
-      } catch (error) {
+      closeModal();
 
-        console.error(
-          "Load subjects error:",
-          error
-        );
+      await loadContentTree();
 
-        subjectSelect.innerHTML = `
-          <option value="">
-            تعذر تحميل المواد
-          </option>
-        `;
+    } catch (error) {
 
-        showToast(
-          error.message ||
-          "تعذر تحميل المواد.",
-          "error"
-        );
-
-      }
+      showMessage(
+        "unitMessage",
+        error.message,
+        "error"
+      );
 
     }
 
-
-    // =====================================================
-    // LOAD UNITS
-    // =====================================================
-
-    async function loadUnitsForContent() {
-
-      const subjectId =
-        document.getElementById(
-          "content-subject"
-        ).value;
-
-      const unitSelect =
-        document.getElementById(
-          "content-unit"
-        );
-
-      const lessonSelect =
-        document.getElementById(
-          "content-lesson"
-        );
+  }
 
 
-      lessonSelect.innerHTML = `
-        <option value="">
-          اختر الدرس
-        </option>
-      `;
+  /* =========================================================
+     ADD LESSON
+  ========================================================= */
 
-      lessonSelect.disabled =
-        true;
+  function openLessonModal(
+    unitId,
+    unitName
+  ) {
+
+    openModal(
+      "إضافة درس",
+      `
+
+        <form
+          onsubmit="createLesson(event, ${unitId})"
+        >
+
+          <p
+            style="
+              margin-bottom:15px;
+              color:#64748b;
+            "
+          >
+            الوحدة:
+            <strong>
+              ${escapeHtml(unitName)}
+            </strong>
+          </p>
+
+          <div class="form-group">
+
+            <label>
+              اسم الدرس
+            </label>
+
+            <input
+              id="lessonName"
+              required
+              placeholder="اسم الدرس"
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              وصف الدرس
+            </label>
+
+            <textarea
+              id="lessonDescription"
+              placeholder="وصف مختصر للدرس"
+            ></textarea>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              ترتيب الدرس
+            </label>
+
+            <input
+              id="lessonOrder"
+              type="number"
+              value="0"
+            >
+
+          </div>
+
+          <button
+            class="btn btn-primary"
+            type="submit"
+          >
+            إضافة الدرس
+          </button>
+
+          <div
+            id="lessonMessage"
+            class="message"
+          ></div>
+
+        </form>
+
+      `
+    );
+
+  }
 
 
-      document
-        .getElementById(
-          "lesson-content-area"
-        )
-        .classList.add(
-          "hidden"
-        );
+  async function createLesson(
+    event,
+    unitId
+  ) {
 
+    event.preventDefault();
 
-      if (!subjectId) {
+    try {
 
-        unitSelect.innerHTML = `
-          <option value="">
-            اختر الوحدة
-          </option>
-        `;
+      await api(
+        "/api/admin/lessons",
+        {
+          method: "POST",
 
-        unitSelect.disabled =
-          true;
+          body: {
 
-        return;
+            unit_id:
+              unitId,
 
-      }
+            name:
+              document
+                .getElementById("lessonName")
+                .value
+                .trim(),
 
+            description:
+              document
+                .getElementById("lessonDescription")
+                .value
+                .trim(),
 
-      try {
-
-        unitSelect.innerHTML = `
-          <option value="">
-            جارٍ تحميل الوحدات...
-          </option>
-        `;
-
-        unitSelect.disabled =
-          true;
-
-
-        const response =
-          await fetch(
-            `${API_BASE_URL}/subjects/${subjectId}/units`
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          throw new Error(
-            data.message ||
-            "تعذر تحميل الوحدات."
-          );
-
-        }
-
-
-        const units =
-          data.units || [];
-
-
-        unitSelect.innerHTML = `
-          <option value="">
-            اختر الوحدة
-          </option>
-        `;
-
-
-        units.forEach(
-          unit => {
-
-            const option =
-              document.createElement(
-                "option"
-              );
-
-            option.value =
-              unit.id;
-
-            option.textContent =
-              unit.name;
-
-            unitSelect.appendChild(
-              option
-            );
+            lesson_order:
+              Number(
+                document
+                  .getElementById("lessonOrder")
+                  .value
+              ) || 0
 
           }
-        );
 
+        }
+      );
 
-        unitSelect.disabled =
-          false;
+      closeModal();
 
+      await loadContentTree();
 
-      } catch (error) {
+      await loadDashboard();
 
-        console.error(
-          "Load units error:",
-          error
-        );
+    } catch (error) {
 
-
-        unitSelect.innerHTML = `
-          <option value="">
-            تعذر تحميل الوحدات
-          </option>
-        `;
-
-
-        showToast(
-          error.message ||
-          "تعذر تحميل الوحدات.",
-          "error"
-        );
-
-      }
+      showMessage(
+        "lessonMessage",
+        error.message,
+        "error"
+      );
 
     }
 
+  }
 
-    // =====================================================
-    // LOAD LESSONS
-    // =====================================================
 
-    async function loadLessonsForContent() {
+  /* =========================================================
+     LESSON CONTENT
+  ========================================================= */
 
-      const unitId =
-        document.getElementById(
-          "content-unit"
-        ).value;
+  async function openLessonContentModal(
+    lessonId,
+    lessonName
+  ) {
 
-      const lessonSelect =
-        document.getElementById(
-          "content-lesson"
-        );
+    openModal(
+      "محتوى الدرس",
+      `<div class="loading">جاري تحميل المحتوى...</div>`
+    );
 
-
-      document
-        .getElementById(
-          "lesson-content-area"
-        )
-        .classList.add(
-          "hidden"
-        );
-
-
-      clearLessonContentForm();
-
-
-      if (!unitId) {
-
-        lessonSelect.innerHTML = `
-          <option value="">
-            اختر الدرس
-          </option>
-        `;
-
-        lessonSelect.disabled =
-          true;
-
-        return;
-
-      }
-
-
-      try {
-
-        lessonSelect.innerHTML = `
-          <option value="">
-            جارٍ تحميل الدروس...
-          </option>
-        `;
-
-        lessonSelect.disabled =
-          true;
-
-
-        const response =
-          await fetch(
-            `${API_BASE_URL}/units/${unitId}/lessons`
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          throw new Error(
-            data.message ||
-            "تعذر تحميل الدروس."
-          );
-
-        }
-
-
-        const lessons =
-          data.lessons || [];
-
-
-        lessonSelect.innerHTML = `
-          <option value="">
-            اختر الدرس
-          </option>
-        `;
-
-
-        lessons.forEach(
-          lesson => {
-
-            const option =
-              document.createElement(
-                "option"
-              );
-
-            option.value =
-              lesson.id;
-
-            option.textContent =
-              lesson.name;
-
-            lessonSelect.appendChild(
-              option
-            );
-
-          }
-        );
-
-
-        lessonSelect.disabled =
-          false;
-
-
-      } catch (error) {
-
-        console.error(
-          "Load lessons error:",
-          error
-        );
-
-
-        lessonSelect.innerHTML = `
-          <option value="">
-            تعذر تحميل الدروس
-          </option>
-        `;
-
-
-        showToast(
-          error.message ||
-          "تعذر تحميل الدروس.",
-          "error"
-        );
-
-      }
-
-    }
-
-
-    // =====================================================
-    // LOAD LESSON CONTENT
-    // =====================================================
-
-    async function loadLessonContent() {
-
-      const lessonId =
-        document.getElementById(
-          "content-lesson"
-        ).value;
-
-
-      const area =
-        document.getElementById(
-          "lesson-content-area"
-        );
-
-
-      if (!lessonId) {
-
-        area.classList.add(
-          "hidden"
-        );
-
-        clearLessonContentForm();
-
-        return;
-
-      }
-
-
-      const loading =
-        document.getElementById(
-          "content-loading"
-        );
-
-
-      try {
-
-        loading.classList.remove(
-          "hidden"
-        );
-
-        area.classList.add(
-          "hidden"
-        );
-
-
-        const response =
-          await fetch(
-            `${API_BASE_URL}/lessons/${lessonId}`
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          throw new Error(
-            data.message ||
-            "تعذر تحميل بيانات الدرس."
-          );
-
-        }
-
-
-        const lesson =
-          data.lesson;
-
-
-        document
-          .getElementById(
-            "selected-lesson-name"
-          )
-          .textContent =
-            `📝 الدرس المحدد: ${lesson.name}`;
-
-
-        document
-          .getElementById(
-            "video-url"
-          )
-          .value =
-            lesson.video_url || "";
-
-
-        document
-          .getElementById(
-            "pdf-url"
-          )
-          .value =
-            lesson.pdf_url || "";
-
-
-        document
-          .getElementById(
-            "lesson-explanation"
-          )
-          .value =
-            lesson.explanation || "";
-
-
-        area.classList.remove(
-          "hidden"
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "Load lesson content error:",
-          error
-        );
-
-
-        showToast(
-          error.message ||
-          "تعذر تحميل محتوى الدرس.",
-          "error"
-        );
-
-
-      } finally {
-
-        loading.classList.add(
-          "hidden"
-        );
-
-      }
-
-    }
-
-
-    // =====================================================
-    // SAVE LESSON CONTENT
-    // =====================================================
-
-    async function saveLessonContent() {
-
-      const lessonId =
-        document.getElementById(
-          "content-lesson"
-        ).value;
-
-
-      if (!lessonId) {
-
-        showToast(
-          "اختر الدرس أولًا.",
-          "warning"
-        );
-
-        return;
-
-      }
-
-
-      const videoUrl =
-        document
-          .getElementById(
-            "video-url"
-          )
-          .value
-          .trim();
-
-
-      const pdfUrl =
-        document
-          .getElementById(
-            "pdf-url"
-          )
-          .value
-          .trim();
-
-
-      const explanation =
-        document
-          .getElementById(
-            "lesson-explanation"
-          )
-          .value
-          .trim();
-
-
-      if (!videoUrl && !pdfUrl && !explanation) {
-
-        const confirmed =
-          confirm(
-            "لم تضف فيديو أو ملف أو شرح. هل تريد حفظ المحتوى فارغًا؟"
-          );
-
-        if (!confirmed) {
-          return;
-        }
-
-      }
-
-
-      const button =
-        document.getElementById(
-          "save-content-button"
-        );
-
-
-      button.disabled =
-        true;
-
-      button.textContent =
-        "جاري الحفظ...";
-
-
-      try {
-
-        const response =
-          await fetch(
-            `${API_BASE_URL}/admin/lessons/${lessonId}/content`,
-            {
-              method: "POST",
-
-              headers: {
-
-                "Content-Type":
-                  "application/json",
-
-                "Authorization":
-                  `Bearer ${adminToken}`
-
-              },
-
-              body:
-                JSON.stringify({
-
-                  video_url:
-                    videoUrl || null,
-
-                  pdf_url:
-                    pdfUrl || null,
-
-                  explanation:
-                    explanation || null
-
-                })
-
-            }
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (
-          response.status === 401 ||
-          response.status === 403
-        ) {
-
-          adminLogout();
-
-          return;
-
-        }
-
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          throw new Error(
-            data.message ||
-            "تعذر حفظ محتوى الدرس."
-          );
-
-        }
-
-
-        showToast(
-          "تم حفظ / تحديث محتوى الدرس بنجاح ✅",
-          "success"
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "Save lesson content error:",
-          error
-        );
-
-
-        showToast(
-          error.message ||
-          "حدث خطأ أثناء حفظ المحتوى.",
-          "error"
-        );
-
-
-      } finally {
-
-        button.disabled =
-          false;
-
-        button.textContent =
-          "💾 حفظ / تحديث المحتوى";
-
-      }
-
-    }
-
-
-    // =====================================================
-    // CLEAR CONTENT
-    // =====================================================
-
-    function clearLessonContentForm() {
-
-      const video =
-        document.getElementById(
-          "video-url"
-        );
-
-      const pdf =
-        document.getElementById(
-          "pdf-url"
-        );
-
-      const explanation =
-        document.getElementById(
-          "lesson-explanation"
-        );
-
-
-      if (video) {
-        video.value = "";
-      }
-
-
-      if (pdf) {
-        pdf.value = "";
-      }
-
-
-      if (explanation) {
-        explanation.value = "";
-      }
-
-    }
-
-
-    // =====================================================
-    // LOAD USERS
-    // =====================================================
-
-    async function loadUsers() {
-
-      const response =
-        await fetch(
-          `${API_BASE_URL}/admin/users`,
-          {
-            method: "GET",
-
-            headers: {
-              "Authorization":
-                `Bearer ${adminToken}`
-            }
-          }
-        );
-
+    try {
 
       const data =
-        await response.json();
-
-
-      if (
-        response.status === 401 ||
-        response.status === 403
-      ) {
-
-        adminLogout();
-
-        throw new Error(
-          "انتهت جلسة المدير."
+        await api(
+          `/api/admin/lessons/${lessonId}/content`
         );
 
-      }
+      const content =
+        data.content || {};
+
+      openModal(
+        `محتوى: ${lessonName}`,
+        `
+
+          <div class="card">
+
+            <div class="card-title">
+              📚 شرح الدرس
+            </div>
+
+            <div class="form-group">
+
+              <label>
+                رابط فيديو الشرح
+              </label>
+
+              <input
+                id="explanationVideo"
+                type="url"
+                value="${escapeHtml(content.explanation_video_url || "")}"
+                placeholder="رابط فيديو الشرح"
+              >
+
+            </div>
+
+            <div class="form-group">
+
+              <label>
+                رابط PDF الشرح
+              </label>
+
+              <input
+                id="explanationPdf"
+                type="url"
+                value="${escapeHtml(content.explanation_pdf_url || "")}"
+                placeholder="رابط ملف PDF"
+              >
+
+            </div>
+
+            <div class="form-group">
+
+              <label>
+                شرح نصي
+              </label>
+
+              <textarea
+                id="explanationText"
+                placeholder="اكتب شرح الدرس هنا..."
+              >${escapeHtml(content.explanation_text || "")}</textarea>
+
+            </div>
+
+            <button
+              class="btn btn-primary"
+              onclick="saveLessonContent(${lessonId})"
+            >
+              💾 حفظ شرح الدرس
+            </button>
+
+            <div
+              id="contentSaveMessage"
+              class="message"
+            ></div>
+
+          </div>
 
 
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-
-        throw new Error(
-          data.message ||
-          "تعذر تحميل المستخدمين."
-        );
-
-      }
+          <hr class="section-divider">
 
 
-      allUsers =
-        data.users || [];
+          <div class="card">
 
+            <div class="card-title">
+              ✅ حل الدرس
+            </div>
 
-      document
-        .getElementById(
-          "users-count"
-        )
-        .textContent =
-          allUsers.length;
+            <div class="form-group">
 
+              <label>
+                رابط فيديو الحل
+              </label>
 
-      renderUsers(
-        allUsers
+              <input
+                id="solutionVideo"
+                type="url"
+                value="${escapeHtml(content.solution_video_url || "")}"
+                placeholder="رابط فيديو الحل"
+              >
+
+            </div>
+
+            <div class="form-group">
+
+              <label>
+                رابط PDF الحل
+              </label>
+
+              <input
+                id="solutionPdf"
+                type="url"
+                value="${escapeHtml(content.solution_pdf_url || "")}"
+                placeholder="رابط ملف PDF الحل"
+              >
+
+            </div>
+
+            <div class="form-group">
+
+              <label>
+                شرح نصي للحل
+              </label>
+
+              <textarea
+                id="solutionText"
+                placeholder="اكتب شرح الحل هنا..."
+              >${escapeHtml(content.solution_text || "")}</textarea>
+
+            </div>
+
+            <button
+              class="btn btn-success"
+              onclick="saveLessonSolution(${lessonId})"
+            >
+              💾 حفظ حل الدرس
+            </button>
+
+            <div
+              id="solutionSaveMessage"
+              class="message"
+            ></div>
+
+          </div>
+
+        `
+      );
+
+    } catch (error) {
+
+      openModal(
+        `محتوى: ${lessonName}`,
+        `<div class="message error" style="display:block;">
+          ${escapeHtml(error.message)}
+        </div>`
       );
 
     }
 
+  }
 
-    // =====================================================
-    // RENDER USERS
-    // =====================================================
 
-    function renderUsers(
-      users
-    ) {
+  async function saveLessonContent(
+    lessonId
+  ) {
 
-      const tbody =
-        document.getElementById(
-          "users-table-body"
+    try {
+
+      await api(
+        `/api/admin/lessons/${lessonId}/content`,
+        {
+          method: "POST",
+
+          body: {
+
+            video_url:
+              document
+                .getElementById("explanationVideo")
+                .value
+                .trim(),
+
+            pdf_url:
+              document
+                .getElementById("explanationPdf")
+                .value
+                .trim(),
+
+            explanation:
+              document
+                .getElementById("explanationText")
+                .value
+                .trim()
+
+          }
+
+        }
+      );
+
+      showMessage(
+        "contentSaveMessage",
+        "تم حفظ شرح الدرس بنجاح.",
+        "success"
+      );
+
+    } catch (error) {
+
+      showMessage(
+        "contentSaveMessage",
+        error.message,
+        "error"
+      );
+
+    }
+
+  }
+
+
+  async function saveLessonSolution(
+    lessonId
+  ) {
+
+    try {
+
+      await api(
+        `/api/admin/lessons/${lessonId}/solution`,
+        {
+          method: "POST",
+
+          body: {
+
+            video_url:
+              document
+                .getElementById("solutionVideo")
+                .value
+                .trim(),
+
+            pdf_url:
+              document
+                .getElementById("solutionPdf")
+                .value
+                .trim(),
+
+            explanation:
+              document
+                .getElementById("solutionText")
+                .value
+                .trim()
+
+          }
+
+        }
+      );
+
+      showMessage(
+        "solutionSaveMessage",
+        "تم حفظ حل الدرس بنجاح.",
+        "success"
+      );
+
+    } catch (error) {
+
+      showMessage(
+        "solutionSaveMessage",
+        error.message,
+        "error"
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     QUIZZES
+  ========================================================= */
+
+  async function loadQuizzes() {
+
+    const container =
+      document.getElementById(
+        "quizzesContainer"
+      );
+
+    container.innerHTML =
+      `<div class="loading">جاري تحميل الاختبارات...</div>`;
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/quizzes"
         );
 
+      if (
+        !data.quizzes ||
+        data.quizzes.length === 0
+      ) {
 
-      if (!users.length) {
-
-        tbody.innerHTML = `
-          <tr>
-            <td
-              colspan="6"
-              class="empty"
-            >
-              لا يوجد طلاب مسجلون حاليًا.
-            </td>
-          </tr>
-        `;
+        container.innerHTML =
+          `<div class="empty">
+            لا توجد اختبارات.
+          </div>`;
 
         return;
+
       }
 
+      container.innerHTML =
+        data.quizzes
+          .map(
+            quiz => `
 
-      tbody.innerHTML =
-        users.map(
-          (user, index) => {
+              <div class="card">
 
-            const date =
-              formatDate(
-                user.created_at
-              );
+                <div
+                  style="
+                    display:flex;
+                    justify-content:space-between;
+                    gap:15px;
+                    align-items:flex-start;
+                    flex-wrap:wrap;
+                  "
+                >
 
+                  <div>
 
-            return `
-              <tr>
+                    <h3>
+                      ${escapeHtml(quiz.title)}
+                    </h3>
 
-                <td>
-                  ${index + 1}
-                </td>
+                    <p
+                      style="
+                        color:#64748b;
+                        margin-top:5px;
+                      "
+                    >
+                      الدرس:
+                      ${escapeHtml(quiz.lesson_name)}
+                    </p>
 
-                <td>
-                  <strong>
-                    ${escapeHTML(
-                      user.name
-                    )}
-                  </strong>
-                </td>
+                    ${
+                      quiz.description
+                        ? `
+                          <p
+                            style="
+                              color:#64748b;
+                              margin-top:5px;
+                              font-size:13px;
+                            "
+                          >
+                            ${escapeHtml(quiz.description)}
+                          </p>
+                        `
+                        : ""
+                    }
 
-                <td>
-                  ${escapeHTML(
-                    user.email
-                  )}
-                </td>
+                  </div>
 
-                <td>
-                  ${escapeHTML(
-                    user.grade
-                  )}
-                </td>
-
-                <td>
-                  ${date}
-                </td>
-
-                <td>
-
-                  <div class="action-buttons">
+                  <div class="actions">
 
                     <button
-                      class="action-btn reset-btn"
-                      onclick="openResetModal(
-                        ${user.id},
-                        '${escapeJS(
-                          user.name
-                        )}',
-                        '${escapeJS(
-                          user.email
-                        )}'
-                      )"
+                      class="btn btn-primary"
+                      onclick="openQuestionsModal(${quiz.id}, '${escapeJs(quiz.title)}')"
                     >
-                      🔑 إعادة تعيين
+                      📋 الأسئلة
                     </button>
 
                     <button
-                      class="action-btn delete-btn"
-                      onclick="openDeleteModal(
-                        ${user.id},
-                        '${escapeJS(
-                          user.name
-                        )}'
-                      )"
+                      class="btn btn-danger"
+                      onclick="deleteQuiz(${quiz.id})"
                     >
-                      🗑️ حذف
+                      🗑 حذف
                     </button>
 
                   </div>
 
-                </td>
+                </div>
 
-              </tr>
+                <div
+                  style="
+                    display:flex;
+                    gap:15px;
+                    margin-top:15px;
+                    flex-wrap:wrap;
+                    color:#64748b;
+                    font-size:13px;
+                  "
+                >
+
+                  <span>
+                    نسبة النجاح:
+                    ${quiz.passing_percentage}%
+                  </span>
+
+                  <span>
+                    أسئلة بالصفحة:
+                    ${quiz.questions_per_page}
+                  </span>
+
+                </div>
+
+              </div>
+
+            `
+          )
+          .join("");
+
+    } catch (error) {
+
+      container.innerHTML =
+        `<div class="empty">
+          ${escapeHtml(error.message)}
+        </div>`;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     CREATE QUIZ
+  ========================================================= */
+
+  async function openQuizModal() {
+
+    openModal(
+      "إنشاء اختبار",
+      `<div class="loading">جاري تحميل الدروس...</div>`
+    );
+
+    try {
+
+      const subjects =
+        await api(
+          "/api/subjects"
+        );
+
+      let lessonOptions = "";
+
+      for (
+        const subject
+        of subjects.subjects
+      ) {
+
+        const units =
+          await api(
+            `/api/subjects/${subject.id}/units`
+          );
+
+        for (
+          const unit
+          of units.units
+        ) {
+
+          const lessons =
+            await api(
+              `/api/units/${unit.id}/lessons`
+            );
+
+          for (
+            const lesson
+            of lessons.lessons
+          ) {
+
+            lessonOptions += `
+              <option value="${lesson.id}">
+                ${escapeHtml(subject.name)}
+                -
+                ${escapeHtml(unit.name)}
+                -
+                ${escapeHtml(lesson.name)}
+              </option>
             `;
 
           }
-        ).join("");
 
-    }
+        }
 
-
-    // =====================================================
-    // SEARCH
-    // =====================================================
-
-    function filterUsers() {
-
-      const query =
-        document
-          .getElementById(
-            "search-input"
-          )
-          .value
-          .trim()
-          .toLowerCase();
-
-
-      if (!query) {
-
-        renderUsers(
-          allUsers
-        );
-
-        return;
       }
 
+      if (!lessonOptions) {
 
-      const filtered =
-        allUsers.filter(
-          user => {
+        lessonOptions =
+          `<option value="">
+            لا توجد دروس
+          </option>`;
 
-            return (
-              String(
-                user.name || ""
-              )
-                .toLowerCase()
-                .includes(query)
+      }
 
-              ||
+      openModal(
+        "إنشاء اختبار",
+        `
 
-              String(
-                user.email || ""
-              )
-                .toLowerCase()
-                .includes(query)
+          <form
+            onsubmit="createQuiz(event)"
+          >
 
-              ||
+            <div class="form-group">
 
-              String(
-                user.grade || ""
-              )
-                .toLowerCase()
-                .includes(query)
-            );
+              <label>
+                الدرس
+              </label>
 
-          }
-        );
+              <select
+                id="quizLesson"
+                required
+              >
 
+                <option value="">
+                  اختر الدرس
+                </option>
 
-      renderUsers(
-        filtered
+                ${lessonOptions}
+
+              </select>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>
+                عنوان الاختبار
+              </label>
+
+              <input
+                id="quizTitle"
+                required
+                placeholder="مثال: اختبار الدرس الأول"
+              >
+
+            </div>
+
+            <div class="form-group">
+
+              <label>
+                وصف الاختبار
+              </label>
+
+              <textarea
+                id="quizDescription"
+                placeholder="وصف الاختبار"
+              ></textarea>
+
+            </div>
+
+            <div class="grid-2">
+
+              <div class="form-group">
+
+                <label>
+                  نسبة النجاح %
+                </label>
+
+                <input
+                  id="passingPercentage"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="50"
+                >
+
+              </div>
+
+              <div class="form-group">
+
+                <label>
+                  عدد الأسئلة في الصفحة
+                </label>
+
+                <input
+                  id="questionsPerPage"
+                  type="number"
+                  min="1"
+                  value="10"
+                >
+
+              </div>
+
+            </div>
+
+            <button
+              class="btn btn-primary"
+              type="submit"
+            >
+              💾 حفظ الاختبار
+            </button>
+
+            <div
+              id="quizMessage"
+              class="message"
+            ></div>
+
+          </form>
+
+        `
+      );
+
+    } catch (error) {
+
+      openModal(
+        "إنشاء اختبار",
+        `<div class="message error" style="display:block;">
+          ${escapeHtml(error.message)}
+        </div>`
       );
 
     }
 
+  }
 
-    // =====================================================
-    // RESET PASSWORD
-    // =====================================================
 
-    function openResetModal(
-      userId,
-      name,
-      email
-    ) {
+  async function createQuiz(event) {
 
-      selectedUserId =
-        userId;
+    event.preventDefault();
 
+    try {
 
-      document
-        .getElementById(
-          "reset-user-info"
-        )
-        .textContent =
-          `سيتم تغيير كلمة مرور ${name} (${email}).`;
-
-
-      document
-        .getElementById(
-          "new-password"
-        )
-        .value = "";
-
-
-      document
-        .getElementById(
-          "reset-modal"
-        )
-        .classList.remove(
-          "hidden"
-        );
-
-    }
-
-
-    function closeResetModal() {
-
-      selectedUserId =
-        null;
-
-
-      document
-        .getElementById(
-          "reset-modal"
-        )
-        .classList.add(
-          "hidden"
-        );
-
-    }
-
-
-    async function confirmResetPassword() {
-
-      if (!selectedUserId) {
-        return;
-      }
-
-
-      const password =
-        document
-          .getElementById(
-            "new-password"
-          )
-          .value;
-
-
-      if (
-        !password ||
-        password.length < 6
-      ) {
-
-        showToast(
-          "كلمة المرور يجب أن تكون 6 أحرف على الأقل.",
-          "warning"
-        );
-
-        return;
-      }
-
-
-      const button =
-        document.getElementById(
-          "reset-confirm-button"
-        );
-
-
-      button.disabled = true;
-
-      button.textContent =
-        "جاري التغيير...";
-
-
-      try {
-
-        const response =
-          await fetch(
-            `${API_BASE_URL}/admin/users/${selectedUserId}/reset-password`,
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json",
-
-                "Authorization":
-                  `Bearer ${adminToken}`
-              },
-
-              body: JSON.stringify({
-                newPassword:
-                  password
-              })
-            }
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (
-          response.status === 401 ||
-          response.status === 403
-        ) {
-
-          adminLogout();
-
-          return;
-
-        }
-
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          throw new Error(
-            data.message ||
-            "تعذر تغيير كلمة المرور."
-          );
-
-        }
-
-
-        closeResetModal();
-
-
-        showToast(
-          "تم تغيير كلمة مرور الطالب بنجاح.",
-          "success"
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "Reset password error:",
-          error
-        );
-
-        showToast(
-          error.message ||
-          "حدث خطأ أثناء تغيير كلمة المرور.",
-          "error"
-        );
-
-      } finally {
-
-        button.disabled = false;
-
-        button.textContent =
-          "تغيير كلمة المرور";
-
-      }
-
-    }
-
-
-    // =====================================================
-    // DELETE USER
-    // =====================================================
-
-    function openDeleteModal(
-      userId,
-      name
-    ) {
-
-      selectedUserId =
-        userId;
-
-
-      document
-        .getElementById(
-          "delete-user-info"
-        )
-        .textContent =
-          `هل أنت متأكد من حذف حساب "${name}"؟ لا يمكن التراجع عن هذا الإجراء.`;
-
-
-      document
-        .getElementById(
-          "delete-modal"
-        )
-        .classList.remove(
-          "hidden"
-        );
-
-    }
-
-
-    function closeDeleteModal() {
-
-      selectedUserId =
-        null;
-
-
-      document
-        .getElementById(
-          "delete-modal"
-        )
-        .classList.add(
-          "hidden"
-        );
-
-    }
-
-
-    async function confirmDeleteUser() {
-
-      if (!selectedUserId) {
-        return;
-      }
-
-
-      const confirmed =
-        confirm(
-          "تأكيد حذف الحساب نهائيًا؟"
-        );
-
-
-      if (!confirmed) {
-        return;
-      }
-
-
-      const button =
-        document.getElementById(
-          "delete-confirm-button"
-        );
-
-
-      button.disabled = true;
-
-      button.textContent =
-        "جاري الحذف...";
-
-
-      try {
-
-        const response =
-          await fetch(
-            `${API_BASE_URL}/admin/users/${selectedUserId}`,
-            {
-              method: "DELETE",
-
-              headers: {
-                "Authorization":
-                  `Bearer ${adminToken}`
-              }
-            }
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (
-          response.status === 401 ||
-          response.status === 403
-        ) {
-
-          adminLogout();
-
-          return;
-
-        }
-
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          throw new Error(
-            data.message ||
-            "تعذر حذف المستخدم."
-          );
-
-        }
-
-
-        closeDeleteModal();
-
-
-        showToast(
-          "تم حذف الحساب بنجاح.",
-          "success"
-        );
-
-
-        await loadUsers();
-
-
-      } catch (error) {
-
-        console.error(
-          "Delete user error:",
-          error
-        );
-
-        showToast(
-          error.message ||
-          "حدث خطأ أثناء حذف الحساب.",
-          "error"
-        );
-
-      } finally {
-
-        button.disabled = false;
-
-        button.textContent =
-          "حذف الحساب";
-
-      }
-
-    }
-
-
-    // =====================================================
-    // DATABASE CHECK
-    // =====================================================
-
-    async function checkDatabase() {
-
-      const status =
-        document.getElementById(
-          "database-status"
-        );
-
-
-      try {
-
-        const response =
-          await fetch(
-            `${API_BASE_URL}/health`
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (
-          response.ok &&
-          data.success &&
-          data.database === "connected"
-        ) {
-
-          status.textContent =
-            "متصلة ✅";
-
-        } else {
-
-          status.textContent =
-            "خطأ ❌";
-        }
-
-
-      } catch (error) {
-
-        console.error(
-          "Database check error:",
-          error
-        );
-
-        status.textContent =
-          "غير متاحة ❌";
-
-      }
-
-    }
-
-
-    // =====================================================
-    // LOGOUT
-    // =====================================================
-
-    function adminLogout() {
-
-      localStorage.removeItem(
-        "drnotes_admin_token"
-      );
-
-      adminToken =
-        null;
-
-      allUsers =
-        [];
-
-      showLoginPage();
-
-      showToast(
-        "تم تسجيل الخروج.",
-        "success"
-      );
-
-    }
-
-
-    // =====================================================
-    // HELPERS
-    // =====================================================
-
-    function formatDate(
-      dateString
-    ) {
-
-      if (!dateString) {
-        return "-";
-      }
-
-
-      try {
-
-        return new Date(
-          dateString
-        ).toLocaleString(
-          "ar-LY",
+      const data =
+        await api(
+          "/api/admin/quizzes",
           {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
+            method: "POST",
+
+            body: {
+
+              lesson_id:
+                Number(
+                  document
+                    .getElementById("quizLesson")
+                    .value
+                ),
+
+              title:
+                document
+                  .getElementById("quizTitle")
+                  .value
+                  .trim(),
+
+              description:
+                document
+                  .getElementById("quizDescription")
+                  .value
+                  .trim(),
+
+              passing_percentage:
+                Number(
+                  document
+                    .getElementById("passingPercentage")
+                    .value
+                ) || 50,
+
+              questions_per_page:
+                Number(
+                  document
+                    .getElementById("questionsPerPage")
+                    .value
+                ) || 10
+
+            }
+
           }
         );
 
-      } catch {
+      closeModal();
 
-        return dateString;
+      await loadQuizzes();
+
+      await loadDashboard();
+
+      setTimeout(
+        () => {
+
+          openQuestionsModal(
+            data.quiz.id,
+            data.quiz.title
+          );
+
+        },
+        200
+      );
+
+    } catch (error) {
+
+      showMessage(
+        "quizMessage",
+        error.message,
+        "error"
+      );
+
+    }
+
+  }
+
+
+  /* =========================================================
+     QUESTIONS
+  ========================================================= */
+
+  async function openQuestionsModal(
+    quizId,
+    quizTitle
+  ) {
+
+    openModal(
+      `أسئلة: ${quizTitle}`,
+      `<div class="loading">جاري تحميل الأسئلة...</div>`
+    );
+
+    try {
+
+      const data =
+        await api(
+          `/api/admin/quizzes/${quizId}/questions`
+        );
+
+      const questions =
+        data.questions || [];
+
+      const questionsHtml =
+        questions.length
+          ? questions
+              .map(
+                (question, index) => `
+
+                  <div
+                    class="card"
+                    style="
+                      border:1px solid #e2e8f0;
+                    "
+                  >
+
+                    <div
+                      style="
+                        display:flex;
+                        justify-content:space-between;
+                        gap:10px;
+                        align-items:flex-start;
+                      "
+                    >
+
+                      <strong>
+                        السؤال ${index + 1}
+                      </strong>
+
+                      <button
+                        class="btn btn-danger"
+                        onclick="deleteQuestion(${question.id}, ${quizId}, '${escapeJs(quizTitle)}')"
+                      >
+                        🗑 حذف
+                      </button>
+
+                    </div>
+
+                    <p
+                      style="
+                        margin-top:12px;
+                        line-height:1.8;
+                      "
+                    >
+                      ${escapeHtml(question.question_text)}
+                    </p>
+
+                    <div
+                      style="
+                        margin-top:10px;
+                        line-height:1.9;
+                        color:#475569;
+                      "
+                    >
+
+                      <div>
+                        A) ${escapeHtml(question.option_a)}
+                      </div>
+
+                      <div>
+                        B) ${escapeHtml(question.option_b)}
+                      </div>
+
+                      <div>
+                        C) ${escapeHtml(question.option_c)}
+                      </div>
+
+                      <div>
+                        D) ${escapeHtml(question.option_d)}
+                      </div>
+
+                    </div>
+
+                    <div
+                      style="
+                        margin-top:10px;
+                        font-weight:bold;
+                      "
+                    >
+                      الإجابة الصحيحة:
+                      ${escapeHtml(question.correct_answer)}
+                    </div>
+
+                    ${
+                      question.explanation
+                        ? `
+                          <div
+                            style="
+                              margin-top:8px;
+                              color:#64748b;
+                            "
+                          >
+                            الشرح:
+                            ${escapeHtml(question.explanation)}
+                          </div>
+                        `
+                        : ""
+                    }
+
+                  </div>
+
+                `
+              )
+              .join("")
+          : `
+              <div class="empty">
+                لا توجد أسئلة حتى الآن.
+              </div>
+            `;
+
+
+      openModal(
+        `أسئلة: ${quizTitle}`,
+        `
+
+          <div class="actions">
+
+            <button
+              class="btn btn-primary"
+              onclick="openAddQuestionModal(${quizId}, '${escapeJs(quizTitle)}')"
+            >
+              ➕ إضافة سؤال
+            </button>
+
+          </div>
+
+          <hr class="section-divider">
+
+          ${questionsHtml}
+
+        `
+      );
+
+    } catch (error) {
+
+      openModal(
+        `أسئلة: ${quizTitle}`,
+        `<div class="message error" style="display:block;">
+          ${escapeHtml(error.message)}
+        </div>`
+      );
+
+    }
+
+  }
+
+
+  function openAddQuestionModal(
+    quizId,
+    quizTitle
+  ) {
+
+    openModal(
+      "إضافة سؤال",
+      `
+
+        <form
+          onsubmit="createQuestion(event, ${quizId}, '${escapeJs(quizTitle)}')"
+        >
+
+          <div class="form-group">
+
+            <label>
+              نص السؤال
+            </label>
+
+            <textarea
+              id="questionText"
+              required
+              placeholder="اكتب السؤال..."
+            ></textarea>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              الاختيار A
+            </label>
+
+            <input
+              id="optionA"
+              required
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              الاختيار B
+            </label>
+
+            <input
+              id="optionB"
+              required
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              الاختيار C
+            </label>
+
+            <input
+              id="optionC"
+              required
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              الاختيار D
+            </label>
+
+            <input
+              id="optionD"
+              required
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              الإجابة الصحيحة
+            </label>
+
+            <select
+              id="correctAnswer"
+              required
+            >
+
+              <option value="A">
+                A
+              </option>
+
+              <option value="B">
+                B
+              </option>
+
+              <option value="C">
+                C
+              </option>
+
+              <option value="D">
+                D
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              شرح الإجابة
+            </label>
+
+            <textarea
+              id="questionExplanation"
+              placeholder="شرح يظهر للطالب بعد الاختبار"
+            ></textarea>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              ترتيب السؤال
+            </label>
+
+            <input
+              id="questionOrder"
+              type="number"
+              value="0"
+            >
+
+          </div>
+
+          <button
+            class="btn btn-primary"
+            type="submit"
+          >
+            💾 إضافة السؤال
+          </button>
+
+          <div
+            id="questionMessage"
+            class="message"
+          ></div>
+
+        </form>
+
+      `
+    );
+
+  }
+
+
+  async function createQuestion(
+    event,
+    quizId,
+    quizTitle
+  ) {
+
+    event.preventDefault();
+
+    try {
+
+      await api(
+        `/api/admin/quizzes/${quizId}/questions`,
+        {
+          method: "POST",
+
+          body: {
+
+            question_text:
+              document
+                .getElementById("questionText")
+                .value
+                .trim(),
+
+            option_a:
+              document
+                .getElementById("optionA")
+                .value
+                .trim(),
+
+            option_b:
+              document
+                .getElementById("optionB")
+                .value
+                .trim(),
+
+            option_c:
+              document
+                .getElementById("optionC")
+                .value
+                .trim(),
+
+            option_d:
+              document
+                .getElementById("optionD")
+                .value
+                .trim(),
+
+            correct_answer:
+              document
+                .getElementById("correctAnswer")
+                .value,
+
+            explanation:
+              document
+                .getElementById("questionExplanation")
+                .value
+                .trim(),
+
+            question_order:
+              Number(
+                document
+                  .getElementById("questionOrder")
+                  .value
+              ) || 0
+
+          }
+
+        }
+      );
+
+      openQuestionsModal(
+        quizId,
+        quizTitle
+      );
+
+    } catch (error) {
+
+      showMessage(
+        "questionMessage",
+        error.message,
+        "error"
+      );
+
+    }
+
+  }
+
+
+  async function deleteQuestion(
+    questionId,
+    quizId,
+    quizTitle
+  ) {
+
+    const confirmed =
+      confirm(
+        "هل أنت متأكد من حذف هذا السؤال؟"
+      );
+
+    if (!confirmed) return;
+
+    try {
+
+      await api(
+        `/api/admin/quizzes/questions/${questionId}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      await openQuestionsModal(
+        quizId,
+        quizTitle
+      );
+
+    } catch (error) {
+
+      alert(error.message);
+
+    }
+
+  }
+
+
+  /* =========================================================
+     DELETE QUIZ
+  ========================================================= */
+
+  async function deleteQuiz(
+    quizId
+  ) {
+
+    const confirmed =
+      confirm(
+        "سيتم حذف الاختبار وجميع أسئلته ومحاولات الطلاب المرتبطة به. هل أنت متأكد؟"
+      );
+
+    if (!confirmed) return;
+
+    try {
+
+      await api(
+        `/api/admin/quizzes/${quizId}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      await loadQuizzes();
+
+      await loadDashboard();
+
+    } catch (error) {
+
+      alert(error.message);
+
+    }
+
+  }
+
+
+  /* =========================================================
+     INITIALIZATION
+  ========================================================= */
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+      if (adminToken) {
+
+        showAdminPage();
 
       }
 
     }
+  );
 
-
-    function escapeHTML(
-      value
-    ) {
-
-      return String(
-        value ?? ""
-      )
-        .replace(
-          /&/g,
-          "&amp;"
-        )
-        .replace(
-          /</g,
-          "&lt;"
-        )
-        .replace(
-          />/g,
-          "&gt;"
-        )
-        .replace(
-          /"/g,
-          "&quot;"
-        )
-        .replace(
-          /'/g,
-          "&#039;"
-        );
-
-    }
-
-
-    function escapeJS(
-      value
-    ) {
-
-      return String(
-        value ?? ""
-      )
-        .replace(
-          /\\/g,
-          "\\\\"
-        )
-        .replace(
-          /'/g,
-          "\\'"
-        )
-        .replace(
-          /"/g,
-          '\\"'
-        )
-        .replace(
-          /\n/g,
-          "\\n"
-        )
-        .replace(
-          /\r/g,
-          "\\r"
-        );
-
-    }
-
-
-    // =====================================================
-    // TOAST
-    // =====================================================
-
-    function showToast(
-      message,
-      type = "success"
-    ) {
-
-      const toast =
-        document.getElementById(
-          "toast"
-        );
-
-
-      toast.textContent =
-        message;
-
-
-      toast.className =
-        type;
-
-
-      toast.style.display =
-        "block";
-
-
-      clearTimeout(
-        window.toastTimer
-      );
-
-
-      window.toastTimer =
-        setTimeout(
-          () => {
-
-            toast.style.display =
-              "none";
-
-          },
-          3500
-        );
-
-    }
-
-  </script>
+</script>
 
 </body>
-            </html>
+  </html>
