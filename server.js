@@ -123,7 +123,6 @@ async function initializeDatabase() {
     // -----------------------------------------------------
     // LESSON SOLUTION
     // حل الدرس
-    // فيديو + PDF
     // -----------------------------------------------------
 
     await pool.query(`
@@ -443,18 +442,13 @@ app.get(
         );
 
       res.json({
-
         success: true,
-
         message:
           "DrNotes API is working 🚀",
-
         database:
           "connected",
-
         time:
           result.rows[0].now
-
       });
 
     } catch (error) {
@@ -465,12 +459,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "Database connection failed"
-
       });
 
     }
@@ -503,12 +494,9 @@ app.post(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "جميع البيانات مطلوبة."
-
         });
 
       }
@@ -516,12 +504,9 @@ app.post(
       if (password.length < 6) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "كلمة المرور يجب أن تكون 6 أحرف على الأقل."
-
         });
 
       }
@@ -540,12 +525,9 @@ app.post(
       ) {
 
         return res.status(409).json({
-
           success: false,
-
           message:
             "هذا البريد الإلكتروني مستخدم بالفعل."
-
         });
 
       }
@@ -590,16 +572,11 @@ app.post(
         createUserToken(user);
 
       res.status(201).json({
-
         success: true,
-
         message:
           "تم إنشاء الحساب بنجاح.",
-
         token,
-
         user
-
       });
 
     } catch (error) {
@@ -610,12 +587,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "حدث خطأ أثناء إنشاء الحساب."
-
       });
 
     }
@@ -644,12 +618,9 @@ app.post(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "البريد الإلكتروني وكلمة المرور مطلوبان."
-
         });
 
       }
@@ -668,12 +639,9 @@ app.post(
       ) {
 
         return res.status(401).json({
-
           success: false,
-
           message:
             "البريد الإلكتروني أو كلمة المرور غير صحيحة."
-
         });
 
       }
@@ -690,12 +658,9 @@ app.post(
       if (!passwordMatch) {
 
         return res.status(401).json({
-
           success: false,
-
           message:
             "البريد الإلكتروني أو كلمة المرور غير صحيحة."
-
         });
 
       }
@@ -704,29 +669,18 @@ app.post(
         createUserToken(user);
 
       res.json({
-
         success: true,
-
         message:
           "تم تسجيل الدخول بنجاح.",
-
         token,
-
         user: {
-
           id: user.id,
-
           name: user.name,
-
           email: user.email,
-
           grade: user.grade,
-
           created_at:
             user.created_at
-
         }
-
       });
 
     } catch (error) {
@@ -737,12 +691,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "حدث خطأ أثناء تسجيل الدخول."
-
       });
 
     }
@@ -781,23 +732,17 @@ app.get(
       ) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "المستخدم غير موجود."
-
         });
 
       }
 
       res.json({
-
         success: true,
-
         user:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -808,12 +753,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر التحقق من الحساب."
-
       });
 
     }
@@ -842,12 +784,9 @@ app.post(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "البريد الإلكتروني وكلمة المرور مطلوبان."
-
         });
 
       }
@@ -864,12 +803,9 @@ app.post(
       ) {
 
         return res.status(500).json({
-
           success: false,
-
           message:
             "إعدادات المدير غير مكتملة على الخادم."
-
         });
 
       }
@@ -880,12 +816,9 @@ app.post(
       ) {
 
         return res.status(401).json({
-
           success: false,
-
           message:
             "بيانات المدير غير صحيحة."
-
         });
 
       }
@@ -895,12 +828,9 @@ app.post(
       ) {
 
         return res.status(401).json({
-
           success: false,
-
           message:
             "بيانات المدير غير صحيحة."
-
         });
 
       }
@@ -909,14 +839,10 @@ app.post(
         createAdminToken();
 
       res.json({
-
         success: true,
-
         message:
           "تم تسجيل دخول المدير بنجاح.",
-
         token
-
       });
 
     } catch (error) {
@@ -927,12 +853,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "حدث خطأ أثناء تسجيل دخول المدير."
-
       });
 
     }
@@ -964,12 +887,9 @@ app.get(
         `);
 
       res.json({
-
         success: true,
-
         users:
           result.rows
-
       });
 
     } catch (error) {
@@ -980,12 +900,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تحميل المستخدمين."
-
       });
 
     }
@@ -1014,12 +931,9 @@ app.get(
         );
 
       res.json({
-
         success: true,
-
         count:
           result.rows[0].count
-
       });
 
     } catch (error) {
@@ -1030,12 +944,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر الحصول على عدد المستخدمين."
-
       });
 
     }
@@ -1066,12 +977,9 @@ app.post(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "معرف المستخدم غير صحيح."
-
         });
 
       }
@@ -1082,12 +990,9 @@ app.post(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل."
-
         });
 
       }
@@ -1120,26 +1025,19 @@ app.post(
       ) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "المستخدم غير موجود."
-
         });
 
       }
 
       res.json({
-
         success: true,
-
         message:
           "تم تغيير كلمة مرور المستخدم بنجاح.",
-
         user:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -1150,12 +1048,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تغيير كلمة المرور."
-
       });
 
     }
@@ -1182,12 +1077,9 @@ app.delete(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "معرف المستخدم غير صحيح."
-
         });
 
       }
@@ -1210,26 +1102,19 @@ app.delete(
       ) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "المستخدم غير موجود."
-
         });
 
       }
 
       res.json({
-
         success: true,
-
         message:
           "تم حذف المستخدم بنجاح.",
-
         user:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -1240,12 +1125,9 @@ app.delete(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر حذف المستخدم."
-
       });
 
     }
@@ -1276,12 +1158,9 @@ app.get(
         `);
 
       res.json({
-
         success: true,
-
         subjects:
           result.rows
-
       });
 
     } catch (error) {
@@ -1292,12 +1171,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تحميل المواد."
-
       });
 
     }
@@ -1325,12 +1201,9 @@ app.post(
       if (!name) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "اسم المادة مطلوب."
-
         });
 
       }
@@ -1355,12 +1228,9 @@ app.post(
         );
 
       res.status(201).json({
-
         success: true,
-
         subject:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -1371,12 +1241,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر إنشاء المادة."
-
       });
 
     }
@@ -1415,12 +1282,9 @@ app.get(
         );
 
       res.json({
-
         success: true,
-
         units:
           result.rows
-
       });
 
     } catch (error) {
@@ -1431,12 +1295,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تحميل الوحدات."
-
       });
 
     }
@@ -1468,12 +1329,9 @@ app.post(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "المادة واسم الوحدة مطلوبان."
-
         });
 
       }
@@ -1500,12 +1358,9 @@ app.post(
         );
 
       res.status(201).json({
-
         success: true,
-
         unit:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -1516,12 +1371,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر إنشاء الوحدة."
-
       });
 
     }
@@ -1560,12 +1412,9 @@ app.get(
         );
 
       res.json({
-
         success: true,
-
         lessons:
           result.rows
-
       });
 
     } catch (error) {
@@ -1576,12 +1425,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تحميل الدروس."
-
       });
 
     }
@@ -1613,12 +1459,9 @@ app.post(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "الوحدة واسم الدرس مطلوبان."
-
         });
 
       }
@@ -1645,12 +1488,9 @@ app.post(
         );
 
       res.status(201).json({
-
         success: true,
-
         lesson:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -1661,12 +1501,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر إنشاء الدرس."
-
       });
 
     }
@@ -1723,12 +1560,9 @@ app.get(
       ) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "الدرس غير موجود."
-
         });
 
       }
@@ -1749,15 +1583,11 @@ app.get(
         );
 
       res.json({
-
         success: true,
-
         lesson:
           lessonResult.rows[0],
-
         quiz:
           quizResult.rows[0] || null
-
       });
 
     } catch (error) {
@@ -1768,12 +1598,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تحميل الدرس."
-
       });
 
     }
@@ -1783,7 +1610,6 @@ app.get(
 
 // =========================================================
 // ADMIN - SAVE LESSON CONTENT
-// شرح الدرس
 // =========================================================
 
 app.post(
@@ -1799,12 +1625,9 @@ app.post(
       if (!Number.isInteger(lessonId)) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "معرف الدرس غير صحيح."
-
         });
 
       }
@@ -1846,15 +1669,11 @@ app.post(
         );
 
       res.json({
-
         success: true,
-
         message:
           "تم حفظ شرح الدرس بنجاح.",
-
         content:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -1865,12 +1684,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر حفظ محتوى الدرس."
-
       });
 
     }
@@ -1880,7 +1696,6 @@ app.post(
 
 // =========================================================
 // ADMIN - SAVE LESSON SOLUTION
-// حل الدرس: فيديو + PDF
 // =========================================================
 
 app.post(
@@ -1896,12 +1711,9 @@ app.post(
       if (!Number.isInteger(lessonId)) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "معرف الدرس غير صحيح."
-
         });
 
       }
@@ -1944,15 +1756,11 @@ app.post(
         );
 
       res.json({
-
         success: true,
-
         message:
           "تم حفظ حل الدرس بنجاح.",
-
         solution:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -1963,12 +1771,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر حفظ حل الدرس."
-
       });
 
     }
@@ -2021,23 +1826,17 @@ app.get(
       if (result.rows.length === 0) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "الدرس غير موجود."
-
         });
 
       }
 
       res.json({
-
         success: true,
-
         content:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -2048,12 +1847,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تحميل محتوى الدرس."
-
       });
 
     }
@@ -2086,12 +1882,9 @@ app.post(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "الدرس واسم الاختبار مطلوبان."
-
         });
 
       }
@@ -2137,15 +1930,11 @@ app.post(
         );
 
       res.status(201).json({
-
         success: true,
-
         message:
           "تم إنشاء أو تحديث الاختبار بنجاح.",
-
         quiz:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -2156,12 +1945,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر إنشاء الاختبار."
-
       });
 
     }
@@ -2208,12 +1994,9 @@ app.post(
       ) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "بيانات السؤال غير مكتملة."
-
         });
 
       }
@@ -2252,15 +2035,11 @@ app.post(
         );
 
       res.status(201).json({
-
         success: true,
-
         message:
           "تمت إضافة السؤال بنجاح.",
-
         question:
           result.rows[0]
-
       });
 
     } catch (error) {
@@ -2271,12 +2050,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر إضافة السؤال."
-
       });
 
     }
@@ -2304,12 +2080,9 @@ app.post(
       if (!Number.isInteger(quizId)) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "معرف الاختبار غير صحيح."
-
         });
 
       }
@@ -2338,19 +2111,12 @@ app.post(
         await client.query("ROLLBACK");
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "الاختبار غير موجود."
-
         });
 
       }
-
-      // -----------------------------------------------------
-      // محاولة واحدة فقط
-      // -----------------------------------------------------
 
       const existingAttempt =
         await client.query(
@@ -2376,36 +2142,24 @@ app.post(
           existingAttempt.rows[0];
 
         return res.status(409).json({
-
           success: false,
-
           already_attempted: true,
-
           message:
             "لقد بدأت أو أنهيت هذا الاختبار من قبل، ولا يمكن فتحه مرة أخرى.",
-
           attempt: {
-
             id:
               attempt.id,
-
             status:
               attempt.status,
-
             score:
               attempt.score,
-
             total_questions:
               attempt.total_questions,
-
             percentage:
               attempt.percentage,
-
             passed:
               attempt.passed
-
           }
-
         });
 
       }
@@ -2438,12 +2192,9 @@ app.post(
         await client.query("ROLLBACK");
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "لا توجد أسئلة في هذا الاختبار."
-
         });
 
       }
@@ -2477,34 +2228,23 @@ app.post(
       await client.query("COMMIT");
 
       res.status(201).json({
-
         success: true,
-
         message:
           "تم بدء الاختبار.",
-
         attempt: {
-
           id:
             attempt.id,
-
           quiz_id:
             quizId,
-
           started_at:
             attempt.started_at,
-
           status:
             attempt.status
-
         },
-
         quiz:
           quizResult.rows[0],
-
         questions:
           questionsResult.rows
-
       });
 
     } catch (error) {
@@ -2519,12 +2259,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر بدء الاختبار."
-
       });
 
     } finally {
@@ -2556,12 +2293,9 @@ app.post(
       if (!Number.isInteger(attemptId)) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "معرف المحاولة غير صحيح."
-
         });
 
       }
@@ -2599,12 +2333,9 @@ app.post(
         await client.query("ROLLBACK");
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "المحاولة غير موجودة."
-
         });
 
       }
@@ -2619,12 +2350,9 @@ app.post(
         await client.query("ROLLBACK");
 
         return res.status(409).json({
-
           success: false,
-
           message:
             "هذه المحاولة تم إرسالها بالفعل ولا يمكن إرسالها مرة أخرى."
-
         });
 
       }
@@ -2660,12 +2388,9 @@ app.post(
         await client.query("ROLLBACK");
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "لا توجد أسئلة لهذا الاختبار."
-
         });
 
       }
@@ -2675,18 +2400,13 @@ app.post(
         await client.query("ROLLBACK");
 
         return res.status(400).json({
-
           success: false,
-
           message:
             `يجب الإجابة عن جميع الأسئلة قبل تسليم الاختبار. عدد الأسئلة: ${questions.length}`,
-
           required:
             questions.length,
-
           received:
             answers.length
-
         });
 
       }
@@ -2712,12 +2432,9 @@ app.post(
           await client.query("ROLLBACK");
 
           return res.status(400).json({
-
             success: false,
-
             message:
               "يوجد جواب غير صحيح في البيانات المرسلة."
-
           });
 
         }
@@ -2727,12 +2444,9 @@ app.post(
           await client.query("ROLLBACK");
 
           return res.status(400).json({
-
             success: false,
-
             message:
               "تم إرسال السؤال أكثر من مرة."
-
           });
 
         }
@@ -2751,12 +2465,9 @@ app.post(
           await client.query("ROLLBACK");
 
           return res.status(400).json({
-
             success: false,
-
             message:
               "يجب الإجابة عن جميع الأسئلة."
-
           });
 
         }
@@ -2814,22 +2525,16 @@ app.post(
         );
 
         results.push({
-
           question_id:
             question.id,
-
           question_text:
             question.question_text,
-
           selected_answer:
             selectedAnswer,
-
           correct_answer:
             question.correct_answer,
-
           is_correct:
             isCorrect,
-
           explanation:
             isCorrect
               ? null
@@ -2837,7 +2542,6 @@ app.post(
                   question.explanation ||
                   "لم تتم إضافة شرح لهذا السؤال بعد."
                 )
-
         });
 
       }
@@ -2896,39 +2600,26 @@ app.post(
       await client.query("COMMIT");
 
       res.json({
-
         success: true,
-
         message:
           passed
             ? "مبروك! نجحت في الاختبار 🎉"
             : "لم تصل إلى نسبة النجاح، راجع أخطاءك.",
-
         result: {
-
           attempt_id:
             attemptId,
-
           score,
-
           total_questions:
             totalQuestions,
-
           percentage,
-
           passing_percentage:
             passingPercentage,
-
           passed,
-
           status:
             "finished"
-
         },
-
         questions:
           results
-
       });
 
     } catch (error) {
@@ -2943,12 +2634,9 @@ app.post(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تسليم الاختبار."
-
       });
 
     } finally {
@@ -3009,12 +2697,9 @@ app.get(
       ) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "نتيجة الاختبار غير موجودة."
-
         });
 
       }
@@ -3055,87 +2740,58 @@ app.get(
 
       const questions =
         answersResult.rows.map(item => ({
-
           question_id:
             item.question_id,
-
           question_text:
             item.question_text,
-
           options: {
-
             A:
               item.option_a,
-
             B:
               item.option_b,
-
             C:
               item.option_c,
-
             D:
               item.option_d
-
           },
-
           selected_answer:
             item.selected_answer,
-
           correct_answer:
             item.correct_answer,
-
           is_correct:
             item.is_correct,
-
           explanation:
             item.explanation ||
             "لم تتم إضافة شرح لهذا السؤال بعد."
-
         }));
 
       res.json({
-
         success: true,
-
         result: {
-
           id:
             attempt.id,
-
           quiz_id:
             attempt.quiz_id,
-
           title:
             attempt.title,
-
           started_at:
             attempt.started_at,
-
           finished_at:
             attempt.finished_at,
-
           score:
             attempt.score,
-
           total_questions:
             attempt.total_questions,
-
           percentage:
             attempt.percentage,
-
           passing_percentage:
             attempt.passing_percentage,
-
           passed:
             attempt.passed,
-
           status:
             attempt.status
-
         },
-
         questions
-
       });
 
     } catch (error) {
@@ -3146,12 +2802,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تحميل نتيجة الاختبار."
-
       });
 
     }
@@ -3198,12 +2851,9 @@ app.get(
         );
 
       res.json({
-
         success: true,
-
         attempts:
           result.rows
-
       });
 
     } catch (error) {
@@ -3214,12 +2864,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تحميل اختباراتك."
-
       });
 
     }
@@ -3267,12 +2914,9 @@ app.get(
         );
 
       res.json({
-
         success: true,
-
         questions:
           result.rows
-
       });
 
     } catch (error) {
@@ -3283,12 +2927,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تحميل أسئلة الاختبار."
-
       });
 
     }
@@ -3331,12 +2972,9 @@ app.get(
         );
 
       res.json({
-
         success: true,
-
         quizzes:
           result.rows
-
       });
 
     } catch (error) {
@@ -3347,12 +2985,9 @@ app.get(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر تحميل الاختبارات."
-
       });
 
     }
@@ -3377,12 +3012,9 @@ app.delete(
       if (!Number.isInteger(questionId)) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "معرف السؤال غير صحيح."
-
         });
 
       }
@@ -3400,23 +3032,17 @@ app.delete(
       if (result.rows.length === 0) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "السؤال غير موجود."
-
         });
 
       }
 
       res.json({
-
         success: true,
-
         message:
           "تم حذف السؤال بنجاح."
-
       });
 
     } catch (error) {
@@ -3427,12 +3053,9 @@ app.delete(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر حذف السؤال."
-
       });
 
     }
@@ -3457,12 +3080,9 @@ app.delete(
       if (!Number.isInteger(quizId)) {
 
         return res.status(400).json({
-
           success: false,
-
           message:
             "معرف الاختبار غير صحيح."
-
         });
 
       }
@@ -3480,23 +3100,17 @@ app.delete(
       if (result.rows.length === 0) {
 
         return res.status(404).json({
-
           success: false,
-
           message:
             "الاختبار غير موجود."
-
         });
 
       }
 
       res.json({
-
         success: true,
-
         message:
           "تم حذف الاختبار بنجاح."
-
       });
 
     } catch (error) {
@@ -3507,12 +3121,9 @@ app.delete(
       );
 
       res.status(500).json({
-
         success: false,
-
         message:
           "تعذر حذف الاختبار."
-
       });
 
     }
@@ -3553,12 +3164,9 @@ app.use(
   (req, res) => {
 
     res.status(404).json({
-
       success: false,
-
       message:
         "API endpoint not found."
-
     });
 
   }
