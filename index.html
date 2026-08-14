@@ -2883,88 +2883,130 @@ function setAuthLoading(
        ========================================================= */
 
     async function apiRequest(
-      endpoint,
-      options = {}
-    ) {
+  endpoint,
+  options = {}
+) {
 
-      const controller =
-        new AbortController();
+  const controller =
+    new AbortController();
 
-      const timeout =
-        setTimeout(
-          () => controller.abort(),
-          12000
-        );
+  const timeout =
+    setTimeout(
+      () => controller.abort(),
+      12000
+    );
 
-      try {
+  try {
 
-        const response =
-          await fetch(
-            `${API_BASE_URL}${endpoint}`,
-            {
-              credentials: "include",
-              headers: {
-                "Content-Type": "application/json",
-                ...(options.headers || {})
-              },
-              ...options,
-              signal: controller.signal
-            }
-          );
+    // =====================================================
+    // الحصول على توكن تسجيل الدخول
+    // =====================================================
 
-        let data = null;
+    const token =
+      localStorage.getItem("drnotes_token") ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("userToken");
 
-        try {
-          data = await response.json();
-        } catch (_) {
-          data = null;
-        }
+    // =====================================================
+    // تجهيز Headers
+    // =====================================================
 
-        if (!response.ok) {
+    const headers = {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    };
 
-          const error =
-            new Error(
-              data?.message ||
-              getApiErrorMessage(response.status)
-            );
+    // =====================================================
+    // إرسال التوكن إلى السيرفر
+    // =====================================================
 
-          error.status =
-            response.status;
+    if (token) {
 
-          throw error;
-        }
-
-        return data;
-
-      } catch (error) {
-
-        if (error.name === "AbortError") {
-
-          throw new Error(
-            "تعذر الاتصال بالخادم، حاول مرة أخرى."
-          );
-
-        }
-
-        if (
-          error instanceof TypeError
-        ) {
-
-          throw new Error(
-            "تعذر الاتصال بالخادم، حاول مرة أخرى."
-          );
-
-        }
-
-        throw error;
-
-      } finally {
-
-        clearTimeout(timeout);
-
-      }
+      headers.Authorization =
+        `Bearer ${token}`;
 
     }
+
+    const response =
+      await fetch(
+        `${API_BASE_URL}${endpoint}`,
+        {
+          ...options,
+
+          credentials: "include",
+
+          headers,
+
+          signal:
+            controller.signal
+        }
+      );
+
+    let data = null;
+
+    try {
+
+      data =
+        await response.json();
+
+    } catch (_) {
+
+      data = null;
+
+    }
+
+    if (!response.ok) {
+
+      const error =
+        new Error(
+          data?.message ||
+          getApiErrorMessage(
+            response.status
+          )
+        );
+
+      error.status =
+        response.status;
+
+      throw error;
+
+    }
+
+    return data;
+
+  } catch (error) {
+
+    if (
+      error.name ===
+      "AbortError"
+    ) {
+
+      throw new Error(
+        "تعذر الاتصال بالخادم، حاول مرة أخرى."
+      );
+
+    }
+
+    if (
+      error instanceof TypeError
+    ) {
+
+      throw new Error(
+        "تعذر الاتصال بالخادم، حاول مرة أخرى."
+      );
+
+    }
+
+    throw error;
+
+  } finally {
+
+    clearTimeout(timeout);
+
+  }
+
+}
 
 
     function getApiErrorMessage(status) {
