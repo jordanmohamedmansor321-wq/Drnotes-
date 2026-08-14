@@ -24,7 +24,11 @@ const pool = new Pool({
 // MIDDLEWARE
 // =========================================================
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -63,136 +67,6 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-
-    // =====================================================
-    // DEFAULT SUBJECTS
-    // =====================================================
-
-    await pool.query(`
-      INSERT INTO subjects
-        (name, description)
-      SELECT *
-      FROM (
-        VALUES
-          ('الفيزياء', 'مادة الفيزياء'),
-          ('الكيمياء', 'مادة الكيمياء'),
-          ('الأحياء', 'مادة الأحياء'),
-          ('العربي', 'مادة اللغة العربية'),
-          ('الإنجليزي', 'مادة اللغة الإنجليزية'),
-          ('الحاسوب', 'مادة الحاسوب')
-      ) AS default_subjects(name, description)
-      WHERE NOT EXISTS (
-        SELECT 1
-        FROM subjects s
-        WHERE LOWER(TRIM(s.name)) =
-              LOWER(TRIM(default_subjects.name))
-      );
-    `);
-
-    // =====================================================
-    // IMPORTANT MIGRATION
-    // تحويل "الاحياء" بدون همزة إلى "الإحصاء"
-    // =====================================================
-
-    const unhamzaBiology =
-      await pool.query(`
-        SELECT id
-        FROM subjects
-        WHERE TRIM(name) = 'الاحياء'
-        ORDER BY id ASC
-      `);
-
-    const statisticsExists =
-      await pool.query(`
-        SELECT id
-        FROM subjects
-        WHERE TRIM(name) = 'الإحصاء'
-        ORDER BY id ASC
-      `);
-
-    if (
-      unhamzaBiology.rows.length > 0 &&
-      statisticsExists.rows.length === 0
-    ) {
-
-      await pool.query(`
-        UPDATE subjects
-        SET
-          name = 'الإحصاء',
-          description = 'مادة الإحصاء'
-        WHERE TRIM(name) = 'الاحياء'
-      `);
-
-      console.log(
-        'Migration: تم تحويل "الاحياء" إلى "الإحصاء".'
-      );
-
-    } else if (
-      unhamzaBiology.rows.length > 0 &&
-      statisticsExists.rows.length > 0
-    ) {
-
-      // إذا كانت الإحصاء موجودة بالفعل،
-      // نحذف النسخة القديمة فقط إذا كانت فارغة من الوحدات.
-      for (const row of unhamzaBiology.rows) {
-
-        const unitsCheck =
-          await pool.query(
-            `
-            SELECT COUNT(*)::int AS count
-            FROM units
-            WHERE subject_id = $1
-            `,
-            [row.id]
-          );
-
-        if (unitsCheck.rows[0].count === 0) {
-
-          await pool.query(
-            `
-            DELETE FROM subjects
-            WHERE id = $1
-            `,
-            [row.id]
-          );
-
-          console.log(
-            'Migration: تم حذف نسخة "الاحياء" المكررة.'
-          );
-
-        } else {
-
-          // لو كانت المادة تحتوي على وحدات،
-          // ننقل الوحدات إلى الإحصاء ثم نحذف المادة.
-          const statisticsId =
-            statisticsExists.rows[0].id;
-
-          await pool.query(
-            `
-            UPDATE units
-            SET subject_id = $1
-            WHERE subject_id = $2
-            `,
-            [
-              statisticsId,
-              row.id
-            ]
-          );
-
-          await pool.query(
-            `
-            DELETE FROM subjects
-            WHERE id = $1
-            `,
-            [row.id]
-          );
-
-          console.log(
-            'Migration: تم نقل وحدات "الاحياء" إلى "الإحصاء" وحذف التكرار.'
-          );
-        }
-      }
-    }
 
     // =====================================================
     // UNITS
@@ -350,13 +224,192 @@ async function initializeDatabase() {
       );
     `);
 
+    // =====================================================
+    // LESSON PROGRESS
+    // =====================================================
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS lesson_progress (
+        id SERIAL PRIMARY KEY,
+
+        user_id INTEGER NOT NULL
+          REFERENCES users(id)
+          ON DELETE CASCADE,
+
+        lesson_id INTEGER NOT NULL
+          REFERENCES lessons(id)
+          ON DELETE CASCADE,
+
+        opened BOOLEAN DEFAULT FALSE,
+
+        completed BOOLEAN DEFAULT FALSE,
+
+        last_opened_at TIMESTAMP,
+
+        completed_at TIMESTAMP,
+
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+        UNIQUE(user_id, lesson_id)
+      );
+    `);
+
+    // =====================================================
+    // FAVORITES
+    // =====================================================
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS favorites (
+        id SERIAL PRIMARY KEY,
+
+        user_id INTEGER NOT NULL
+          REFERENCES users(id)
+          ON DELETE CASCADE,
+
+        lesson_id INTEGER NOT NULL
+          REFERENCES lessons(id)
+          ON DELETE CASCADE,
+
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+        UNIQUE(user_id, lesson_id)
+      );
+    `);
+
+    // =====================================================
+    // DEFAULT SUBJECTS
+    // =====================================================
+
+    await pool.query(`
+      INSERT INTO subjects
+        (name, description)
+      SELECT *
+      FROM (
+        VALUES
+          ('الفيزياء', 'مادة الفيزياء'),
+          ('الكيمياء', 'مادة الكيمياء'),
+          ('الأحياء', 'مادة الأحياء'),
+          ('العربي', 'مادة اللغة العربية'),
+          ('الإنجليزي', 'مادة اللغة الإنجليزية'),
+          ('الحاسوب', 'مادة الحاسوب')
+      ) AS default_subjects(name, description)
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM subjects s
+        WHERE LOWER(TRIM(s.name)) =
+              LOWER(TRIM(default_subjects.name))
+      );
+    `);
+
+    // =====================================================
+    // IMPORTANT SUBJECT MIGRATION
+    // =====================================================
+
+    const unhamzaBiology =
+      await pool.query(`
+        SELECT id
+        FROM subjects
+        WHERE TRIM(name) = 'الاحياء'
+        ORDER BY id ASC
+      `);
+
+    const statisticsExists =
+      await pool.query(`
+        SELECT id
+        FROM subjects
+        WHERE TRIM(name) = 'الإحصاء'
+        ORDER BY id ASC
+      `);
+
+    if (
+      unhamzaBiology.rows.length > 0 &&
+      statisticsExists.rows.length === 0
+    ) {
+
+      await pool.query(`
+        UPDATE subjects
+        SET
+          name = 'الإحصاء',
+          description = 'مادة الإحصاء'
+        WHERE TRIM(name) = 'الاحياء'
+      `);
+
+      console.log(
+        'Migration: تم تحويل "الاحياء" إلى "الإحصاء".'
+      );
+
+    } else if (
+      unhamzaBiology.rows.length > 0 &&
+      statisticsExists.rows.length > 0
+    ) {
+
+      for (const row of unhamzaBiology.rows) {
+
+        const unitsCheck =
+          await pool.query(
+            `
+            SELECT COUNT(*)::int AS count
+            FROM units
+            WHERE subject_id = $1
+            `,
+            [row.id]
+          );
+
+        if (unitsCheck.rows[0].count === 0) {
+
+          await pool.query(
+            `
+            DELETE FROM subjects
+            WHERE id = $1
+            `,
+            [row.id]
+          );
+
+          console.log(
+            'Migration: تم حذف نسخة "الاحياء" المكررة.'
+          );
+
+        } else {
+
+          const statisticsId =
+            statisticsExists.rows[0].id;
+
+          await pool.query(
+            `
+            UPDATE units
+            SET subject_id = $1
+            WHERE subject_id = $2
+            `,
+            [
+              statisticsId,
+              row.id
+            ]
+          );
+
+          await pool.query(
+            `
+            DELETE FROM subjects
+            WHERE id = $1
+            `,
+            [row.id]
+          );
+
+          console.log(
+            'Migration: تم نقل وحدات "الاحياء" إلى الإحصاء وحذف التكرار.'
+          );
+        }
+      }
+    }
+
     console.log("Database tables are ready.");
 
   } catch (error) {
 
     console.error(
       "Database initialization failed:",
-      error.message
+      error
     );
   }
 }
@@ -428,6 +481,7 @@ function requireAdmin(req, res, next) {
     }
 
     req.admin = decoded;
+
     next();
 
   } catch (error) {
@@ -479,6 +533,7 @@ function requireUser(req, res, next) {
     }
 
     req.user = decoded;
+
     next();
 
   } catch (error) {
@@ -511,7 +566,10 @@ app.get("/api/health", async (req, res) => {
 
   } catch (error) {
 
-    console.error("Health error:", error);
+    console.error(
+      "Health error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -607,7 +665,10 @@ app.post("/api/auth/register", async (req, res) => {
 
   } catch (error) {
 
-    console.error("Register error:", error);
+    console.error(
+      "Register error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -689,7 +750,10 @@ app.post("/api/auth/login", async (req, res) => {
 
   } catch (error) {
 
-    console.error("Login error:", error);
+    console.error(
+      "Login error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -2671,6 +2735,869 @@ app.delete(
 );
 
 // =========================================================
+// PROGRESS - DASHBOARD
+// =========================================================
+
+app.get(
+  "/api/progress/dashboard",
+  requireUser,
+  async (req, res) => {
+    try {
+
+      const userId =
+        req.user.id;
+
+      // -----------------------------------------------
+      // Total lessons
+      // -----------------------------------------------
+
+      const totalLessonsResult =
+        await pool.query(`
+          SELECT COUNT(*)::int AS count
+          FROM lessons
+        `);
+
+      const totalLessons =
+        totalLessonsResult.rows[0].count;
+
+      // -----------------------------------------------
+      // Completed lessons
+      // -----------------------------------------------
+
+      const completedLessonsResult =
+        await pool.query(
+          `
+          SELECT COUNT(*)::int AS count
+          FROM lesson_progress
+          WHERE user_id = $1
+          AND completed = TRUE
+          `,
+          [userId]
+        );
+
+      const completedLessons =
+        completedLessonsResult.rows[0].count;
+
+      // -----------------------------------------------
+      // Completed quizzes
+      // -----------------------------------------------
+
+      const completedQuizzesResult =
+        await pool.query(
+          `
+          SELECT COUNT(*)::int AS count
+          FROM quiz_attempts
+          WHERE user_id = $1
+          AND status = 'finished'
+          `,
+          [userId]
+        );
+
+      const completedQuizzes =
+        completedQuizzesResult.rows[0].count;
+
+      // -----------------------------------------------
+      // Favorites
+      // -----------------------------------------------
+
+      const favoritesResult =
+        await pool.query(
+          `
+          SELECT COUNT(*)::int AS count
+          FROM favorites
+          WHERE user_id = $1
+          `,
+          [userId]
+        );
+
+      const favorites =
+        favoritesResult.rows[0].count;
+
+      // -----------------------------------------------
+      // Overall percentage
+      // -----------------------------------------------
+
+      let overallPercentage = 0;
+
+      if (totalLessons > 0) {
+        overallPercentage =
+          Math.round(
+            (
+              completedLessons /
+              totalLessons
+            ) * 100
+          );
+      }
+
+      // -----------------------------------------------
+      // Last lesson
+      // -----------------------------------------------
+
+      const lastLessonResult =
+        await pool.query(
+          `
+          SELECT
+            lp.lesson_id AS id,
+            l.name,
+            lp.opened,
+            lp.completed,
+            lp.last_opened_at,
+            lp.completed_at,
+            u.name AS unit_name,
+            s.id AS subject_id,
+            s.name AS subject_name
+          FROM lesson_progress lp
+
+          JOIN lessons l
+            ON l.id = lp.lesson_id
+
+          JOIN units u
+            ON u.id = l.unit_id
+
+          JOIN subjects s
+            ON s.id = u.subject_id
+
+          WHERE lp.user_id = $1
+
+          ORDER BY
+            lp.last_opened_at DESC NULLS LAST,
+            lp.updated_at DESC
+
+          LIMIT 1
+          `,
+          [userId]
+        );
+
+      const lastLesson =
+        lastLessonResult.rows[0] || null;
+
+      // -----------------------------------------------
+      // Latest completed lessons
+      // -----------------------------------------------
+
+      const recentLessonsResult =
+        await pool.query(
+          `
+          SELECT
+            lp.lesson_id AS id,
+            l.name,
+            lp.completed,
+            lp.completed_at,
+            u.name AS unit_name,
+            s.name AS subject_name
+          FROM lesson_progress lp
+
+          JOIN lessons l
+            ON l.id = lp.lesson_id
+
+          JOIN units u
+            ON u.id = l.unit_id
+
+          JOIN subjects s
+            ON s.id = u.subject_id
+
+          WHERE lp.user_id = $1
+
+          ORDER BY
+            lp.updated_at DESC
+
+          LIMIT 10
+          `,
+          [userId]
+        );
+
+      // -----------------------------------------------
+      // Latest quiz
+      // -----------------------------------------------
+
+      const latestQuizResult =
+        await pool.query(
+          `
+          SELECT
+            a.id,
+            a.quiz_id,
+            q.title,
+            a.score,
+            a.total_questions,
+            a.percentage,
+            a.passed,
+            a.finished_at
+          FROM quiz_attempts a
+
+          JOIN quizzes q
+            ON q.id = a.quiz_id
+
+          WHERE a.user_id = $1
+          AND a.status = 'finished'
+
+          ORDER BY a.finished_at DESC
+
+          LIMIT 1
+          `,
+          [userId]
+        );
+
+      const latestQuiz =
+        latestQuizResult.rows[0] || null;
+
+      res.json({
+        success: true,
+
+        progress: {
+          completed_lessons:
+            completedLessons,
+
+          total_lessons:
+            totalLessons,
+
+          overall_percentage:
+            overallPercentage,
+
+          completed_quizzes:
+            completedQuizzes,
+
+          favorites,
+
+          last_lesson:
+            lastLesson,
+
+          recent_lessons:
+            recentLessonsResult.rows,
+
+          latest_quiz:
+            latestQuiz
+        }
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Progress dashboard error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحميل تقدمك الدراسي."
+      });
+    }
+  }
+);
+
+// =========================================================
+// PROGRESS - GET ALL USER LESSON PROGRESS
+// =========================================================
+
+app.get(
+  "/api/progress/lessons",
+  requireUser,
+  async (req, res) => {
+    try {
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            lp.lesson_id,
+            lp.opened,
+            lp.completed,
+            lp.last_opened_at,
+            lp.completed_at,
+
+            l.name AS lesson_name,
+            l.unit_id,
+
+            u.name AS unit_name,
+            u.subject_id,
+
+            s.name AS subject_name
+
+          FROM lesson_progress lp
+
+          JOIN lessons l
+            ON l.id = lp.lesson_id
+
+          JOIN units u
+            ON u.id = l.unit_id
+
+          JOIN subjects s
+            ON s.id = u.subject_id
+
+          WHERE lp.user_id = $1
+
+          ORDER BY
+            lp.updated_at DESC
+          `,
+          [req.user.id]
+        );
+
+      res.json({
+        success: true,
+        progress: result.rows
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get lesson progress error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحميل تقدم الدروس."
+      });
+    }
+  }
+);
+
+// =========================================================
+// PROGRESS - GET SINGLE LESSON STATUS
+// =========================================================
+
+app.get(
+  "/api/progress/lessons/:lessonId",
+  requireUser,
+  async (req, res) => {
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الدرس غير صحيح."
+        });
+      }
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            lp.lesson_id,
+            lp.opened,
+            lp.completed,
+            lp.last_opened_at,
+            lp.completed_at
+          FROM lesson_progress lp
+          WHERE lp.user_id = $1
+          AND lp.lesson_id = $2
+          `,
+          [
+            req.user.id,
+            lessonId
+          ]
+        );
+
+      res.json({
+        success: true,
+        progress:
+          result.rows[0] || {
+            lesson_id: lessonId,
+            opened: false,
+            completed: false,
+            last_opened_at: null,
+            completed_at: null
+          }
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get single lesson progress error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحميل حالة الدرس."
+      });
+    }
+  }
+);
+
+// =========================================================
+// PROGRESS - OPEN LESSON
+// =========================================================
+
+app.post(
+  "/api/progress/lessons/:lessonId/open",
+  requireUser,
+  async (req, res) => {
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الدرس غير صحيح."
+        });
+      }
+
+      const lessonCheck =
+        await pool.query(
+          `
+          SELECT id, name
+          FROM lessons
+          WHERE id = $1
+          `,
+          [lessonId]
+        );
+
+      if (lessonCheck.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "الدرس غير موجود."
+        });
+      }
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO lesson_progress
+          (
+            user_id,
+            lesson_id,
+            opened,
+            last_opened_at,
+            updated_at
+          )
+          VALUES
+          (
+            $1,
+            $2,
+            TRUE,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+          )
+
+          ON CONFLICT (user_id, lesson_id)
+
+          DO UPDATE SET
+            opened = TRUE,
+            last_opened_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+
+          RETURNING *
+          `,
+          [
+            req.user.id,
+            lessonId
+          ]
+        );
+
+      res.json({
+        success: true,
+        message:
+          "تم تسجيل فتح الدرس.",
+        progress:
+          result.rows[0]
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Open lesson progress error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تسجيل فتح الدرس."
+      });
+    }
+  }
+);
+
+// =========================================================
+// PROGRESS - COMPLETE LESSON
+// =========================================================
+
+app.post(
+  "/api/progress/lessons/:lessonId/complete",
+  requireUser,
+  async (req, res) => {
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الدرس غير صحيح."
+        });
+      }
+
+      const lessonCheck =
+        await pool.query(
+          `
+          SELECT id, name
+          FROM lessons
+          WHERE id = $1
+          `,
+          [lessonId]
+        );
+
+      if (lessonCheck.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "الدرس غير موجود."
+        });
+      }
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO lesson_progress
+          (
+            user_id,
+            lesson_id,
+            opened,
+            completed,
+            last_opened_at,
+            completed_at,
+            updated_at
+          )
+          VALUES
+          (
+            $1,
+            $2,
+            TRUE,
+            TRUE,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+          )
+
+          ON CONFLICT (user_id, lesson_id)
+
+          DO UPDATE SET
+            opened = TRUE,
+            completed = TRUE,
+            last_opened_at = CURRENT_TIMESTAMP,
+            completed_at =
+              COALESCE(
+                lesson_progress.completed_at,
+                CURRENT_TIMESTAMP
+              ),
+            updated_at = CURRENT_TIMESTAMP
+
+          RETURNING *
+          `,
+          [
+            req.user.id,
+            lessonId
+          ]
+        );
+
+      // -----------------------------------------------
+      // Calculate updated progress immediately
+      // -----------------------------------------------
+
+      const totalResult =
+        await pool.query(`
+          SELECT COUNT(*)::int AS count
+          FROM lessons
+        `);
+
+      const completedResult =
+        await pool.query(
+          `
+          SELECT COUNT(*)::int AS count
+          FROM lesson_progress
+          WHERE user_id = $1
+          AND completed = TRUE
+          `,
+          [req.user.id]
+        );
+
+      const total =
+        totalResult.rows[0].count;
+
+      const completed =
+        completedResult.rows[0].count;
+
+      const percentage =
+        total > 0
+          ? Math.round(
+              (completed / total) * 100
+            )
+          : 0;
+
+      res.json({
+        success: true,
+        message:
+          "تم إكمال الدرس بنجاح 🎉",
+
+        progress:
+          result.rows[0],
+
+        dashboard: {
+          completed_lessons:
+            completed,
+
+          total_lessons:
+            total,
+
+          overall_percentage:
+            percentage
+        }
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Complete lesson progress error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تسجيل إكمال الدرس."
+      });
+    }
+  }
+);
+
+// =========================================================
+// FAVORITES - GET
+// =========================================================
+
+app.get(
+  "/api/favorites",
+  requireUser,
+  async (req, res) => {
+    try {
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            f.id,
+            f.lesson_id,
+            f.created_at,
+
+            l.name AS lesson_name,
+            u.name AS unit_name,
+            s.name AS subject_name
+
+          FROM favorites f
+
+          JOIN lessons l
+            ON l.id = f.lesson_id
+
+          JOIN units u
+            ON u.id = l.unit_id
+
+          JOIN subjects s
+            ON s.id = u.subject_id
+
+          WHERE f.user_id = $1
+
+          ORDER BY f.created_at DESC
+          `,
+          [req.user.id]
+        );
+
+      res.json({
+        success: true,
+        favorites: result.rows
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get favorites error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحميل المفضلة."
+      });
+    }
+  }
+);
+
+// =========================================================
+// FAVORITES - ADD
+// =========================================================
+
+app.post(
+  "/api/favorites/:lessonId",
+  requireUser,
+  async (req, res) => {
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الدرس غير صحيح."
+        });
+      }
+
+      const lessonCheck =
+        await pool.query(
+          `
+          SELECT id
+          FROM lessons
+          WHERE id = $1
+          `,
+          [lessonId]
+        );
+
+      if (lessonCheck.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "الدرس غير موجود."
+        });
+      }
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO favorites
+          (
+            user_id,
+            lesson_id
+          )
+          VALUES ($1, $2)
+
+          ON CONFLICT (user_id, lesson_id)
+          DO NOTHING
+
+          RETURNING *
+          `,
+          [
+            req.user.id,
+            lessonId
+          ]
+        );
+
+      const countResult =
+        await pool.query(
+          `
+          SELECT COUNT(*)::int AS count
+          FROM favorites
+          WHERE user_id = $1
+          `,
+          [req.user.id]
+        );
+
+      res.json({
+        success: true,
+        message:
+          "تمت إضافة الدرس إلى المفضلة.",
+        favorite:
+          result.rows[0] || null,
+        count:
+          countResult.rows[0].count
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Add favorite error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر إضافة الدرس إلى المفضلة."
+      });
+    }
+  }
+);
+
+// =========================================================
+// FAVORITES - DELETE
+// =========================================================
+
+app.delete(
+  "/api/favorites/:lessonId",
+  requireUser,
+  async (req, res) => {
+    try {
+
+      const lessonId =
+        Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الدرس غير صحيح."
+        });
+      }
+
+      await pool.query(
+        `
+        DELETE FROM favorites
+        WHERE user_id = $1
+        AND lesson_id = $2
+        `,
+        [
+          req.user.id,
+          lessonId
+        ]
+      );
+
+      const countResult =
+        await pool.query(
+          `
+          SELECT COUNT(*)::int AS count
+          FROM favorites
+          WHERE user_id = $1
+          `,
+          [req.user.id]
+        );
+
+      res.json({
+        success: true,
+        message:
+          "تمت إزالة الدرس من المفضلة.",
+        count:
+          countResult.rows[0].count
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Delete favorite error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر إزالة الدرس من المفضلة."
+      });
+    }
+  }
+);
+
+// =========================================================
 // START QUIZ
 // =========================================================
 
@@ -2702,6 +3629,7 @@ app.post(
           `
           SELECT
             id,
+            lesson_id,
             title,
             description,
             passing_percentage,
@@ -2813,6 +3741,45 @@ app.post(
 
       const attempt =
         attemptResult.rows[0];
+
+      // فتح الاختبار يعني أيضًا أن الطالب وصل إلى الدرس
+      const quizLessonId =
+        quizResult.rows[0].lesson_id;
+
+      if (quizLessonId) {
+
+        await client.query(
+          `
+          INSERT INTO lesson_progress
+          (
+            user_id,
+            lesson_id,
+            opened,
+            last_opened_at,
+            updated_at
+          )
+          VALUES
+          (
+            $1,
+            $2,
+            TRUE,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+          )
+
+          ON CONFLICT (user_id, lesson_id)
+
+          DO UPDATE SET
+            opened = TRUE,
+            last_opened_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+          `,
+          [
+            req.user.id,
+            quizLessonId
+          ]
+        );
+      }
 
       await client.query("COMMIT");
 
@@ -3036,6 +4003,7 @@ app.post(
       }
 
       let score = 0;
+
       const results = [];
 
       for (const question of questions) {
@@ -3141,26 +4109,168 @@ app.post(
         ]
       );
 
+      // ===================================================
+      // QUIZ COMPLETION ALSO UPDATES LESSON PROGRESS
+      // ===================================================
+
+      const quizLessonResult =
+        await client.query(
+          `
+          SELECT lesson_id
+          FROM quizzes
+          WHERE id = $1
+          `,
+          [attempt.quiz_id]
+        );
+
+      if (
+        quizLessonResult.rows.length > 0 &&
+        quizLessonResult.rows[0].lesson_id
+      ) {
+
+        const lessonId =
+          quizLessonResult.rows[0].lesson_id;
+
+        await client.query(
+          `
+          INSERT INTO lesson_progress
+          (
+            user_id,
+            lesson_id,
+            opened,
+            completed,
+            last_opened_at,
+            completed_at,
+            updated_at
+          )
+          VALUES
+          (
+            $1,
+            $2,
+            TRUE,
+            TRUE,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+          )
+
+          ON CONFLICT (user_id, lesson_id)
+
+          DO UPDATE SET
+            opened = TRUE,
+            completed = TRUE,
+            last_opened_at = CURRENT_TIMESTAMP,
+            completed_at =
+              COALESCE(
+                lesson_progress.completed_at,
+                CURRENT_TIMESTAMP
+              ),
+            updated_at = CURRENT_TIMESTAMP
+          `,
+          [
+            req.user.id,
+            lessonId
+          ]
+        );
+      }
+
       await client.query("COMMIT");
+
+      // -----------------------------------------------
+      // Calculate dashboard after quiz completion
+      // -----------------------------------------------
+
+      const totalLessonsResult =
+        await pool.query(`
+          SELECT COUNT(*)::int AS count
+          FROM lessons
+        `);
+
+      const completedLessonsResult =
+        await pool.query(
+          `
+          SELECT COUNT(*)::int AS count
+          FROM lesson_progress
+          WHERE user_id = $1
+          AND completed = TRUE
+          `,
+          [req.user.id]
+        );
+
+      const completedQuizzesResult =
+        await pool.query(
+          `
+          SELECT COUNT(*)::int AS count
+          FROM quiz_attempts
+          WHERE user_id = $1
+          AND status = 'finished'
+          `,
+          [req.user.id]
+        );
+
+      const totalLessons =
+        totalLessonsResult.rows[0].count;
+
+      const completedLessons =
+        completedLessonsResult.rows[0].count;
+
+      const completedQuizzes =
+        completedQuizzesResult.rows[0].count;
+
+      const overallPercentage =
+        totalLessons > 0
+          ? Math.round(
+              (
+                completedLessons /
+                totalLessons
+              ) * 100
+            )
+          : 0;
 
       res.json({
         success: true,
+
         message:
           passed
             ? "مبروك! نجحت في الاختبار 🎉"
             : "لم تصل إلى نسبة النجاح، راجع أخطاءك.",
+
         result: {
-          attempt_id: attemptId,
+          attempt_id:
+            attemptId,
+
           score,
+
           total_questions:
             totalQuestions,
+
           percentage,
+
           passing_percentage:
             passingPercentage,
+
           passed,
-          status: "finished"
+
+          status:
+            "finished"
         },
-        questions: results
+
+        progress: {
+          completed_lessons:
+            completedLessons,
+
+          total_lessons:
+            totalLessons,
+
+          overall_percentage:
+            overallPercentage,
+
+          completed_quizzes:
+            completedQuizzes
+        },
+
+        questions:
+          results
       });
 
     } catch (error) {
@@ -3274,20 +4384,26 @@ app.get(
         answersResult.rows.map(item => ({
           question_id:
             item.question_id,
+
           question_text:
             item.question_text,
+
           options: {
             A: item.option_a,
             B: item.option_b,
             C: item.option_c,
             D: item.option_d
           },
+
           selected_answer:
             item.selected_answer,
+
           correct_answer:
             item.correct_answer,
+
           is_correct:
             item.is_correct,
+
           explanation:
             item.explanation ||
             "لم تتم إضافة شرح لهذا السؤال بعد."
@@ -3295,26 +4411,42 @@ app.get(
 
       res.json({
         success: true,
+
         result: {
-          id: attempt.id,
-          quiz_id: attempt.quiz_id,
-          title: attempt.title,
+          id:
+            attempt.id,
+
+          quiz_id:
+            attempt.quiz_id,
+
+          title:
+            attempt.title,
+
           started_at:
             attempt.started_at,
+
           finished_at:
             attempt.finished_at,
-          score: attempt.score,
+
+          score:
+            attempt.score,
+
           total_questions:
             attempt.total_questions,
+
           percentage:
             attempt.percentage,
+
           passing_percentage:
             attempt.passing_percentage,
+
           passed:
             attempt.passed,
+
           status:
             attempt.status
         },
+
         questions
       });
 
