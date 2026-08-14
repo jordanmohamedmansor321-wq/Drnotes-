@@ -7,7 +7,6 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const app = express();
-
 const PORT = process.env.PORT || 10000;
 
 // =========================================================
@@ -67,7 +66,6 @@ async function initializeDatabase() {
 
     // =====================================================
     // DEFAULT SUBJECTS
-    // المواد الأساسية الستة
     // =====================================================
 
     await pool.query(`
@@ -92,23 +90,123 @@ async function initializeDatabase() {
     `);
 
     // =====================================================
+    // IMPORTANT MIGRATION
+    // تحويل "الاحياء" بدون همزة إلى "الإحصاء"
+    // =====================================================
+
+    const unhamzaBiology =
+      await pool.query(`
+        SELECT id
+        FROM subjects
+        WHERE TRIM(name) = 'الاحياء'
+        ORDER BY id ASC
+      `);
+
+    const statisticsExists =
+      await pool.query(`
+        SELECT id
+        FROM subjects
+        WHERE TRIM(name) = 'الإحصاء'
+        ORDER BY id ASC
+      `);
+
+    if (
+      unhamzaBiology.rows.length > 0 &&
+      statisticsExists.rows.length === 0
+    ) {
+
+      await pool.query(`
+        UPDATE subjects
+        SET
+          name = 'الإحصاء',
+          description = 'مادة الإحصاء'
+        WHERE TRIM(name) = 'الاحياء'
+      `);
+
+      console.log(
+        'Migration: تم تحويل "الاحياء" إلى "الإحصاء".'
+      );
+
+    } else if (
+      unhamzaBiology.rows.length > 0 &&
+      statisticsExists.rows.length > 0
+    ) {
+
+      // إذا كانت الإحصاء موجودة بالفعل،
+      // نحذف النسخة القديمة فقط إذا كانت فارغة من الوحدات.
+      for (const row of unhamzaBiology.rows) {
+
+        const unitsCheck =
+          await pool.query(
+            `
+            SELECT COUNT(*)::int AS count
+            FROM units
+            WHERE subject_id = $1
+            `,
+            [row.id]
+          );
+
+        if (unitsCheck.rows[0].count === 0) {
+
+          await pool.query(
+            `
+            DELETE FROM subjects
+            WHERE id = $1
+            `,
+            [row.id]
+          );
+
+          console.log(
+            'Migration: تم حذف نسخة "الاحياء" المكررة.'
+          );
+
+        } else {
+
+          // لو كانت المادة تحتوي على وحدات،
+          // ننقل الوحدات إلى الإحصاء ثم نحذف المادة.
+          const statisticsId =
+            statisticsExists.rows[0].id;
+
+          await pool.query(
+            `
+            UPDATE units
+            SET subject_id = $1
+            WHERE subject_id = $2
+            `,
+            [
+              statisticsId,
+              row.id
+            ]
+          );
+
+          await pool.query(
+            `
+            DELETE FROM subjects
+            WHERE id = $1
+            `,
+            [row.id]
+          );
+
+          console.log(
+            'Migration: تم نقل وحدات "الاحياء" إلى "الإحصاء" وحذف التكرار.'
+          );
+        }
+      }
+    }
+
+    // =====================================================
     // UNITS
     // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS units (
         id SERIAL PRIMARY KEY,
-
         subject_id INTEGER NOT NULL
           REFERENCES subjects(id)
           ON DELETE CASCADE,
-
         name VARCHAR(150) NOT NULL,
-
         description TEXT,
-
         unit_order INTEGER DEFAULT 0,
-
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -120,63 +218,46 @@ async function initializeDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lessons (
         id SERIAL PRIMARY KEY,
-
         unit_id INTEGER NOT NULL
           REFERENCES units(id)
           ON DELETE CASCADE,
-
         name VARCHAR(200) NOT NULL,
-
         description TEXT,
-
         lesson_order INTEGER DEFAULT 0,
-
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
     // =====================================================
     // LESSON CONTENT
-    // شرح الدرس
     // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lesson_content (
         id SERIAL PRIMARY KEY,
-
         lesson_id INTEGER UNIQUE NOT NULL
           REFERENCES lessons(id)
           ON DELETE CASCADE,
-
         video_url TEXT,
-
         pdf_url TEXT,
-
         explanation TEXT,
-
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
     // =====================================================
     // LESSON SOLUTION
-    // حل الدرس
     // =====================================================
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lesson_solution (
         id SERIAL PRIMARY KEY,
-
         lesson_id INTEGER UNIQUE NOT NULL
           REFERENCES lessons(id)
           ON DELETE CASCADE,
-
         video_url TEXT,
-
         pdf_url TEXT,
-
         explanation TEXT,
-
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -188,19 +269,13 @@ async function initializeDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quizzes (
         id SERIAL PRIMARY KEY,
-
         lesson_id INTEGER UNIQUE NOT NULL
           REFERENCES lessons(id)
           ON DELETE CASCADE,
-
         title VARCHAR(200) NOT NULL,
-
         description TEXT,
-
         passing_percentage INTEGER DEFAULT 50,
-
         questions_per_page INTEGER DEFAULT 10,
-
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -212,30 +287,18 @@ async function initializeDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_questions (
         id SERIAL PRIMARY KEY,
-
         quiz_id INTEGER NOT NULL
           REFERENCES quizzes(id)
           ON DELETE CASCADE,
-
         question_text TEXT NOT NULL,
-
         option_a TEXT NOT NULL,
-
         option_b TEXT NOT NULL,
-
         option_c TEXT NOT NULL,
-
         option_d TEXT NOT NULL,
-
         correct_answer VARCHAR(1) NOT NULL
-          CHECK (
-            correct_answer IN ('A', 'B', 'C', 'D')
-          ),
-
+          CHECK (correct_answer IN ('A', 'B', 'C', 'D')),
         explanation TEXT,
-
         question_order INTEGER DEFAULT 0,
-
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -247,36 +310,22 @@ async function initializeDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_attempts (
         id SERIAL PRIMARY KEY,
-
         user_id INTEGER NOT NULL
           REFERENCES users(id)
           ON DELETE CASCADE,
-
         quiz_id INTEGER NOT NULL
           REFERENCES quizzes(id)
           ON DELETE CASCADE,
-
         started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
         finished_at TIMESTAMP,
-
         score INTEGER,
-
         total_questions INTEGER,
-
         percentage NUMERIC(5,2),
-
         passed BOOLEAN,
-
         status VARCHAR(20) DEFAULT 'started'
           CHECK (
-            status IN (
-              'started',
-              'finished',
-              'abandoned'
-            )
+            status IN ('started', 'finished', 'abandoned')
           ),
-
         UNIQUE(user_id, quiz_id)
       );
     `);
@@ -288,21 +337,15 @@ async function initializeDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS quiz_answers (
         id SERIAL PRIMARY KEY,
-
         attempt_id INTEGER NOT NULL
           REFERENCES quiz_attempts(id)
           ON DELETE CASCADE,
-
         question_id INTEGER NOT NULL
           REFERENCES quiz_questions(id)
           ON DELETE CASCADE,
-
         selected_answer VARCHAR(1),
-
         is_correct BOOLEAN,
-
         answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
         UNIQUE(attempt_id, question_id)
       );
     `);
@@ -315,7 +358,6 @@ async function initializeDatabase() {
       "Database initialization failed:",
       error.message
     );
-
   }
 }
 
@@ -324,7 +366,6 @@ async function initializeDatabase() {
 // =========================================================
 
 function createUserToken(user) {
-
   return jwt.sign(
     {
       id: user.id,
@@ -336,11 +377,9 @@ function createUserToken(user) {
       expiresIn: "7d"
     }
   );
-
 }
 
 function createAdminToken() {
-
   return jwt.sign(
     {
       role: "admin"
@@ -350,7 +389,6 @@ function createAdminToken() {
       expiresIn: "7d"
     }
   );
-
 }
 
 // =========================================================
@@ -358,7 +396,6 @@ function createAdminToken() {
 // =========================================================
 
 function requireAdmin(req, res, next) {
-
   try {
 
     const authHeader =
@@ -368,12 +405,10 @@ function requireAdmin(req, res, next) {
       !authHeader ||
       !authHeader.startsWith("Bearer ")
     ) {
-
       return res.status(401).json({
         success: false,
         message: "غير مصرح بالوصول."
       });
-
     }
 
     const token =
@@ -386,16 +421,13 @@ function requireAdmin(req, res, next) {
       );
 
     if (decoded.role !== "admin") {
-
       return res.status(403).json({
         success: false,
         message: "صلاحيات المدير مطلوبة."
       });
-
     }
 
     req.admin = decoded;
-
     next();
 
   } catch (error) {
@@ -405,9 +437,7 @@ function requireAdmin(req, res, next) {
       message:
         "جلسة المدير غير صالحة أو منتهية."
     });
-
   }
-
 }
 
 // =========================================================
@@ -415,7 +445,6 @@ function requireAdmin(req, res, next) {
 // =========================================================
 
 function requireUser(req, res, next) {
-
   try {
 
     const authHeader =
@@ -425,13 +454,11 @@ function requireUser(req, res, next) {
       !authHeader ||
       !authHeader.startsWith("Bearer ")
     ) {
-
       return res.status(401).json({
         success: false,
         message:
           "يجب تسجيل الدخول أولًا."
       });
-
     }
 
     const token =
@@ -444,17 +471,14 @@ function requireUser(req, res, next) {
       );
 
     if (decoded.role !== "user") {
-
       return res.status(403).json({
         success: false,
         message:
           "صلاحيات الطالب مطلوبة."
       });
-
     }
 
     req.user = decoded;
-
     next();
 
   } catch (error) {
@@ -464,285 +488,216 @@ function requireUser(req, res, next) {
       message:
         "جلسة تسجيل الدخول غير صالحة أو منتهية."
     });
-
   }
-
 }
 
 // =========================================================
 // HEALTH
 // =========================================================
 
-app.get(
-  "/api/health",
-  async (req, res) => {
+app.get("/api/health", async (req, res) => {
+  try {
 
-    try {
+    const result =
+      await pool.query("SELECT NOW()");
 
-      const result =
-        await pool.query(
-          "SELECT NOW()"
-        );
+    res.json({
+      success: true,
+      message:
+        "DrNotes API is working 🚀",
+      database: "connected",
+      time: result.rows[0].now
+    });
 
-      res.json({
-        success: true,
-        message:
-          "DrNotes API is working 🚀",
-        database:
-          "connected",
-        time:
-          result.rows[0].now
-      });
+  } catch (error) {
 
-    } catch (error) {
+    console.error("Health error:", error);
 
-      console.error(
-        "Health error:",
-        error
-      );
-
-      res.status(500).json({
-        success: false,
-        message:
-          "Database connection failed"
-      });
-
-    }
-
+    res.status(500).json({
+      success: false,
+      message:
+        "Database connection failed"
+    });
   }
-);
+});
 
 // =========================================================
 // REGISTER
 // =========================================================
 
-app.post(
-  "/api/auth/register",
-  async (req, res) => {
+app.post("/api/auth/register", async (req, res) => {
+  try {
 
-    try {
+    const {
+      name,
+      email,
+      grade,
+      password
+    } = req.body;
 
-      const {
-        name,
-        email,
-        grade,
-        password
-      } = req.body;
-
-      if (
-        !name ||
-        !email ||
-        !grade ||
-        !password
-      ) {
-
-        return res.status(400).json({
-          success: false,
-          message:
-            "جميع البيانات مطلوبة."
-        });
-
-      }
-
-      if (password.length < 6) {
-
-        return res.status(400).json({
-          success: false,
-          message:
-            "كلمة المرور يجب أن تكون 6 أحرف على الأقل."
-        });
-
-      }
-
-      const normalizedEmail =
-        email.trim().toLowerCase();
-
-      const existingUser =
-        await pool.query(
-          "SELECT id FROM users WHERE email = $1",
-          [normalizedEmail]
-        );
-
-      if (
-        existingUser.rows.length > 0
-      ) {
-
-        return res.status(409).json({
-          success: false,
-          message:
-            "هذا البريد الإلكتروني مستخدم بالفعل."
-        });
-
-      }
-
-      const passwordHash =
-        await bcrypt.hash(
-          password,
-          12
-        );
-
-      const result =
-        await pool.query(
-          `
-          INSERT INTO users
-          (
-            name,
-            email,
-            grade,
-            password_hash
-          )
-          VALUES ($1, $2, $3, $4)
-
-          RETURNING
-            id,
-            name,
-            email,
-            grade,
-            created_at
-          `,
-          [
-            name.trim(),
-            normalizedEmail,
-            grade,
-            passwordHash
-          ]
-        );
-
-      const user =
-        result.rows[0];
-
-      const token =
-        createUserToken(user);
-
-      res.status(201).json({
-        success: true,
-        message:
-          "تم إنشاء الحساب بنجاح.",
-        token,
-        user
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Register error:",
-        error
-      );
-
-      res.status(500).json({
+    if (
+      !name ||
+      !email ||
+      !grade ||
+      !password
+    ) {
+      return res.status(400).json({
         success: false,
         message:
-          "حدث خطأ أثناء إنشاء الحساب."
+          "جميع البيانات مطلوبة."
       });
-
     }
 
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "كلمة المرور يجب أن تكون 6 أحرف على الأقل."
+      });
+    }
+
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+    const existingUser =
+      await pool.query(
+        "SELECT id FROM users WHERE email = $1",
+        [normalizedEmail]
+      );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "هذا البريد الإلكتروني مستخدم بالفعل."
+      });
+    }
+
+    const passwordHash =
+      await bcrypt.hash(password, 12);
+
+    const result =
+      await pool.query(
+        `
+        INSERT INTO users
+        (name, email, grade, password_hash)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, name, email, grade, created_at
+        `,
+        [
+          name.trim(),
+          normalizedEmail,
+          grade,
+          passwordHash
+        ]
+      );
+
+    const user = result.rows[0];
+
+    const token =
+      createUserToken(user);
+
+    res.status(201).json({
+      success: true,
+      message:
+        "تم إنشاء الحساب بنجاح.",
+      token,
+      user
+    });
+
+  } catch (error) {
+
+    console.error("Register error:", error);
+
+    res.status(500).json({
+      success: false,
+      message:
+        "حدث خطأ أثناء إنشاء الحساب."
+    });
   }
-);
+});
 
 // =========================================================
 // LOGIN
 // =========================================================
 
-app.post(
-  "/api/auth/login",
-  async (req, res) => {
+app.post("/api/auth/login", async (req, res) => {
+  try {
 
-    try {
+    const {
+      email,
+      password
+    } = req.body;
 
-      const {
-        email,
-        password
-      } = req.body;
-
-      if (
-        !email ||
-        !password
-      ) {
-
-        return res.status(400).json({
-          success: false,
-          message:
-            "البريد الإلكتروني وكلمة المرور مطلوبان."
-        });
-
-      }
-
-      const normalizedEmail =
-        email.trim().toLowerCase();
-
-      const result =
-        await pool.query(
-          "SELECT * FROM users WHERE email = $1",
-          [normalizedEmail]
-        );
-
-      if (
-        result.rows.length === 0
-      ) {
-
-        return res.status(401).json({
-          success: false,
-          message:
-            "البريد الإلكتروني أو كلمة المرور غير صحيحة."
-        });
-
-      }
-
-      const user =
-        result.rows[0];
-
-      const passwordMatch =
-        await bcrypt.compare(
-          password,
-          user.password_hash
-        );
-
-      if (!passwordMatch) {
-
-        return res.status(401).json({
-          success: false,
-          message:
-            "البريد الإلكتروني أو كلمة المرور غير صحيحة."
-        });
-
-      }
-
-      const token =
-        createUserToken(user);
-
-      res.json({
-        success: true,
-        message:
-          "تم تسجيل الدخول بنجاح.",
-        token,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          grade: user.grade,
-          created_at:
-            user.created_at
-        }
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Login error:",
-        error
-      );
-
-      res.status(500).json({
+    if (!email || !password) {
+      return res.status(400).json({
         success: false,
         message:
-          "حدث خطأ أثناء تسجيل الدخول."
+          "البريد الإلكتروني وكلمة المرور مطلوبان."
       });
-
     }
 
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+    const result =
+      await pool.query(
+        "SELECT * FROM users WHERE email = $1",
+        [normalizedEmail]
+      );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+      });
+    }
+
+    const user = result.rows[0];
+
+    const passwordMatch =
+      await bcrypt.compare(
+        password,
+        user.password_hash
+      );
+
+    if (!passwordMatch) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+      });
+    }
+
+    const token =
+      createUserToken(user);
+
+    res.json({
+      success: true,
+      message:
+        "تم تسجيل الدخول بنجاح.",
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        grade: user.grade,
+        created_at: user.created_at
+      }
+    });
+
+  } catch (error) {
+
+    console.error("Login error:", error);
+
+    res.status(500).json({
+      success: false,
+      message:
+        "حدث خطأ أثناء تسجيل الدخول."
+    });
   }
-);
+});
 
 // =========================================================
 // CURRENT USER
@@ -752,7 +707,6 @@ app.get(
   "/api/auth/me",
   requireUser,
   async (req, res) => {
-
     try {
 
       const result =
@@ -770,22 +724,17 @@ app.get(
           [req.user.id]
         );
 
-      if (
-        result.rows.length === 0
-      ) {
-
+      if (result.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "المستخدم غير موجود."
         });
-
       }
 
       res.json({
         success: true,
-        user:
-          result.rows[0]
+        user: result.rows[0]
       });
 
     } catch (error) {
@@ -800,9 +749,7 @@ app.get(
         message:
           "تعذر التحقق من الحساب."
       });
-
     }
-
   }
 );
 
@@ -810,101 +757,79 @@ app.get(
 // ADMIN LOGIN
 // =========================================================
 
-app.post(
-  "/api/admin/login",
-  async (req, res) => {
+app.post("/api/admin/login", async (req, res) => {
+  try {
 
-    try {
+    const {
+      email,
+      password
+    } = req.body;
 
-      const {
-        email,
-        password
-      } = req.body;
-
-      if (
-        !email ||
-        !password
-      ) {
-
-        return res.status(400).json({
-          success: false,
-          message:
-            "البريد الإلكتروني وكلمة المرور مطلوبان."
-        });
-
-      }
-
-      const adminEmail =
-        process.env.ADMIN_EMAIL;
-
-      const adminPassword =
-        process.env.ADMIN_PASSWORD;
-
-      if (
-        !adminEmail ||
-        !adminPassword
-      ) {
-
-        return res.status(500).json({
-          success: false,
-          message:
-            "إعدادات المدير غير مكتملة على الخادم."
-        });
-
-      }
-
-      if (
-        email.trim().toLowerCase() !==
-        adminEmail.trim().toLowerCase()
-      ) {
-
-        return res.status(401).json({
-          success: false,
-          message:
-            "بيانات المدير غير صحيحة."
-        });
-
-      }
-
-      if (
-        password !== adminPassword
-      ) {
-
-        return res.status(401).json({
-          success: false,
-          message:
-            "بيانات المدير غير صحيحة."
-        });
-
-      }
-
-      const token =
-        createAdminToken();
-
-      res.json({
-        success: true,
-        message:
-          "تم تسجيل دخول المدير بنجاح.",
-        token
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Admin login error:",
-        error
-      );
-
-      res.status(500).json({
+    if (!email || !password) {
+      return res.status(400).json({
         success: false,
         message:
-          "حدث خطأ أثناء تسجيل دخول المدير."
+          "البريد الإلكتروني وكلمة المرور مطلوبان."
       });
-
     }
 
+    const adminEmail =
+      process.env.ADMIN_EMAIL;
+
+    const adminPassword =
+      process.env.ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+      return res.status(500).json({
+        success: false,
+        message:
+          "إعدادات المدير غير مكتملة على الخادم."
+      });
+    }
+
+    if (
+      email.trim().toLowerCase() !==
+      adminEmail.trim().toLowerCase()
+    ) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "بيانات المدير غير صحيحة."
+      });
+    }
+
+    if (password !== adminPassword) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "بيانات المدير غير صحيحة."
+      });
+    }
+
+    const token =
+      createAdminToken();
+
+    res.json({
+      success: true,
+      message:
+        "تم تسجيل دخول المدير بنجاح.",
+      token
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Admin login error:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message:
+        "حدث خطأ أثناء تسجيل دخول المدير."
+    });
   }
-);
+});
 
 // =========================================================
 // ADMIN - USERS
@@ -914,7 +839,6 @@ app.get(
   "/api/admin/users",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const result =
@@ -931,8 +855,7 @@ app.get(
 
       res.json({
         success: true,
-        users:
-          result.rows
+        users: result.rows
       });
 
     } catch (error) {
@@ -947,9 +870,7 @@ app.get(
         message:
           "تعذر تحميل المستخدمين."
       });
-
     }
-
   }
 );
 
@@ -957,7 +878,6 @@ app.get(
   "/api/admin/users/count",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const result =
@@ -970,8 +890,7 @@ app.get(
 
       res.json({
         success: true,
-        count:
-          result.rows[0].count
+        count: result.rows[0].count
       });
 
     } catch (error) {
@@ -986,9 +905,7 @@ app.get(
         message:
           "تعذر الحصول على عدد المستخدمين."
       });
-
     }
-
   }
 );
 
@@ -1000,39 +917,31 @@ app.post(
   "/api/admin/users/:id/reset-password",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const userId =
         Number(req.params.id);
 
-      const {
-        newPassword
-      } = req.body;
+      const { newPassword } =
+        req.body;
 
-      if (
-        !Number.isInteger(userId)
-      ) {
-
+      if (!Number.isInteger(userId)) {
         return res.status(400).json({
           success: false,
           message:
             "معرف المستخدم غير صحيح."
         });
-
       }
 
       if (
         !newPassword ||
         newPassword.length < 6
       ) {
-
         return res.status(400).json({
           success: false,
           message:
             "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل."
         });
-
       }
 
       const passwordHash =
@@ -1047,11 +956,7 @@ app.post(
           UPDATE users
           SET password_hash = $1
           WHERE id = $2
-
-          RETURNING
-            id,
-            name,
-            email
+          RETURNING id, name, email
           `,
           [
             passwordHash,
@@ -1059,24 +964,19 @@ app.post(
           ]
         );
 
-      if (
-        result.rows.length === 0
-      ) {
-
+      if (result.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "المستخدم غير موجود."
         });
-
       }
 
       res.json({
         success: true,
         message:
           "تم تغيير كلمة مرور المستخدم بنجاح.",
-        user:
-          result.rows[0]
+        user: result.rows[0]
       });
 
     } catch (error) {
@@ -1091,9 +991,7 @@ app.post(
         message:
           "تعذر تغيير كلمة المرور."
       });
-
     }
-
   }
 );
 
@@ -1105,22 +1003,17 @@ app.delete(
   "/api/admin/users/:id",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const userId =
         Number(req.params.id);
 
-      if (
-        !Number.isInteger(userId)
-      ) {
-
+      if (!Number.isInteger(userId)) {
         return res.status(400).json({
           success: false,
           message:
             "معرف المستخدم غير صحيح."
         });
-
       }
 
       const result =
@@ -1128,33 +1021,24 @@ app.delete(
           `
           DELETE FROM users
           WHERE id = $1
-
-          RETURNING
-            id,
-            name,
-            email
+          RETURNING id, name, email
           `,
           [userId]
         );
 
-      if (
-        result.rows.length === 0
-      ) {
-
+      if (result.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "المستخدم غير موجود."
         });
-
       }
 
       res.json({
         success: true,
         message:
           "تم حذف المستخدم بنجاح.",
-        user:
-          result.rows[0]
+        user: result.rows[0]
       });
 
     } catch (error) {
@@ -1169,9 +1053,7 @@ app.delete(
         message:
           "تعذر حذف المستخدم."
       });
-
     }
-
   }
 );
 
@@ -1179,62 +1061,49 @@ app.delete(
 // SUBJECTS - PUBLIC
 // =========================================================
 
-app.get(
-  "/api/subjects",
-  async (req, res) => {
+app.get("/api/subjects", async (req, res) => {
+  try {
 
-    try {
+    const result =
+      await pool.query(`
+        SELECT
+          id,
+          name,
+          description,
+          image_url,
+          created_at
+        FROM subjects
+        ORDER BY id ASC
+      `);
 
-      const result =
-        await pool.query(`
-          SELECT
-            id,
-            name,
-            description,
-            image_url,
-            created_at
+    res.json({
+      success: true,
+      subjects: result.rows
+    });
 
-          FROM subjects
+  } catch (error) {
 
-          ORDER BY id ASC
-        `);
+    console.error(
+      "Get subjects error:",
+      error
+    );
 
-      res.json({
-        success: true,
-        subjects:
-          result.rows
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get subjects error:",
-        error
-      );
-
-      res.status(500).json({
-        success: false,
-        message:
-          "تعذر تحميل المواد."
-      });
-
-    }
-
+    res.status(500).json({
+      success: false,
+      message:
+        "تعذر تحميل المواد."
+    });
   }
-);
+});
 
 // =========================================================
 // ADMIN - SUBJECTS
 // =========================================================
 
-// الحصول على المواد نفسها من قاعدة البيانات
-// لا نحتاج لإضافة المواد يدويًا من لوحة الإدارة.
-
 app.get(
   "/api/admin/subjects",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const result =
@@ -1245,32 +1114,20 @@ app.get(
             s.description,
             s.image_url,
             s.created_at,
-
-            COUNT(DISTINCT u.id)::int
-              AS units_count,
-
-            COUNT(DISTINCT l.id)::int
-              AS lessons_count
-
+            COUNT(DISTINCT u.id)::int AS units_count,
+            COUNT(DISTINCT l.id)::int AS lessons_count
           FROM subjects s
-
           LEFT JOIN units u
             ON u.subject_id = s.id
-
           LEFT JOIN lessons l
             ON l.unit_id = u.id
-
-          GROUP BY
-            s.id
-
-          ORDER BY
-            s.id ASC
+          GROUP BY s.id
+          ORDER BY s.id ASC
         `);
 
       res.json({
         success: true,
-        subjects:
-          result.rows
+        subjects: result.rows
       });
 
     } catch (error) {
@@ -1285,9 +1142,7 @@ app.get(
         message:
           "تعذر تحميل مواد الإدارة."
       });
-
     }
-
   }
 );
 
@@ -1299,7 +1154,6 @@ app.put(
   "/api/admin/subjects/:subjectId",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const subjectId =
@@ -1312,37 +1166,30 @@ app.put(
       } = req.body;
 
       if (!Number.isInteger(subjectId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف المادة غير صحيح."
         });
-
       }
 
       if (!name || !name.trim()) {
-
         return res.status(400).json({
           success: false,
           message:
             "اسم المادة مطلوب."
         });
-
       }
 
       const result =
         await pool.query(
           `
           UPDATE subjects
-
           SET
             name = $1,
             description = $2,
             image_url = $3
-
           WHERE id = $4
-
           RETURNING *
           `,
           [
@@ -1354,21 +1201,18 @@ app.put(
         );
 
       if (result.rows.length === 0) {
-
         return res.status(404).json({
           success: false,
           message:
             "المادة غير موجودة."
         });
-
       }
 
       res.json({
         success: true,
         message:
           "تم تحديث المادة بنجاح.",
-        subject:
-          result.rows[0]
+        subject: result.rows[0]
       });
 
     } catch (error) {
@@ -1383,9 +1227,7 @@ app.put(
         message:
           "تعذر تحديث المادة."
       });
-
     }
-
   }
 );
 
@@ -1396,20 +1238,17 @@ app.put(
 app.get(
   "/api/subjects/:subjectId/units",
   async (req, res) => {
-
     try {
 
       const subjectId =
         Number(req.params.subjectId);
 
       if (!Number.isInteger(subjectId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف المادة غير صحيح."
         });
-
       }
 
       const result =
@@ -1422,22 +1261,16 @@ app.get(
             description,
             unit_order,
             created_at
-
           FROM units
-
           WHERE subject_id = $1
-
-          ORDER BY
-            unit_order ASC,
-            id ASC
+          ORDER BY unit_order ASC, id ASC
           `,
           [subjectId]
         );
 
       res.json({
         success: true,
-        units:
-          result.rows
+        units: result.rows
       });
 
     } catch (error) {
@@ -1452,9 +1285,7 @@ app.get(
         message:
           "تعذر تحميل الوحدات."
       });
-
     }
-
   }
 );
 
@@ -1466,7 +1297,6 @@ app.post(
   "/api/admin/units",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const {
@@ -1484,13 +1314,11 @@ app.post(
         !name ||
         !name.trim()
       ) {
-
         return res.status(400).json({
           success: false,
           message:
             "المادة واسم الوحدة مطلوبان."
         });
-
       }
 
       const subjectCheck =
@@ -1503,16 +1331,12 @@ app.post(
           [subjectId]
         );
 
-      if (
-        subjectCheck.rows.length === 0
-      ) {
-
+      if (subjectCheck.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "المادة غير موجودة."
         });
-
       }
 
       const result =
@@ -1525,10 +1349,7 @@ app.post(
             description,
             unit_order
           )
-
-          VALUES
-          ($1, $2, $3, $4)
-
+          VALUES ($1, $2, $3, $4)
           RETURNING *
           `,
           [
@@ -1543,8 +1364,7 @@ app.post(
         success: true,
         message:
           "تم إنشاء الوحدة بنجاح.",
-        unit:
-          result.rows[0]
+        unit: result.rows[0]
       });
 
     } catch (error) {
@@ -1559,9 +1379,7 @@ app.post(
         message:
           "تعذر إنشاء الوحدة."
       });
-
     }
-
   }
 );
 
@@ -1573,7 +1391,6 @@ app.put(
   "/api/admin/units/:unitId",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const unitId =
@@ -1590,27 +1407,22 @@ app.put(
         !name ||
         !name.trim()
       ) {
-
         return res.status(400).json({
           success: false,
           message:
             "بيانات الوحدة غير صحيحة."
         });
-
       }
 
       const result =
         await pool.query(
           `
           UPDATE units
-
           SET
             name = $1,
             description = $2,
             unit_order = $3
-
           WHERE id = $4
-
           RETURNING *
           `,
           [
@@ -1622,21 +1434,18 @@ app.put(
         );
 
       if (result.rows.length === 0) {
-
         return res.status(404).json({
           success: false,
           message:
             "الوحدة غير موجودة."
         });
-
       }
 
       res.json({
         success: true,
         message:
           "تم تحديث الوحدة بنجاح.",
-        unit:
-          result.rows[0]
+        unit: result.rows[0]
       });
 
     } catch (error) {
@@ -1651,9 +1460,7 @@ app.put(
         message:
           "تعذر تحديث الوحدة."
       });
-
     }
-
   }
 );
 
@@ -1665,20 +1472,17 @@ app.delete(
   "/api/admin/units/:unitId",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const unitId =
         Number(req.params.unitId);
 
       if (!Number.isInteger(unitId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف الوحدة غير صحيح."
         });
-
       }
 
       const result =
@@ -1692,13 +1496,11 @@ app.delete(
         );
 
       if (result.rows.length === 0) {
-
         return res.status(404).json({
           success: false,
           message:
             "الوحدة غير موجودة."
         });
-
       }
 
       res.json({
@@ -1719,9 +1521,7 @@ app.delete(
         message:
           "تعذر حذف الوحدة."
       });
-
     }
-
   }
 );
 
@@ -1732,20 +1532,17 @@ app.delete(
 app.get(
   "/api/units/:unitId/lessons",
   async (req, res) => {
-
     try {
 
       const unitId =
         Number(req.params.unitId);
 
       if (!Number.isInteger(unitId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف الوحدة غير صحيح."
         });
-
       }
 
       const result =
@@ -1758,22 +1555,16 @@ app.get(
             description,
             lesson_order,
             created_at
-
           FROM lessons
-
           WHERE unit_id = $1
-
-          ORDER BY
-            lesson_order ASC,
-            id ASC
+          ORDER BY lesson_order ASC, id ASC
           `,
           [unitId]
         );
 
       res.json({
         success: true,
-        lessons:
-          result.rows
+        lessons: result.rows
       });
 
     } catch (error) {
@@ -1788,9 +1579,7 @@ app.get(
         message:
           "تعذر تحميل الدروس."
       });
-
     }
-
   }
 );
 
@@ -1802,7 +1591,6 @@ app.post(
   "/api/admin/lessons",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const {
@@ -1820,13 +1608,11 @@ app.post(
         !name ||
         !name.trim()
       ) {
-
         return res.status(400).json({
           success: false,
           message:
             "الوحدة واسم الدرس مطلوبان."
         });
-
       }
 
       const unitCheck =
@@ -1839,16 +1625,12 @@ app.post(
           [unitId]
         );
 
-      if (
-        unitCheck.rows.length === 0
-      ) {
-
+      if (unitCheck.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "الوحدة غير موجودة."
         });
-
       }
 
       const result =
@@ -1861,10 +1643,7 @@ app.post(
             description,
             lesson_order
           )
-
-          VALUES
-          ($1, $2, $3, $4)
-
+          VALUES ($1, $2, $3, $4)
           RETURNING *
           `,
           [
@@ -1879,8 +1658,7 @@ app.post(
         success: true,
         message:
           "تم إنشاء الدرس بنجاح.",
-        lesson:
-          result.rows[0]
+        lesson: result.rows[0]
       });
 
     } catch (error) {
@@ -1895,9 +1673,7 @@ app.post(
         message:
           "تعذر إنشاء الدرس."
       });
-
     }
-
   }
 );
 
@@ -1909,7 +1685,6 @@ app.put(
   "/api/admin/lessons/:lessonId",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const lessonId =
@@ -1926,27 +1701,22 @@ app.put(
         !name ||
         !name.trim()
       ) {
-
         return res.status(400).json({
           success: false,
           message:
             "بيانات الدرس غير صحيحة."
         });
-
       }
 
       const result =
         await pool.query(
           `
           UPDATE lessons
-
           SET
             name = $1,
             description = $2,
             lesson_order = $3
-
           WHERE id = $4
-
           RETURNING *
           `,
           [
@@ -1958,21 +1728,18 @@ app.put(
         );
 
       if (result.rows.length === 0) {
-
         return res.status(404).json({
           success: false,
           message:
             "الدرس غير موجود."
         });
-
       }
 
       res.json({
         success: true,
         message:
           "تم تحديث الدرس بنجاح.",
-        lesson:
-          result.rows[0]
+        lesson: result.rows[0]
       });
 
     } catch (error) {
@@ -1987,9 +1754,7 @@ app.put(
         message:
           "تعذر تحديث الدرس."
       });
-
     }
-
   }
 );
 
@@ -2001,20 +1766,17 @@ app.delete(
   "/api/admin/lessons/:lessonId",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const lessonId =
         Number(req.params.lessonId);
 
       if (!Number.isInteger(lessonId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف الدرس غير صحيح."
         });
-
       }
 
       const result =
@@ -2028,13 +1790,11 @@ app.delete(
         );
 
       if (result.rows.length === 0) {
-
         return res.status(404).json({
           success: false,
           message:
             "الدرس غير موجود."
         });
-
       }
 
       res.json({
@@ -2055,9 +1815,7 @@ app.delete(
         message:
           "تعذر حذف الدرس."
       });
-
     }
-
   }
 );
 
@@ -2068,54 +1826,36 @@ app.delete(
 app.get(
   "/api/lessons/:lessonId",
   async (req, res) => {
-
     try {
 
       const lessonId =
         Number(req.params.lessonId);
 
       if (!Number.isInteger(lessonId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف الدرس غير صحيح."
         });
-
       }
 
       const lessonResult =
         await pool.query(
           `
           SELECT
-
             l.id,
-
             l.unit_id,
-
             l.name,
-
             l.description,
-
             l.lesson_order,
 
-            lc.video_url
-              AS explanation_video_url,
+            lc.video_url AS explanation_video_url,
+            lc.pdf_url AS explanation_pdf_url,
+            lc.explanation AS explanation_text,
 
-            lc.pdf_url
-              AS explanation_pdf_url,
-
-            lc.explanation
-              AS explanation_text,
-
-            ls.video_url
-              AS solution_video_url,
-
-            ls.pdf_url
-              AS solution_pdf_url,
-
-            ls.explanation
-              AS solution_text
+            ls.video_url AS solution_video_url,
+            ls.pdf_url AS solution_pdf_url,
+            ls.explanation AS solution_text
 
           FROM lessons l
 
@@ -2130,16 +1870,12 @@ app.get(
           [lessonId]
         );
 
-      if (
-        lessonResult.rows.length === 0
-      ) {
-
+      if (lessonResult.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "الدرس غير موجود."
         });
-
       }
 
       const quizResult =
@@ -2151,9 +1887,7 @@ app.get(
             description,
             passing_percentage,
             questions_per_page
-
           FROM quizzes
-
           WHERE lesson_id = $1
           `,
           [lessonId]
@@ -2161,10 +1895,8 @@ app.get(
 
       res.json({
         success: true,
-        lesson:
-          lessonResult.rows[0],
-        quiz:
-          quizResult.rows[0] || null
+        lesson: lessonResult.rows[0],
+        quiz: quizResult.rows[0] || null
       });
 
     } catch (error) {
@@ -2179,9 +1911,7 @@ app.get(
         message:
           "تعذر تحميل الدرس."
       });
-
     }
-
   }
 );
 
@@ -2193,50 +1923,34 @@ app.get(
   "/api/admin/lessons/:lessonId/content",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const lessonId =
         Number(req.params.lessonId);
 
       if (!Number.isInteger(lessonId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف الدرس غير صحيح."
         });
-
       }
 
       const result =
         await pool.query(
           `
           SELECT
-
             l.id,
-
             l.name,
-
             l.description,
 
-            lc.video_url
-              AS explanation_video_url,
+            lc.video_url AS explanation_video_url,
+            lc.pdf_url AS explanation_pdf_url,
+            lc.explanation AS explanation_text,
 
-            lc.pdf_url
-              AS explanation_pdf_url,
-
-            lc.explanation
-              AS explanation_text,
-
-            ls.video_url
-              AS solution_video_url,
-
-            ls.pdf_url
-              AS solution_pdf_url,
-
-            ls.explanation
-              AS solution_text
+            ls.video_url AS solution_video_url,
+            ls.pdf_url AS solution_pdf_url,
+            ls.explanation AS solution_text
 
           FROM lessons l
 
@@ -2251,22 +1965,17 @@ app.get(
           [lessonId]
         );
 
-      if (
-        result.rows.length === 0
-      ) {
-
+      if (result.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "الدرس غير موجود."
         });
-
       }
 
       res.json({
         success: true,
-        content:
-          result.rows[0]
+        content: result.rows[0]
       });
 
     } catch (error) {
@@ -2281,9 +1990,7 @@ app.get(
         message:
           "تعذر تحميل محتوى الدرس."
       });
-
     }
-
   }
 );
 
@@ -2295,20 +2002,17 @@ app.post(
   "/api/admin/lessons/:lessonId/content",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const lessonId =
         Number(req.params.lessonId);
 
       if (!Number.isInteger(lessonId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف الدرس غير صحيح."
         });
-
       }
 
       const {
@@ -2327,16 +2031,12 @@ app.post(
           [lessonId]
         );
 
-      if (
-        lessonCheck.rows.length === 0
-      ) {
-
+      if (lessonCheck.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "الدرس غير موجود."
         });
-
       }
 
       const result =
@@ -2349,25 +2049,14 @@ app.post(
             pdf_url,
             explanation
           )
-
-          VALUES
-          ($1, $2, $3, $4)
+          VALUES ($1, $2, $3, $4)
 
           ON CONFLICT (lesson_id)
-
           DO UPDATE SET
-
-            video_url =
-              EXCLUDED.video_url,
-
-            pdf_url =
-              EXCLUDED.pdf_url,
-
-            explanation =
-              EXCLUDED.explanation,
-
-            updated_at =
-              CURRENT_TIMESTAMP
+            video_url = EXCLUDED.video_url,
+            pdf_url = EXCLUDED.pdf_url,
+            explanation = EXCLUDED.explanation,
+            updated_at = CURRENT_TIMESTAMP
 
           RETURNING *
           `,
@@ -2383,8 +2072,7 @@ app.post(
         success: true,
         message:
           "تم حفظ شرح الدرس بنجاح.",
-        content:
-          result.rows[0]
+        content: result.rows[0]
       });
 
     } catch (error) {
@@ -2399,9 +2087,7 @@ app.post(
         message:
           "تعذر حفظ محتوى الدرس."
       });
-
     }
-
   }
 );
 
@@ -2413,20 +2099,17 @@ app.post(
   "/api/admin/lessons/:lessonId/solution",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const lessonId =
         Number(req.params.lessonId);
 
       if (!Number.isInteger(lessonId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف الدرس غير صحيح."
         });
-
       }
 
       const {
@@ -2445,16 +2128,12 @@ app.post(
           [lessonId]
         );
 
-      if (
-        lessonCheck.rows.length === 0
-      ) {
-
+      if (lessonCheck.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "الدرس غير موجود."
         });
-
       }
 
       const result =
@@ -2467,25 +2146,14 @@ app.post(
             pdf_url,
             explanation
           )
-
-          VALUES
-          ($1, $2, $3, $4)
+          VALUES ($1, $2, $3, $4)
 
           ON CONFLICT (lesson_id)
-
           DO UPDATE SET
-
-            video_url =
-              EXCLUDED.video_url,
-
-            pdf_url =
-              EXCLUDED.pdf_url,
-
-            explanation =
-              EXCLUDED.explanation,
-
-            updated_at =
-              CURRENT_TIMESTAMP
+            video_url = EXCLUDED.video_url,
+            pdf_url = EXCLUDED.pdf_url,
+            explanation = EXCLUDED.explanation,
+            updated_at = CURRENT_TIMESTAMP
 
           RETURNING *
           `,
@@ -2501,8 +2169,7 @@ app.post(
         success: true,
         message:
           "تم حفظ حل الدرس بنجاح.",
-        solution:
-          result.rows[0]
+        solution: result.rows[0]
       });
 
     } catch (error) {
@@ -2517,9 +2184,7 @@ app.post(
         message:
           "تعذر حفظ حل الدرس."
       });
-
     }
-
   }
 );
 
@@ -2531,7 +2196,6 @@ app.post(
   "/api/admin/quizzes",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const {
@@ -2550,13 +2214,11 @@ app.post(
         !title ||
         !title.trim()
       ) {
-
         return res.status(400).json({
           success: false,
           message:
             "الدرس واسم الاختبار مطلوبان."
         });
-
       }
 
       const lessonCheck =
@@ -2569,16 +2231,12 @@ app.post(
           [lessonId]
         );
 
-      if (
-        lessonCheck.rows.length === 0
-      ) {
-
+      if (lessonCheck.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "الدرس غير موجود."
         });
-
       }
 
       let passing =
@@ -2613,23 +2271,14 @@ app.post(
             passing_percentage,
             questions_per_page
           )
-
-          VALUES
-          ($1, $2, $3, $4, $5)
+          VALUES ($1, $2, $3, $4, $5)
 
           ON CONFLICT (lesson_id)
-
           DO UPDATE SET
-
-            title =
-              EXCLUDED.title,
-
-            description =
-              EXCLUDED.description,
-
+            title = EXCLUDED.title,
+            description = EXCLUDED.description,
             passing_percentage =
               EXCLUDED.passing_percentage,
-
             questions_per_page =
               EXCLUDED.questions_per_page
 
@@ -2648,8 +2297,7 @@ app.post(
         success: true,
         message:
           "تم إنشاء أو تحديث الاختبار بنجاح.",
-        quiz:
-          result.rows[0]
+        quiz: result.rows[0]
       });
 
     } catch (error) {
@@ -2664,9 +2312,7 @@ app.post(
         message:
           "تعذر إنشاء الاختبار."
       });
-
     }
-
   }
 );
 
@@ -2678,44 +2324,30 @@ app.get(
   "/api/admin/quizzes",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const result =
         await pool.query(
           `
           SELECT
-
             q.id,
-
             q.lesson_id,
-
             q.title,
-
             q.description,
-
             q.passing_percentage,
-
             q.questions_per_page,
-
             q.created_at,
-
             l.name AS lesson_name
-
           FROM quizzes q
-
           JOIN lessons l
             ON l.id = q.lesson_id
-
-          ORDER BY
-            q.id DESC
+          ORDER BY q.id DESC
           `
         );
 
       res.json({
         success: true,
-        quizzes:
-          result.rows
+        quizzes: result.rows
       });
 
     } catch (error) {
@@ -2730,9 +2362,7 @@ app.get(
         message:
           "تعذر تحميل الاختبارات."
       });
-
     }
-
   }
 );
 
@@ -2744,7 +2374,6 @@ app.post(
   "/api/admin/quizzes/:quizId/questions",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const quizId =
@@ -2775,13 +2404,11 @@ app.post(
         !option_d ||
         !["A", "B", "C", "D"].includes(correct)
       ) {
-
         return res.status(400).json({
           success: false,
           message:
             "بيانات السؤال غير مكتملة."
         });
-
       }
 
       const quizCheck =
@@ -2794,16 +2421,12 @@ app.post(
           [quizId]
         );
 
-      if (
-        quizCheck.rows.length === 0
-      ) {
-
+      if (quizCheck.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "الاختبار غير موجود."
         });
-
       }
 
       const result =
@@ -2821,10 +2444,8 @@ app.post(
             explanation,
             question_order
           )
-
           VALUES
           ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-
           RETURNING *
           `,
           [
@@ -2844,8 +2465,7 @@ app.post(
         success: true,
         message:
           "تمت إضافة السؤال بنجاح.",
-        question:
-          result.rows[0]
+        question: result.rows[0]
       });
 
     } catch (error) {
@@ -2860,9 +2480,7 @@ app.post(
         message:
           "تعذر إضافة السؤال."
       });
-
     }
-
   }
 );
 
@@ -2874,64 +2492,44 @@ app.get(
   "/api/admin/quizzes/:quizId/questions",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const quizId =
         Number(req.params.quizId);
 
       if (!Number.isInteger(quizId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف الاختبار غير صحيح."
         });
-
       }
 
       const result =
         await pool.query(
           `
           SELECT
-
             id,
-
             quiz_id,
-
             question_text,
-
             option_a,
-
             option_b,
-
             option_c,
-
             option_d,
-
             correct_answer,
-
             explanation,
-
             question_order,
-
             created_at
-
           FROM quiz_questions
-
           WHERE quiz_id = $1
-
-          ORDER BY
-            question_order ASC,
-            id ASC
+          ORDER BY question_order ASC, id ASC
           `,
           [quizId]
         );
 
       res.json({
         success: true,
-        questions:
-          result.rows
+        questions: result.rows
       });
 
     } catch (error) {
@@ -2946,9 +2544,7 @@ app.get(
         message:
           "تعذر تحميل أسئلة الاختبار."
       });
-
     }
-
   }
 );
 
@@ -2960,44 +2556,35 @@ app.delete(
   "/api/admin/quizzes/questions/:questionId",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const questionId =
         Number(req.params.questionId);
 
       if (!Number.isInteger(questionId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف السؤال غير صحيح."
         });
-
       }
 
       const result =
         await pool.query(
           `
           DELETE FROM quiz_questions
-
           WHERE id = $1
-
           RETURNING id
           `,
           [questionId]
         );
 
-      if (
-        result.rows.length === 0
-      ) {
-
+      if (result.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "السؤال غير موجود."
         });
-
       }
 
       res.json({
@@ -3018,9 +2605,7 @@ app.delete(
         message:
           "تعذر حذف السؤال."
       });
-
     }
-
   }
 );
 
@@ -3032,44 +2617,35 @@ app.delete(
   "/api/admin/quizzes/:quizId",
   requireAdmin,
   async (req, res) => {
-
     try {
 
       const quizId =
         Number(req.params.quizId);
 
       if (!Number.isInteger(quizId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف الاختبار غير صحيح."
         });
-
       }
 
       const result =
         await pool.query(
           `
           DELETE FROM quizzes
-
           WHERE id = $1
-
           RETURNING id
           `,
           [quizId]
         );
 
-      if (
-        result.rows.length === 0
-      ) {
-
+      if (result.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "الاختبار غير موجود."
         });
-
       }
 
       res.json({
@@ -3090,9 +2666,7 @@ app.delete(
         message:
           "تعذر حذف الاختبار."
       });
-
     }
-
   }
 );
 
@@ -3114,13 +2688,11 @@ app.post(
         Number(req.params.quizId);
 
       if (!Number.isInteger(quizId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف الاختبار غير صحيح."
         });
-
       }
 
       await client.query("BEGIN");
@@ -3129,27 +2701,18 @@ app.post(
         await client.query(
           `
           SELECT
-
             id,
-
             title,
-
             description,
-
             passing_percentage,
-
             questions_per_page
-
           FROM quizzes
-
           WHERE id = $1
           `,
           [quizId]
         );
 
-      if (
-        quizResult.rows.length === 0
-      ) {
+      if (quizResult.rows.length === 0) {
 
         await client.query("ROLLBACK");
 
@@ -3158,18 +2721,14 @@ app.post(
           message:
             "الاختبار غير موجود."
         });
-
       }
 
       const existingAttempt =
         await client.query(
           `
           SELECT *
-
           FROM quiz_attempts
-
           WHERE user_id = $1
-
           AND quiz_id = $2
           `,
           [
@@ -3178,9 +2737,7 @@ app.post(
           ]
         );
 
-      if (
-        existingAttempt.rows.length > 0
-      ) {
+      if (existingAttempt.rows.length > 0) {
 
         await client.query("ROLLBACK");
 
@@ -3193,56 +2750,37 @@ app.post(
           message:
             "لقد بدأت أو أنهيت هذا الاختبار من قبل، ولا يمكن فتحه مرة أخرى.",
           attempt: {
-            id:
-              attempt.id,
-            status:
-              attempt.status,
-            score:
-              attempt.score,
+            id: attempt.id,
+            status: attempt.status,
+            score: attempt.score,
             total_questions:
               attempt.total_questions,
             percentage:
               attempt.percentage,
-            passed:
-              attempt.passed
+            passed: attempt.passed
           }
         });
-
       }
 
       const questionsResult =
         await client.query(
           `
           SELECT
-
             id,
-
             question_text,
-
             option_a,
-
             option_b,
-
             option_c,
-
             option_d,
-
             question_order
-
           FROM quiz_questions
-
           WHERE quiz_id = $1
-
-          ORDER BY
-            question_order ASC,
-            id ASC
+          ORDER BY question_order ASC, id ASC
           `,
           [quizId]
         );
 
-      if (
-        questionsResult.rows.length === 0
-      ) {
+      if (questionsResult.rows.length === 0) {
 
         await client.query("ROLLBACK");
 
@@ -3251,7 +2789,6 @@ app.post(
           message:
             "لا توجد أسئلة في هذا الاختبار."
         });
-
       }
 
       const attemptResult =
@@ -3264,10 +2801,7 @@ app.post(
             total_questions,
             status
           )
-
-          VALUES
-          ($1, $2, $3, 'started')
-
+          VALUES ($1, $2, $3, 'started')
           RETURNING *
           `,
           [
@@ -3287,19 +2821,13 @@ app.post(
         message:
           "تم بدء الاختبار.",
         attempt: {
-          id:
-            attempt.id,
-          quiz_id:
-            quizId,
-          started_at:
-            attempt.started_at,
-          status:
-            attempt.status
+          id: attempt.id,
+          quiz_id: quizId,
+          started_at: attempt.started_at,
+          status: attempt.status
         },
-        quiz:
-          quizResult.rows[0],
-        questions:
-          questionsResult.rows
+        quiz: quizResult.rows[0],
+        questions: questionsResult.rows
       });
 
     } catch (error) {
@@ -3322,9 +2850,7 @@ app.post(
     } finally {
 
       client.release();
-
     }
-
   }
 );
 
@@ -3346,13 +2872,11 @@ app.post(
         Number(req.params.attemptId);
 
       if (!Number.isInteger(attemptId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف المحاولة غير صحيح."
         });
-
       }
 
       const answers =
@@ -3366,20 +2890,13 @@ app.post(
         await client.query(
           `
           SELECT
-
             a.*,
-
             q.passing_percentage
-
           FROM quiz_attempts a
-
           JOIN quizzes q
             ON q.id = a.quiz_id
-
           WHERE a.id = $1
-
           AND a.user_id = $2
-
           FOR UPDATE
           `,
           [
@@ -3388,9 +2905,7 @@ app.post(
           ]
         );
 
-      if (
-        attemptResult.rows.length === 0
-      ) {
+      if (attemptResult.rows.length === 0) {
 
         await client.query("ROLLBACK");
 
@@ -3399,15 +2914,12 @@ app.post(
           message:
             "المحاولة غير موجودة."
         });
-
       }
 
       const attempt =
         attemptResult.rows[0];
 
-      if (
-        attempt.status !== "started"
-      ) {
+      if (attempt.status !== "started") {
 
         await client.query("ROLLBACK");
 
@@ -3416,39 +2928,24 @@ app.post(
           message:
             "هذه المحاولة تم إرسالها بالفعل ولا يمكن إرسالها مرة أخرى."
         });
-
       }
 
       const questionsResult =
         await client.query(
           `
           SELECT
-
             id,
-
             question_text,
-
             option_a,
-
             option_b,
-
             option_c,
-
             option_d,
-
             correct_answer,
-
             explanation,
-
             question_order
-
           FROM quiz_questions
-
           WHERE quiz_id = $1
-
-          ORDER BY
-            question_order ASC,
-            id ASC
+          ORDER BY question_order ASC, id ASC
           `,
           [attempt.quiz_id]
         );
@@ -3465,12 +2962,9 @@ app.post(
           message:
             "لا توجد أسئلة لهذا الاختبار."
         });
-
       }
 
-      if (
-        answers.length !== questions.length
-      ) {
+      if (answers.length !== questions.length) {
 
         await client.query("ROLLBACK");
 
@@ -3478,12 +2972,9 @@ app.post(
           success: false,
           message:
             `يجب الإجابة عن جميع الأسئلة قبل تسليم الاختبار. عدد الأسئلة: ${questions.length}`,
-          required:
-            questions.length,
-          received:
-            answers.length
+          required: questions.length,
+          received: answers.length
         });
-
       }
 
       const answerMap =
@@ -3511,12 +3002,9 @@ app.post(
             message:
               "يوجد جواب غير صحيح في البيانات المرسلة."
           });
-
         }
 
-        if (
-          answerMap.has(questionId)
-        ) {
+        if (answerMap.has(questionId)) {
 
           await client.query("ROLLBACK");
 
@@ -3525,21 +3013,17 @@ app.post(
             message:
               "تم إرسال السؤال أكثر من مرة."
           });
-
         }
 
         answerMap.set(
           questionId,
           selected
         );
-
       }
 
       for (const question of questions) {
 
-        if (
-          !answerMap.has(question.id)
-        ) {
+        if (!answerMap.has(question.id)) {
 
           await client.query("ROLLBACK");
 
@@ -3548,13 +3032,10 @@ app.post(
             message:
               "يجب الإجابة عن جميع الأسئلة."
           });
-
         }
-
       }
 
       let score = 0;
-
       const results = [];
 
       for (const question of questions) {
@@ -3579,21 +3060,16 @@ app.post(
             selected_answer,
             is_correct
           )
-
-          VALUES
-          ($1, $2, $3, $4)
+          VALUES ($1, $2, $3, $4)
 
           ON CONFLICT
           (attempt_id, question_id)
 
           DO UPDATE SET
-
             selected_answer =
               EXCLUDED.selected_answer,
-
             is_correct =
               EXCLUDED.is_correct,
-
             answered_at =
               CURRENT_TIMESTAMP
           `,
@@ -3606,8 +3082,7 @@ app.post(
         );
 
         results.push({
-          question_id:
-            question.id,
+          question_id: question.id,
           question_text:
             question.question_text,
           selected_answer:
@@ -3624,7 +3099,6 @@ app.post(
                   "لم تتم إضافة شرح لهذا السؤال بعد."
                 )
         });
-
       }
 
       const totalQuestions =
@@ -3649,27 +3123,13 @@ app.post(
       await client.query(
         `
         UPDATE quiz_attempts
-
         SET
-
-          finished_at =
-            CURRENT_TIMESTAMP,
-
-          score =
-            $1,
-
-          total_questions =
-            $2,
-
-          percentage =
-            $3,
-
-          passed =
-            $4,
-
-          status =
-            'finished'
-
+          finished_at = CURRENT_TIMESTAMP,
+          score = $1,
+          total_questions = $2,
+          percentage = $3,
+          passed = $4,
+          status = 'finished'
         WHERE id = $5
         `,
         [
@@ -3690,8 +3150,7 @@ app.post(
             ? "مبروك! نجحت في الاختبار 🎉"
             : "لم تصل إلى نسبة النجاح، راجع أخطاءك.",
         result: {
-          attempt_id:
-            attemptId,
+          attempt_id: attemptId,
           score,
           total_questions:
             totalQuestions,
@@ -3699,11 +3158,9 @@ app.post(
           passing_percentage:
             passingPercentage,
           passed,
-          status:
-            "finished"
+          status: "finished"
         },
-        questions:
-          results
+        questions: results
       });
 
     } catch (error) {
@@ -3726,9 +3183,7 @@ app.post(
     } finally {
 
       client.release();
-
     }
-
   }
 );
 
@@ -3740,56 +3195,38 @@ app.get(
   "/api/quizzes/attempts/:attemptId/result",
   requireUser,
   async (req, res) => {
-
     try {
 
       const attemptId =
         Number(req.params.attemptId);
 
       if (!Number.isInteger(attemptId)) {
-
         return res.status(400).json({
           success: false,
           message:
             "معرف المحاولة غير صحيح."
         });
-
       }
 
       const attemptResult =
         await pool.query(
           `
           SELECT
-
             a.id,
-
             a.quiz_id,
-
             a.started_at,
-
             a.finished_at,
-
             a.score,
-
             a.total_questions,
-
             a.percentage,
-
             a.passed,
-
             a.status,
-
             q.title,
-
             q.passing_percentage
-
           FROM quiz_attempts a
-
           JOIN quizzes q
             ON q.id = a.quiz_id
-
           WHERE a.id = $1
-
           AND a.user_id = $2
           `,
           [
@@ -3798,16 +3235,12 @@ app.get(
           ]
         );
 
-      if (
-        attemptResult.rows.length === 0
-      ) {
-
+      if (attemptResult.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message:
             "نتيجة الاختبار غير موجودة."
         });
-
       }
 
       const attempt =
@@ -3817,41 +3250,22 @@ app.get(
         await pool.query(
           `
           SELECT
-
             qa.question_id,
-
             qa.selected_answer,
-
             qa.is_correct,
-
             qq.question_text,
-
             qq.option_a,
-
             qq.option_b,
-
             qq.option_c,
-
             qq.option_d,
-
             qq.correct_answer,
-
             qq.explanation,
-
             qq.question_order
-
           FROM quiz_answers qa
-
           JOIN quiz_questions qq
             ON qq.id = qa.question_id
-
           WHERE qa.attempt_id = $1
-
-          ORDER BY
-
-            qq.question_order ASC,
-
-            qq.id ASC
+          ORDER BY qq.question_order ASC, qq.id ASC
           `,
           [attemptId]
         );
@@ -3860,30 +3274,20 @@ app.get(
         answersResult.rows.map(item => ({
           question_id:
             item.question_id,
-
           question_text:
             item.question_text,
-
           options: {
-            A:
-              item.option_a,
-            B:
-              item.option_b,
-            C:
-              item.option_c,
-            D:
-              item.option_d
+            A: item.option_a,
+            B: item.option_b,
+            C: item.option_c,
+            D: item.option_d
           },
-
           selected_answer:
             item.selected_answer,
-
           correct_answer:
             item.correct_answer,
-
           is_correct:
             item.is_correct,
-
           explanation:
             item.explanation ||
             "لم تتم إضافة شرح لهذا السؤال بعد."
@@ -3891,45 +3295,27 @@ app.get(
 
       res.json({
         success: true,
-
         result: {
-
-          id:
-            attempt.id,
-
-          quiz_id:
-            attempt.quiz_id,
-
-          title:
-            attempt.title,
-
+          id: attempt.id,
+          quiz_id: attempt.quiz_id,
+          title: attempt.title,
           started_at:
             attempt.started_at,
-
           finished_at:
             attempt.finished_at,
-
-          score:
-            attempt.score,
-
+          score: attempt.score,
           total_questions:
             attempt.total_questions,
-
           percentage:
             attempt.percentage,
-
           passing_percentage:
             attempt.passing_percentage,
-
           passed:
             attempt.passed,
-
           status:
             attempt.status
         },
-
         questions
-
       });
 
     } catch (error) {
@@ -3944,9 +3330,7 @@ app.get(
         message:
           "تعذر تحميل نتيجة الاختبار."
       });
-
     }
-
   }
 );
 
@@ -3958,51 +3342,34 @@ app.get(
   "/api/quizzes/my-attempts",
   requireUser,
   async (req, res) => {
-
     try {
 
       const result =
         await pool.query(
           `
           SELECT
-
             a.id,
-
             a.quiz_id,
-
             q.title,
-
             a.started_at,
-
             a.finished_at,
-
             a.score,
-
             a.total_questions,
-
             a.percentage,
-
             a.passed,
-
             a.status
-
           FROM quiz_attempts a
-
           JOIN quizzes q
             ON q.id = a.quiz_id
-
           WHERE a.user_id = $1
-
-          ORDER BY
-            a.started_at DESC
+          ORDER BY a.started_at DESC
           `,
           [req.user.id]
         );
 
       res.json({
         success: true,
-        attempts:
-          result.rows
+        attempts: result.rows
       });
 
     } catch (error) {
@@ -4017,9 +3384,7 @@ app.get(
         message:
           "تعذر تحميل اختباراتك."
       });
-
     }
-
   }
 );
 
@@ -4033,19 +3398,14 @@ app.use(
   )
 );
 
-app.get(
-  "/",
-  (req, res) => {
-
-    res.sendFile(
-      path.join(
-        __dirname,
-        "index.html"
-      )
-    );
-
-  }
-);
+app.get("/", (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "index.html"
+    )
+  );
+});
 
 // =========================================================
 // 404 API
@@ -4054,13 +3414,11 @@ app.get(
 app.use(
   "/api",
   (req, res) => {
-
     res.status(404).json({
       success: false,
       message:
         "API endpoint not found."
     });
-
   }
 );
 
@@ -4078,6 +3436,5 @@ app.listen(
     );
 
     await initializeDatabase();
-
   }
 );
