@@ -39,22 +39,13 @@
       display: none !important;
     }
 
-    /* =====================================================
-       LOGIN
-    ===================================================== */
-
     #loginScreen {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      background:
-        linear-gradient(
-          135deg,
-          #0f766e,
-          #0f172a
-        );
+      background: linear-gradient(135deg, #0f766e, #0f172a);
     }
 
     .login-card {
@@ -175,10 +166,6 @@
       color: #166534;
     }
 
-    /* =====================================================
-       ADMIN LAYOUT
-    ===================================================== */
-
     #adminScreen {
       min-height: 100vh;
     }
@@ -280,10 +267,6 @@
       font-weight: bold;
     }
 
-    /* =====================================================
-       CARDS
-    ===================================================== */
-
     .card {
       background: white;
       border-radius: 17px;
@@ -352,10 +335,6 @@
       gap: 8px;
     }
 
-    /* =====================================================
-       FORMS
-    ===================================================== */
-
     textarea.form-control {
       min-height: 130px;
       resize: vertical;
@@ -385,10 +364,6 @@
       background: #e2e8f0;
       margin: 25px 0;
     }
-
-    /* =====================================================
-       LESSON EDITOR
-    ===================================================== */
 
     .lesson-header {
       background: #f0fdfa;
@@ -426,16 +401,17 @@
       border-right: 4px solid #2563eb;
     }
 
+    .content-section.edit-lesson {
+      border-right: 4px solid #7c3aed;
+      background: #faf5ff;
+    }
+
     .button-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-top: 15px;
     }
-
-    /* =====================================================
-       QUESTIONS
-    ===================================================== */
 
     .question-card {
       background: #f8fafc;
@@ -471,10 +447,6 @@
       background: #f0fdf4;
     }
 
-    /* =====================================================
-       USERS
-    ===================================================== */
-
     .table-wrapper {
       overflow-x: auto;
     }
@@ -497,10 +469,6 @@
       font-weight: 900;
     }
 
-    /* =====================================================
-       LOADING
-    ===================================================== */
-
     .loading {
       padding: 30px;
       text-align: center;
@@ -522,10 +490,6 @@
         transform: rotate(360deg);
       }
     }
-
-    /* =====================================================
-       RESPONSIVE
-    ===================================================== */
 
     @media (max-width: 900px) {
 
@@ -587,10 +551,6 @@
 </head>
 
 <body>
-
-<!-- =====================================================
-     LOGIN SCREEN
-===================================================== -->
 
 <section id="loginScreen">
 
@@ -657,10 +617,6 @@
 </section>
 
 
-<!-- =====================================================
-     ADMIN SCREEN
-===================================================== -->
-
 <section
   id="adminScreen"
   class="hidden"
@@ -695,10 +651,6 @@
 
   <div class="admin-layout">
 
-    <!-- =================================================
-         SIDEBAR
-    ================================================== -->
-
     <aside class="sidebar">
 
       <div class="sidebar-title">
@@ -719,10 +671,6 @@
 
     </aside>
 
-
-    <!-- =================================================
-         MAIN
-    ================================================== -->
 
     <main class="main-content">
 
@@ -745,11 +693,6 @@
         الرئيسية
       </div>
 
-
-      <!-- ===============================================
-           ALERT
-      ================================================ -->
-
       <div
         id="successMessage"
         class="success-message"
@@ -759,11 +702,6 @@
         id="errorMessage"
         class="error-message"
       ></div>
-
-
-      <!-- ===============================================
-           MAIN CONTENT AREA
-      ================================================ -->
 
       <div id="contentArea">
 
@@ -983,8 +921,7 @@
           document
             .getElementById("loginError");
 
-        errorBox.style.display =
-          "none";
+        errorBox.style.display = "none";
 
         try {
 
@@ -1107,19 +1044,49 @@
           "/api/subjects"
         );
 
-      subjects =
+      let rawSubjects =
         Array.isArray(data.subjects)
           ? data.subjects
           : [];
 
+
       /*
-       * نضمن وجود المواد الست.
+       * منع ظهور نفس المادة أكثر من مرة
+       * داخل لوحة الإدارة.
        *
-       * لو مادة موجودة بالفعل:
-       * لا نضيفها مرة ثانية.
-       *
-       * لو غير موجودة:
-       * ننشئها تلقائيًا.
+       * لا ننشئ نسخة ثانية من المادة
+       * إذا كانت موجودة.
+       */
+
+      const uniqueSubjects = [];
+
+      const seenNames =
+        new Set();
+
+      rawSubjects.forEach(subject => {
+
+        const normalized =
+          String(subject.name || "")
+            .trim()
+            .toLowerCase();
+
+        if (!normalized) {
+          return;
+        }
+
+        if (seenNames.has(normalized)) {
+          return;
+        }
+
+        seenNames.add(normalized);
+
+        uniqueSubjects.push(subject);
+
+      });
+
+
+      /*
+       * إنشاء المواد الناقصة فقط.
        */
 
       for (
@@ -1128,9 +1095,9 @@
       ) {
 
         const exists =
-          subjects.some(
+          uniqueSubjects.some(
             subject =>
-              subject.name
+              String(subject.name || "")
                 .trim()
                 .toLowerCase() ===
               subjectName
@@ -1170,26 +1137,52 @@
 
       }
 
-      /*
-       * إعادة تحميل المواد بعد
-       * إنشاء المواد الناقصة.
-       */
 
       const refreshed =
         await api(
           "/api/subjects"
         );
 
-      subjects =
+      rawSubjects =
         Array.isArray(
           refreshed.subjects
         )
           ? refreshed.subjects
           : [];
 
+
       /*
-       * ترتيب المواد بنفس ترتيب
-       * صفحة الطالب.
+       * إزالة التكرار من العرض.
+       */
+
+      subjects = [];
+
+      const finalSeen =
+        new Set();
+
+      rawSubjects.forEach(subject => {
+
+        const normalized =
+          String(subject.name || "")
+            .trim()
+            .toLowerCase();
+
+        if (
+          normalized &&
+          !finalSeen.has(normalized)
+        ) {
+
+          finalSeen.add(normalized);
+
+          subjects.push(subject);
+
+        }
+
+      });
+
+
+      /*
+       * ترتيب المواد.
        */
 
       subjects.sort(
@@ -1197,12 +1190,12 @@
 
           const ai =
             SUBJECT_NAMES.indexOf(
-              a.name.trim()
+              String(a.name || "").trim()
             );
 
           const bi =
             SUBJECT_NAMES.indexOf(
-              b.name.trim()
+              String(b.name || "").trim()
             );
 
           return (
@@ -1408,7 +1401,6 @@
         <div class="empty">
           لا توجد وحدات مضافة لهذه المادة حتى الآن.
           <br><br>
-
           يمكنك إضافة وحدة من الزر التالي.
         </div>
       `;
@@ -1491,9 +1483,7 @@
         "addUnitFormContainer"
       );
 
-    container.classList.remove(
-      "hidden"
-    );
+    container.classList.remove("hidden");
 
     container.innerHTML = `
 
@@ -1582,11 +1572,7 @@
       );
 
     if (container) {
-
-      container.classList.add(
-        "hidden"
-      );
-
+      container.classList.add("hidden");
     }
 
   }
@@ -1606,18 +1592,14 @@
 
     const description =
       document
-        .getElementById(
-          "newUnitDescription"
-        )
+        .getElementById("newUnitDescription")
         .value
         .trim();
 
     const unitOrder =
       Number(
         document
-          .getElementById(
-            "newUnitOrder"
-          )
+          .getElementById("newUnitOrder")
           .value
       ) || 0;
 
@@ -1640,17 +1622,12 @@
 
           body:
             JSON.stringify({
-
               subject_id:
                 currentSubject.id,
-
               name,
-
               description,
-
               unit_order:
                 unitOrder
-
             })
         }
       );
@@ -1822,6 +1799,20 @@
                   إدارة الدرس
                 </button>
 
+                <button
+                  class="btn btn-warning"
+                  onclick="showEditLessonForm(${lesson.id})"
+                >
+                  تعديل الدرس
+                </button>
+
+                <button
+                  class="btn btn-danger"
+                  onclick="deleteLesson(${lesson.id})"
+                >
+                  حذف الدرس
+                </button>
+
               </div>
 
             </div>
@@ -1871,9 +1862,7 @@
         "addLessonFormContainer"
       );
 
-    container.classList.remove(
-      "hidden"
-    );
+    container.classList.remove("hidden");
 
     container.innerHTML = `
 
@@ -1963,11 +1952,7 @@
       );
 
     if (container) {
-
-      container.classList.add(
-        "hidden"
-      );
-
+      container.classList.add("hidden");
     }
 
   }
@@ -1981,26 +1966,20 @@
 
     const name =
       document
-        .getElementById(
-          "newLessonName"
-        )
+        .getElementById("newLessonName")
         .value
         .trim();
 
     const description =
       document
-        .getElementById(
-          "newLessonDescription"
-        )
+        .getElementById("newLessonDescription")
         .value
         .trim();
 
     const lessonOrder =
       Number(
         document
-          .getElementById(
-            "newLessonOrder"
-          )
+          .getElementById("newLessonOrder")
           .value
       ) || 0;
 
@@ -2023,23 +2002,291 @@
 
           body:
             JSON.stringify({
-
               unit_id:
                 currentUnit.id,
-
               name,
-
               description,
-
               lesson_order:
                 lessonOrder
-
             })
         }
       );
 
       showSuccess(
         "تمت إضافة الدرس بنجاح."
+      );
+
+      await loadLessons(
+        currentUnit.id
+      );
+
+    } catch (error) {
+
+      showError(
+        error.message
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     EDIT LESSON
+  ===================================================== */
+
+  async function showEditLessonForm(
+    lessonId
+  ) {
+
+    const area =
+      document.getElementById(
+        "contentArea"
+      );
+
+    area.innerHTML = `
+      <div class="card">
+        <div class="loading">
+          <div class="spinner"></div>
+          جاري تحميل بيانات الدرس...
+        </div>
+      </div>
+    `;
+
+    try {
+
+      const data =
+        await api(
+          `/api/lessons/${lessonId}`
+        );
+
+      const lesson =
+        data.lesson;
+
+      currentLesson =
+        lesson;
+
+      area.innerHTML = `
+
+        <div class="button-row">
+
+          <button
+            class="btn btn-light"
+            onclick="loadLessons(${currentUnit.id})"
+          >
+            ← العودة للدروس
+          </button>
+
+        </div>
+
+        <br>
+
+        <div class="card">
+
+          <div class="content-section edit-lesson">
+
+            <h3>
+              ✏️ تعديل بيانات الدرس
+            </h3>
+
+            <div class="form-group">
+
+              <label>
+                اسم الدرس
+              </label>
+
+              <input
+                id="editLessonName"
+                class="form-control"
+                value="${escapeHtml(
+                  lesson.name || ""
+                )}"
+              >
+
+            </div>
+
+            <div class="form-group">
+
+              <label>
+                وصف الدرس
+              </label>
+
+              <textarea
+                id="editLessonDescription"
+                class="form-control"
+              >${escapeHtml(
+                lesson.description || ""
+              )}</textarea>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>
+                ترتيب الدرس
+              </label>
+
+              <input
+                id="editLessonOrder"
+                class="form-control"
+                type="number"
+                value="${Number(
+                  lesson.lesson_order || 0
+                )}"
+              >
+
+            </div>
+
+            <div class="button-row">
+
+              <button
+                class="btn btn-success"
+                onclick="saveLessonEdit(${lesson.id})"
+              >
+                حفظ التعديلات
+              </button>
+
+              <button
+                class="btn btn-light"
+                onclick="loadLessons(${currentUnit.id})"
+              >
+                إلغاء
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
+    } catch (error) {
+
+      area.innerHTML = `
+        <div class="card">
+          <div class="empty">
+            تعذر تحميل بيانات الدرس.
+            <br><br>
+            ${escapeHtml(error.message)}
+          </div>
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     SAVE LESSON EDIT
+  ===================================================== */
+
+  async function saveLessonEdit(
+    lessonId
+  ) {
+
+    const name =
+      document
+        .getElementById("editLessonName")
+        .value
+        .trim();
+
+    const description =
+      document
+        .getElementById("editLessonDescription")
+        .value
+        .trim();
+
+    const lessonOrder =
+      Number(
+        document
+          .getElementById("editLessonOrder")
+          .value
+      ) || 0;
+
+    if (!name) {
+
+      showError(
+        "اسم الدرس لا يمكن أن يكون فارغًا."
+      );
+
+      return;
+
+    }
+
+    try {
+
+      await api(
+        `/api/admin/lessons/${lessonId}`,
+        {
+          method: "PUT",
+
+          body:
+            JSON.stringify({
+              name,
+              description,
+              lesson_order:
+                lessonOrder
+            })
+        }
+      );
+
+      showSuccess(
+        "تم تعديل الدرس بنجاح."
+      );
+
+      await loadLessons(
+        currentUnit.id
+      );
+
+    } catch (error) {
+
+      showError(
+        error.message
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     DELETE LESSON
+  ===================================================== */
+
+  async function deleteLesson(
+    lessonId
+  ) {
+
+    const confirmed =
+      confirm(
+        "⚠️ هل أنت متأكد من حذف هذا الدرس؟\n\nسيتم حذف الدرس ومحتواه المرتبط به مثل الشرح والحل والاختبار والأسئلة. لا يمكن التراجع عن هذه العملية."
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const secondConfirmed =
+      confirm(
+        "تأكيد نهائي: حذف الدرس نهائيًا؟"
+      );
+
+    if (!secondConfirmed) {
+      return;
+    }
+
+    try {
+
+      await api(
+        `/api/admin/lessons/${lessonId}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      showSuccess(
+        "تم حذف الدرس وجميع بياناته المرتبطة بنجاح."
       );
 
       await loadLessons(
@@ -2163,6 +2410,20 @@
           ← العودة للدروس
         </button>
 
+        <button
+          class="btn btn-warning"
+          onclick="showEditLessonForm(${lesson.id})"
+        >
+          ✏️ تعديل بيانات الدرس
+        </button>
+
+        <button
+          class="btn btn-danger"
+          onclick="deleteLesson(${lesson.id})"
+        >
+          🗑️ حذف الدرس
+        </button>
+
       </div>
 
       <br>
@@ -2184,10 +2445,6 @@
 
       </div>
 
-
-      <!-- ============================================
-           EXPLANATION
-      ============================================= -->
 
       <div class="card">
 
@@ -2259,10 +2516,6 @@
         </div>
 
 
-        <!-- ==========================================
-             SOLUTION
-        =========================================== -->
-
         <div class="content-section solution">
 
           <h3>
@@ -2330,10 +2583,6 @@
 
         </div>
 
-
-        <!-- ==========================================
-             QUIZ
-        =========================================== -->
 
         <div class="content-section quiz">
 
@@ -2461,25 +2710,19 @@
 
       const video =
         document
-          .getElementById(
-            "explanationVideo"
-          )
+          .getElementById("explanationVideo")
           .value
           .trim();
 
       const pdf =
         document
-          .getElementById(
-            "explanationPdf"
-          )
+          .getElementById("explanationPdf")
           .value
           .trim();
 
       const explanation =
         document
-          .getElementById(
-            "explanationText"
-          )
+          .getElementById("explanationText")
           .value;
 
       await api(
@@ -2489,16 +2732,12 @@
 
           body:
             JSON.stringify({
-
               video_url:
                 video || null,
-
               pdf_url:
                 pdf || null,
-
               explanation:
                 explanation || null
-
             })
         }
       );
@@ -2528,25 +2767,19 @@
 
       const video =
         document
-          .getElementById(
-            "solutionVideo"
-          )
+          .getElementById("solutionVideo")
           .value
           .trim();
 
       const pdf =
         document
-          .getElementById(
-            "solutionPdf"
-          )
+          .getElementById("solutionPdf")
           .value
           .trim();
 
       const explanation =
         document
-          .getElementById(
-            "solutionText"
-          )
+          .getElementById("solutionText")
           .value;
 
       await api(
@@ -2556,16 +2789,12 @@
 
           body:
             JSON.stringify({
-
               video_url:
                 video || null,
-
               pdf_url:
                 pdf || null,
-
               explanation:
                 explanation || null
-
             })
         }
       );
@@ -2595,35 +2824,27 @@
 
       const title =
         document
-          .getElementById(
-            "quizTitle"
-          )
+          .getElementById("quizTitle")
           .value
           .trim();
 
       const description =
         document
-          .getElementById(
-            "quizDescription"
-          )
+          .getElementById("quizDescription")
           .value
           .trim();
 
       const passing =
         Number(
           document
-            .getElementById(
-              "quizPassing"
-            )
+            .getElementById("quizPassing")
             .value
         ) || 50;
 
       const perPage =
         Number(
           document
-            .getElementById(
-              "quizQuestionsPerPage"
-            )
+            .getElementById("quizQuestionsPerPage")
             .value
         ) || 10;
 
@@ -2742,9 +2963,7 @@
 
       } else {
 
-        html += `
-          <div>
-        `;
+        html += `<div>`;
 
         questions.forEach(
           (question, index) => {
@@ -2832,9 +3051,7 @@
           }
         );
 
-        html += `
-          </div>
-        `;
+        html += `</div>`;
 
       }
 
@@ -2986,21 +3203,10 @@
               class="form-control"
             >
 
-              <option value="A">
-                A
-              </option>
-
-              <option value="B">
-                B
-              </option>
-
-              <option value="C">
-                C
-              </option>
-
-              <option value="D">
-                D
-              </option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="D">D</option>
 
             </select>
 
@@ -3070,11 +3276,7 @@
       );
 
     if (container) {
-
-      container.classList.add(
-        "hidden"
-      );
-
+      container.classList.add("hidden");
     }
 
   }
@@ -3088,65 +3290,49 @@
 
     const questionText =
       document
-        .getElementById(
-          "questionText"
-        )
+        .getElementById("questionText")
         .value
         .trim();
 
     const optionA =
       document
-        .getElementById(
-          "optionA"
-        )
+        .getElementById("optionA")
         .value
         .trim();
 
     const optionB =
       document
-        .getElementById(
-          "optionB"
-        )
+        .getElementById("optionB")
         .value
         .trim();
 
     const optionC =
       document
-        .getElementById(
-          "optionC"
-        )
+        .getElementById("optionC")
         .value
         .trim();
 
     const optionD =
       document
-        .getElementById(
-          "optionD"
-        )
+        .getElementById("optionD")
         .value
         .trim();
 
     const correctAnswer =
       document
-        .getElementById(
-          "correctAnswer"
-        )
+        .getElementById("correctAnswer")
         .value;
 
     const explanation =
       document
-        .getElementById(
-          "questionExplanation"
-        )
+        .getElementById("questionExplanation")
         .value
         .trim();
 
     const questionOrder =
       Number(
         document
-          .getElementById(
-            "questionOrder"
-          )
+          .getElementById("questionOrder")
           .value
       ) || 0;
 
@@ -3278,23 +3464,17 @@
     renderSubjects();
 
     document
-      .getElementById(
-        "pageTitle"
-      )
+      .getElementById("pageTitle")
       .textContent =
         "المستخدمون";
 
     document
-      .getElementById(
-        "pageSubtitle"
-      )
+      .getElementById("pageSubtitle")
       .textContent =
         "إدارة حسابات الطلاب.";
 
     document
-      .getElementById(
-        "breadcrumb"
-      )
+      .getElementById("breadcrumb")
       .innerHTML =
         "الرئيسية ← <span>المستخدمون</span>";
 
@@ -3387,36 +3567,26 @@
           <tr>
 
             <td>
-              ${escapeHtml(
-                user.id
-              )}
+              ${escapeHtml(user.id)}
             </td>
 
             <td>
-              ${escapeHtml(
-                user.name
-              )}
+              ${escapeHtml(user.name)}
             </td>
 
             <td>
-              ${escapeHtml(
-                user.email
-              )}
+              ${escapeHtml(user.email)}
             </td>
 
             <td>
-              ${escapeHtml(
-                user.grade
-              )}
+              ${escapeHtml(user.grade)}
             </td>
 
             <td>
               ${user.created_at
                 ? new Date(
                     user.created_at
-                  ).toLocaleDateString(
-                    "ar"
-                  )
+                  ).toLocaleDateString("ar")
                 : "-"
               }
             </td>
@@ -3469,38 +3639,19 @@
 
               <tr>
 
-                <th>
-                  ID
-                </th>
-
-                <th>
-                  الاسم
-                </th>
-
-                <th>
-                  البريد
-                </th>
-
-                <th>
-                  الصف
-                </th>
-
-                <th>
-                  تاريخ التسجيل
-                </th>
-
-                <th>
-                  الإجراءات
-                </th>
+                <th>ID</th>
+                <th>الاسم</th>
+                <th>البريد</th>
+                <th>الصف</th>
+                <th>تاريخ التسجيل</th>
+                <th>الإجراءات</th>
 
               </tr>
 
             </thead>
 
             <tbody>
-
               ${rows}
-
             </tbody>
 
           </table>
@@ -3531,9 +3682,7 @@
       return;
     }
 
-    if (
-      newPassword.length < 6
-    ) {
+    if (newPassword.length < 6) {
 
       showError(
         "كلمة المرور يجب أن تكون 6 أحرف على الأقل."
@@ -3624,9 +3773,7 @@
     function() {
 
       if (adminToken) {
-
         showAdminScreen();
-
       }
 
     }
@@ -3635,4 +3782,4 @@
 </script>
 
 </body>
-      </html>
+  </html>
