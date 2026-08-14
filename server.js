@@ -1,3583 +1,476 @@
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-const { Pool } = require("pg");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const express = require('express');
+const cors = require('cors');
+const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
-
 const PORT = process.env.PORT || 10000;
+const JWT_SECRET = process.env.JWT_SECRET || 'drnotes_secret_key_2026';
 
-// =========================================================
-// DATABASE
-// =========================================================
+// Middlewares
+app.use(cors());
+app.use(express.json());
 
+// PostgreSQL Connection Pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
+
+// Middleware for Auth Check (Optional & Mandatory)
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'غير مصرح: يرجى تسجيل الدخول' });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'جلسة انتهت أو رمز غير صالح' });
+    req.user = user;
+    next();
+  });
+};
+
+const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    req.user = err ? null : user;
+    next();
+  });
+};
+
+// Database Initialization Helper
+const initDb = async () => {
+  const queryText = `
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      role VARCHAR(50) DEFAULT 'student',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS subjects (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      image_url TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS units (
+      id SERIAL PRIMARY KEY,
+      subject_id INTEGER REFERENCES subjects(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS lessons (
+      id SERIAL PRIMARY KEY,
+      unit_id INTEGER REFERENCES units(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS lesson_content (
+      id SERIAL PRIMARY KEY,
+      lesson_id INTEGER UNIQUE REFERENCES lessons(id) ON DELETE CASCADE,
+      youtube_url TEXT,
+      pdf_url TEXT,
+      text_content TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS lesson_solution (
+      id SERIAL PRIMARY KEY,
+      lesson_id INTEGER UNIQUE REFERENCES lessons(id) ON DELETE CASCADE,
+      youtube_url TEXT,
+      pdf_url TEXT,
+      text_content TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS quizzes (
+      id SERIAL PRIMARY KEY,
+      lesson_id INTEGER REFERENCES lessons(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      pass_score INTEGER DEFAULT 50,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS quiz_questions (
+      id SERIAL PRIMARY KEY,
+      quiz_id INTEGER REFERENCES quizzes(id) ON DELETE CASCADE,
+      question TEXT NOT NULL,
+      option_a VARCHAR(255) NOT NULL,
+      option_b VARCHAR(255) NOT NULL,
+      option_c VARCHAR(255) NOT NULL,
+      option_d VARCHAR(255) NOT NULL,
+      correct_option CHAR(1) NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS quiz_attempts (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      quiz_id INTEGER REFERENCES quizzes(id) ON DELETE CASCADE,
+      score INTEGER NOT NULL,
+      total INTEGER NOT NULL,
+      passed BOOLEAN DEFAULT false,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+  try {
+    await pool.query(queryText);
+    console.log('✅ تم التحقق من جداول قاعدة البيانات بنجاح.');
+  } catch (err) {
+    console.error('❌ خطأ في تهيئة قاعدة البيانات:', err.message);
+  }
+};
+
+initDb();
+
+// ------------------------------------
+// 1. Auth Endpoints
+// ------------------------------------
+
+app.post('/api/auth/register', async (req, res) => {
+  const { name, email, password, role } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'جميع الحقول مطلوبة' });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userRole = role === 'admin' ? 'admin' : 'student';
+    const result = await pool.query(
+      'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
+      [name, email.toLowerCase(), hashedPassword, userRole]
+    );
+
+    const user = result.rows[0];
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+
+    res.status(201).json({ message: 'تم إنشاء الحساب بنجاح', token, user });
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(400).json({ error: 'البريد الإلكتروني مستخدم بالفعل' });
+    }
+    res.status(500).json({ error: 'خطأ في السيرفر عند التسجيل' });
   }
 });
 
-// =========================================================
-// MIDDLEWARE
-// =========================================================
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// =========================================================
-// DATABASE INITIALIZATION
-// =========================================================
-
-async function initializeDatabase() {
-  try {
-
-    // -----------------------------------------------------
-    // USERS
-    // -----------------------------------------------------
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        grade VARCHAR(50) NOT NULL,
-        password_hash TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // -----------------------------------------------------
-    // SUBJECTS
-    // -----------------------------------------------------
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS subjects (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(150) NOT NULL,
-        description TEXT,
-        image_url TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // -----------------------------------------------------
-    // UNITS
-    // -----------------------------------------------------
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS units (
-        id SERIAL PRIMARY KEY,
-        subject_id INTEGER NOT NULL
-          REFERENCES subjects(id)
-          ON DELETE CASCADE,
-        name VARCHAR(150) NOT NULL,
-        description TEXT,
-        unit_order INTEGER DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // -----------------------------------------------------
-    // LESSONS
-    // -----------------------------------------------------
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS lessons (
-        id SERIAL PRIMARY KEY,
-        unit_id INTEGER NOT NULL
-          REFERENCES units(id)
-          ON DELETE CASCADE,
-        name VARCHAR(200) NOT NULL,
-        description TEXT,
-        lesson_order INTEGER DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // -----------------------------------------------------
-    // LESSON CONTENT
-    // شرح الدرس
-    // -----------------------------------------------------
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS lesson_content (
-        id SERIAL PRIMARY KEY,
-
-        lesson_id INTEGER UNIQUE NOT NULL
-          REFERENCES lessons(id)
-          ON DELETE CASCADE,
-
-        video_url TEXT,
-        pdf_url TEXT,
-        explanation TEXT,
-
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // -----------------------------------------------------
-    // LESSON SOLUTION
-    // حل الدرس
-    // فيديو + PDF
-    // -----------------------------------------------------
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS lesson_solution (
-        id SERIAL PRIMARY KEY,
-
-        lesson_id INTEGER UNIQUE NOT NULL
-          REFERENCES lessons(id)
-          ON DELETE CASCADE,
-
-        video_url TEXT,
-        pdf_url TEXT,
-        explanation TEXT,
-
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // -----------------------------------------------------
-    // QUIZZES
-    // -----------------------------------------------------
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS quizzes (
-        id SERIAL PRIMARY KEY,
-
-        lesson_id INTEGER UNIQUE NOT NULL
-          REFERENCES lessons(id)
-          ON DELETE CASCADE,
-
-        title VARCHAR(200) NOT NULL,
-
-        description TEXT,
-
-        passing_percentage INTEGER DEFAULT 50,
-
-        questions_per_page INTEGER DEFAULT 10,
-
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // -----------------------------------------------------
-    // QUIZ QUESTIONS
-    // -----------------------------------------------------
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS quiz_questions (
-        id SERIAL PRIMARY KEY,
-
-        quiz_id INTEGER NOT NULL
-          REFERENCES quizzes(id)
-          ON DELETE CASCADE,
-
-        question_text TEXT NOT NULL,
-
-        option_a TEXT NOT NULL,
-        option_b TEXT NOT NULL,
-        option_c TEXT NOT NULL,
-        option_d TEXT NOT NULL,
-
-        correct_answer VARCHAR(1) NOT NULL
-          CHECK (
-            correct_answer IN ('A', 'B', 'C', 'D')
-          ),
-
-        explanation TEXT,
-
-        question_order INTEGER DEFAULT 0,
-
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // -----------------------------------------------------
-    // QUIZ ATTEMPTS
-    // -----------------------------------------------------
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS quiz_attempts (
-        id SERIAL PRIMARY KEY,
-
-        user_id INTEGER NOT NULL
-          REFERENCES users(id)
-          ON DELETE CASCADE,
-
-        quiz_id INTEGER NOT NULL
-          REFERENCES quizzes(id)
-          ON DELETE CASCADE,
-
-        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-        finished_at TIMESTAMP,
-
-        score INTEGER,
-
-        total_questions INTEGER,
-
-        percentage NUMERIC(5,2),
-
-        passed BOOLEAN,
-
-        status VARCHAR(20) DEFAULT 'started'
-          CHECK (
-            status IN (
-              'started',
-              'finished',
-              'abandoned'
-            )
-          ),
-
-        UNIQUE(user_id, quiz_id)
-      );
-    `);
-
-    // -----------------------------------------------------
-    // QUIZ ANSWERS
-    // -----------------------------------------------------
-
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS quiz_answers (
-        id SERIAL PRIMARY KEY,
-
-        attempt_id INTEGER NOT NULL
-          REFERENCES quiz_attempts(id)
-          ON DELETE CASCADE,
-
-        question_id INTEGER NOT NULL
-          REFERENCES quiz_questions(id)
-          ON DELETE CASCADE,
-
-        selected_answer VARCHAR(1),
-
-        is_correct BOOLEAN,
-
-        answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-        UNIQUE(attempt_id, question_id)
-      );
-    `);
-
-    console.log("Database tables are ready.");
-
-  } catch (error) {
-
-    console.error(
-      "Database initialization failed:",
-      error.message
-    );
-
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'البريد والكلمة مطلوبين' });
   }
-}
-
-// =========================================================
-// JWT
-// =========================================================
-
-function createUserToken(user) {
-
-  return jwt.sign(
-    {
-      id: user.id,
-      email: user.email,
-      role: "user"
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "7d"
-    }
-  );
-
-}
-
-function createAdminToken() {
-
-  return jwt.sign(
-    {
-      role: "admin"
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "7d"
-    }
-  );
-
-}
-
-// =========================================================
-// ADMIN AUTHENTICATION
-// =========================================================
-
-function requireAdmin(req, res, next) {
 
   try {
-
-    const authHeader =
-      req.headers.authorization;
-
-    if (
-      !authHeader ||
-      !authHeader.startsWith("Bearer ")
-    ) {
-
-      return res.status(401).json({
-        success: false,
-        message: "غير مصرح بالوصول."
-      });
-
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: 'بيانات الدخول غير صحيحة' });
     }
 
-    const token =
-      authHeader.substring(7);
-
-    const decoded =
-      jwt.verify(
-        token,
-        process.env.JWT_SECRET
-      );
-
-    if (decoded.role !== "admin") {
-
-      return res.status(403).json({
-        success: false,
-        message: "صلاحيات المدير مطلوبة."
-      });
-
+    const user = result.rows[0];
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(400).json({ error: 'بيانات الدخول غير صحيحة' });
     }
 
-    req.admin = decoded;
-
-    next();
-
-  } catch (error) {
-
-    return res.status(401).json({
-      success: false,
-      message:
-        "جلسة المدير غير صالحة أو منتهية."
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
     });
-
+  } catch (err) {
+    res.status(500).json({ error: 'خطأ في السيرفر عند تسجيل الدخول' });
   }
+});
 
-}
+// ------------------------------------
+// 2. Public / Student Content Endpoints
+// ------------------------------------
 
-// =========================================================
-// USER AUTHENTICATION
-// =========================================================
+// Get All Subjects
+app.get('/api/subjects', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM subjects ORDER BY id ASC');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'فشل جلب المواد' });
+  }
+});
 
-function requireUser(req, res, next) {
+// Get Units for a Subject
+app.get('/api/subjects/:subjectId/units', async (req, res) => {
+  const { subjectId } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM units WHERE subject_id = $1 ORDER BY id ASC', [subjectId]);
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'فشل جلب الوحدات' });
+  }
+});
+
+// Get Lessons for a Unit (مع فحص حالة القفل للطالب بناءً على الامتحانات)
+app.get('/api/units/:unitId/lessons', optionalAuth, async (req, res) => {
+  const { unitId } = req.params;
+  const userId = req.user ? req.user.id : null;
 
   try {
+    const lessonsRes = await pool.query('SELECT * FROM lessons WHERE unit_id = $1 ORDER BY id ASC', [unitId]);
+    const lessons = lessonsRes.rows;
 
-    const authHeader =
-      req.headers.authorization;
+    if (lessons.length === 0) return res.json([]);
 
-    if (
-      !authHeader ||
-      !authHeader.startsWith("Bearer ")
-    ) {
-
-      return res.status(401).json({
-        success: false,
-        message:
-          "يجب تسجيل الدخول أولًا."
-      });
-
+    // إذا لم يكن طالب مسجلاً الدخول، يفتح الدرس الأول فقط
+    if (!userId) {
+      const formatted = lessons.map((lesson, idx) => ({
+        ...lesson,
+        is_locked: idx !== 0
+      }));
+      return res.json(formatted);
     }
 
-    const token =
-      authHeader.substring(7);
+    // فحص الاجتازات السابقة للامتحانات للمستخدم
+    const result = [];
+    for (let i = 0; i < lessons.length; i++) {
+      const currentLesson = lessons[i];
+      
+      if (i === 0) {
+        // الدرس الأول مفتوح دائماً
+        result.push({ ...currentLesson, is_locked: false });
+      } else {
+        // الدرس الحالي يتطلب اجتياز امتحان الدرس السابق
+        const previousLessonId = lessons[i - 1].id;
+        
+        // جلب امتحان الدرس السابق
+        const quizRes = await pool.query('SELECT id FROM quizzes WHERE lesson_id = $1 LIMIT 1', [previousLessonId]);
+        
+        if (quizRes.rows.length === 0) {
+          // إذا لم يكن هناك امتحان للدرس السابق، يفتح التلقائي
+          result.push({ ...currentLesson, is_locked: false });
+        } else {
+          const quizId = quizRes.rows[0].id;
+          // التحقق مما إذا حل الطالب هذا الامتحان بنجاح
+          const attemptRes = await pool.query(
+            'SELECT passed FROM quiz_attempts WHERE user_id = $1 AND quiz_id = $2 AND passed = true LIMIT 1',
+            [userId, quizId]
+          );
 
-    const decoded =
-      jwt.verify(
-        token,
-        process.env.JWT_SECRET
+          const isPassed = attemptRes.rows.length > 0;
+          result.push({ ...currentLesson, is_locked: !isPassed });
+        }
+      }
+    }
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'فشل جلب الدروس' });
+  }
+});
+
+// Get Lesson Details with Content & Solution
+app.get('/api/lessons/:lessonId', async (req, res) => {
+  const { lessonId } = req.params;
+  try {
+    const lessonRes = await pool.query('SELECT * FROM lessons WHERE id = $1', [lessonId]);
+    if (lessonRes.rows.length === 0) {
+      return res.status(404).json({ error: 'الدرس غير موجود' });
+    }
+
+    const contentRes = await pool.query('SELECT * FROM lesson_content WHERE lesson_id = $1', [lessonId]);
+    const solutionRes = await pool.query('SELECT * FROM lesson_solution WHERE lesson_id = $1', [lessonId]);
+
+    res.json({
+      lesson: lessonRes.rows[0],
+      content: contentRes.rows[0] || null,
+      solution: solutionRes.rows[0] || null
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'فشل جلب تفاصيل الدرس' });
+  }
+});
+
+// ------------------------------------
+// 3. Admin Endpoints (Manage Courses)
+// ------------------------------------
+
+// Add Subject
+app.post('/api/admin/subjects', async (req, res) => {
+  const { name, description, image_url } = req.body;
+  if (!name) return res.status(400).json({ error: 'اسم المادة مطلوب' });
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO subjects (name, description, image_url) VALUES ($1, $2, $3) RETURNING *',
+      [name, description || '', image_url || '']
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'فشل إضافة المادة' });
+  }
+});
+
+// Add Unit
+app.post('/api/admin/units', async (req, res) => {
+  const { subject_id, title, description } = req.body;
+  if (!subject_id || !title) {
+    return res.status(400).json({ error: 'معرف المادة وعنوان الوحدة مطلوبين' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO units (subject_id, title, description) VALUES ($1, $2, $3) RETURNING *',
+      [subject_id, title, description || '']
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'فشل إضافة الوحدة' });
+  }
+});
+
+// Add Lesson
+app.post('/api/admin/lessons', async (req, res) => {
+  const { unit_id, title } = req.body;
+  if (!unit_id || !title) {
+    return res.status(400).json({ error: 'معرف الوحدة وعنوان الدرس مطلوبين' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO lessons (unit_id, title) VALUES ($1, $2) RETURNING *',
+      [unit_id, title]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'فشل إضافة الدرس' });
+  }
+});
+
+// Fetch Content & Solution for Admin Editor
+app.get('/api/admin/lessons/:lessonId/content', async (req, res) => {
+  const { lessonId } = req.params;
+  try {
+    const contentRes = await pool.query('SELECT * FROM lesson_content WHERE lesson_id = $1', [lessonId]);
+    const solutionRes = await pool.query('SELECT * FROM lesson_solution WHERE lesson_id = $1', [lessonId]);
+
+    res.json({
+      content: contentRes.rows[0] || { youtube_url: '', pdf_url: '', text_content: '' },
+      solution: solutionRes.rows[0] || { youtube_url: '', pdf_url: '', text_content: '' }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'فشل جلب بيانات محتوى الدرس' });
+  }
+});
+
+// Save/Update Lesson Content & Solution
+app.post('/api/admin/lessons/:lessonId/content', async (req, res) => {
+  const { lessonId } = req.params;
+  const { content, solution } = req.body;
+
+  try {
+    if (content) {
+      await pool.query(
+        `INSERT INTO lesson_content (lesson_id, youtube_url, pdf_url, text_content)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (lesson_id)
+         DO UPDATE SET youtube_url = $2, pdf_url = $3, text_content = $4`,
+        [lessonId, content.youtube_url || '', content.pdf_url || '', content.text_content || '']
       );
-
-    if (decoded.role !== "user") {
-
-      return res.status(403).json({
-        success: false,
-        message:
-          "صلاحيات الطالب مطلوبة."
-      });
-
     }
 
-    req.user = decoded;
+    if (solution) {
+      await pool.query(
+        `INSERT INTO lesson_solution (lesson_id, youtube_url, pdf_url, text_content)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (lesson_id)
+         DO UPDATE SET youtube_url = $2, pdf_url = $3, text_content = $4`,
+        [lessonId, solution.youtube_url || '', solution.pdf_url || '', solution.text_content || '']
+      );
+    }
 
-    next();
+    res.json({ message: 'تم حفظ محتوى الدرس والحل بنجاح' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'فشل حفظ محتوى الدرس' });
+  }
+});
 
-  } catch (error) {
+// ------------------------------------
+// 4. Quizzes Endpoints & Attempt Submissions
+// ------------------------------------
 
-    return res.status(401).json({
-      success: false,
-      message:
-        "جلسة تسجيل الدخول غير صالحة أو منتهية."
+app.get('/api/lessons/:lessonId/quizzes', async (req, res) => {
+  const { lessonId } = req.params;
+  try {
+    const quizzesRes = await pool.query('SELECT * FROM quizzes WHERE lesson_id = $1', [lessonId]);
+    res.json(quizzesRes.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'فشل جلب الاختبارات' });
+  }
+});
+
+app.get('/api/quizzes/:quizId/questions', async (req, res) => {
+  const { quizId } = req.params;
+  try {
+    const questionsRes = await pool.query('SELECT id, quiz_id, question, option_a, option_b, option_c, option_d FROM quiz_questions WHERE quiz_id = $1', [quizId]);
+    res.json(questionsRes.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'فشل جلب أسئلة الاختبار' });
+  }
+});
+
+// تسليم نموذج إجابة الاختبار واحتساب الفتح التلقائي للدرس التالي
+app.post('/api/quizzes/:quizId/submit', authenticateToken, async (req, res) => {
+  const { quizId } = req.params;
+  const { answers } = req.body; // { questionId: "A", ... }
+  const userId = req.user.id;
+
+  try {
+    const questionsRes = await pool.query('SELECT id, correct_option FROM quiz_questions WHERE quiz_id = $1', [quizId]);
+    const questions = questionsRes.rows;
+
+    let score = 0;
+    const total = questions.length;
+
+    questions.forEach(q => {
+      if (answers[q.id] && answers[q.id].toUpperCase() === q.correct_option.toUpperCase()) {
+        score++;
+      }
     });
 
-  }
-
-}
-
-// =========================================================
-// HEALTH
-// =========================================================
-
-app.get(
-  "/api/health",
-  async (req, res) => {
-
-    try {
-
-      const result =
-        await pool.query(
-          "SELECT NOW()"
-        );
-
-      res.json({
-
-        success: true,
-
-        message:
-          "DrNotes API is working 🚀",
-
-        database:
-          "connected",
-
-        time:
-          result.rows[0].now
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Health error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "Database connection failed"
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// REGISTER
-// =========================================================
-
-app.post(
-  "/api/auth/register",
-  async (req, res) => {
-
-    try {
-
-      const {
-        name,
-        email,
-        grade,
-        password
-      } = req.body;
-
-      if (
-        !name ||
-        !email ||
-        !grade ||
-        !password
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "جميع البيانات مطلوبة."
-
-        });
-
-      }
-
-      if (password.length < 6) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "كلمة المرور يجب أن تكون 6 أحرف على الأقل."
-
-        });
-
-      }
-
-      const normalizedEmail =
-        email.trim().toLowerCase();
-
-      const existingUser =
-        await pool.query(
-          "SELECT id FROM users WHERE email = $1",
-          [normalizedEmail]
-        );
-
-      if (
-        existingUser.rows.length > 0
-      ) {
-
-        return res.status(409).json({
-
-          success: false,
-
-          message:
-            "هذا البريد الإلكتروني مستخدم بالفعل."
-
-        });
-
-      }
-
-      const passwordHash =
-        await bcrypt.hash(
-          password,
-          12
-        );
-
-      const result =
-        await pool.query(
-          `
-          INSERT INTO users
-          (
-            name,
-            email,
-            grade,
-            password_hash
-          )
-          VALUES ($1, $2, $3, $4)
-
-          RETURNING
-            id,
-            name,
-            email,
-            grade,
-            created_at
-          `,
-          [
-            name.trim(),
-            normalizedEmail,
-            grade,
-            passwordHash
-          ]
-        );
-
-      const user =
-        result.rows[0];
-
-      const token =
-        createUserToken(user);
-
-      res.status(201).json({
-
-        success: true,
-
-        message:
-          "تم إنشاء الحساب بنجاح.",
-
-        token,
-
-        user
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Register error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "حدث خطأ أثناء إنشاء الحساب."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// USER LOGIN
-// =========================================================
-
-app.post(
-  "/api/auth/login",
-  async (req, res) => {
-
-    try {
-
-      const {
-        email,
-        password
-      } = req.body;
-
-      if (
-        !email ||
-        !password
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "البريد الإلكتروني وكلمة المرور مطلوبان."
-
-        });
-
-      }
-
-      const normalizedEmail =
-        email.trim().toLowerCase();
-
-      const result =
-        await pool.query(
-          "SELECT * FROM users WHERE email = $1",
-          [normalizedEmail]
-        );
-
-      if (
-        result.rows.length === 0
-      ) {
-
-        return res.status(401).json({
-
-          success: false,
-
-          message:
-            "البريد الإلكتروني أو كلمة المرور غير صحيحة."
-
-        });
-
-      }
-
-      const user =
-        result.rows[0];
-
-      const passwordMatch =
-        await bcrypt.compare(
-          password,
-          user.password_hash
-        );
-
-      if (!passwordMatch) {
-
-        return res.status(401).json({
-
-          success: false,
-
-          message:
-            "البريد الإلكتروني أو كلمة المرور غير صحيحة."
-
-        });
-
-      }
-
-      const token =
-        createUserToken(user);
-
-      res.json({
-
-        success: true,
-
-        message:
-          "تم تسجيل الدخول بنجاح.",
-
-        token,
-
-        user: {
-
-          id: user.id,
-
-          name: user.name,
-
-          email: user.email,
-
-          grade: user.grade,
-
-          created_at:
-            user.created_at
-
-        }
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Login error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "حدث خطأ أثناء تسجيل الدخول."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// CURRENT USER
-// =========================================================
-
-app.get(
-  "/api/auth/me",
-  requireUser,
-  async (req, res) => {
-
-    try {
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            id,
-            name,
-            email,
-            grade,
-            created_at
-          FROM users
-          WHERE id = $1
-          `,
-          [req.user.id]
-        );
-
-      if (
-        result.rows.length === 0
-      ) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "المستخدم غير موجود."
-
-        });
-
-      }
-
-      res.json({
-
-        success: true,
-
-        user:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Current user error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر التحقق من الحساب."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN LOGIN
-// =========================================================
-
-app.post(
-  "/api/admin/login",
-  async (req, res) => {
-
-    try {
-
-      const {
-        email,
-        password
-      } = req.body;
-
-      if (
-        !email ||
-        !password
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "البريد الإلكتروني وكلمة المرور مطلوبان."
-
-        });
-
-      }
-
-      const adminEmail =
-        process.env.ADMIN_EMAIL;
-
-      const adminPassword =
-        process.env.ADMIN_PASSWORD;
-
-      if (
-        !adminEmail ||
-        !adminPassword
-      ) {
-
-        return res.status(500).json({
-
-          success: false,
-
-          message:
-            "إعدادات المدير غير مكتملة على الخادم."
-
-        });
-
-      }
-
-      if (
-        email.trim().toLowerCase() !==
-        adminEmail.trim().toLowerCase()
-      ) {
-
-        return res.status(401).json({
-
-          success: false,
-
-          message:
-            "بيانات المدير غير صحيحة."
-
-        });
-
-      }
-
-      if (
-        password !== adminPassword
-      ) {
-
-        return res.status(401).json({
-
-          success: false,
-
-          message:
-            "بيانات المدير غير صحيحة."
-
-        });
-
-      }
-
-      const token =
-        createAdminToken();
-
-      res.json({
-
-        success: true,
-
-        message:
-          "تم تسجيل دخول المدير بنجاح.",
-
-        token
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Admin login error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "حدث خطأ أثناء تسجيل دخول المدير."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - GET USERS
-// =========================================================
-
-app.get(
-  "/api/admin/users",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const result =
-        await pool.query(`
-          SELECT
-            id,
-            name,
-            email,
-            grade,
-            created_at
-          FROM users
-          ORDER BY created_at DESC
-        `);
-
-      res.json({
-
-        success: true,
-
-        users:
-          result.rows
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get users error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل المستخدمين."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - USERS COUNT
-// =========================================================
-
-app.get(
-  "/api/admin/users/count",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            COUNT(*)::int AS count
-          FROM users
-          `
-        );
-
-      res.json({
-
-        success: true,
-
-        count:
-          result.rows[0].count
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Users count error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر الحصول على عدد المستخدمين."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - RESET PASSWORD
-// =========================================================
-
-app.post(
-  "/api/admin/users/:id/reset-password",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const userId =
-        Number(req.params.id);
-
-      const {
-        newPassword
-      } = req.body;
-
-      if (
-        !Number.isInteger(userId)
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "معرف المستخدم غير صحيح."
-
-        });
-
-      }
-
-      if (
-        !newPassword ||
-        newPassword.length < 6
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل."
-
-        });
-
-      }
-
-      const passwordHash =
-        await bcrypt.hash(
-          newPassword,
-          12
-        );
-
-      const result =
-        await pool.query(
-          `
-          UPDATE users
-          SET password_hash = $1
-          WHERE id = $2
-          RETURNING
-            id,
-            name,
-            email
-          `,
-          [
-            passwordHash,
-            userId
-          ]
-        );
-
-      if (
-        result.rows.length === 0
-      ) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "المستخدم غير موجود."
-
-        });
-
-      }
-
-      res.json({
-
-        success: true,
-
-        message:
-          "تم تغيير كلمة مرور المستخدم بنجاح.",
-
-        user:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Reset password error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تغيير كلمة المرور."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - DELETE USER
-// =========================================================
-
-app.delete(
-  "/api/admin/users/:id",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const userId =
-        Number(req.params.id);
-
-      if (
-        !Number.isInteger(userId)
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "معرف المستخدم غير صحيح."
-
-        });
-
-      }
-
-      const result =
-        await pool.query(
-          `
-          DELETE FROM users
-          WHERE id = $1
-          RETURNING
-            id,
-            name,
-            email
-          `,
-          [userId]
-        );
-
-      if (
-        result.rows.length === 0
-      ) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "المستخدم غير موجود."
-
-        });
-
-      }
-
-      res.json({
-
-        success: true,
-
-        message:
-          "تم حذف المستخدم بنجاح.",
-
-        user:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Delete user error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر حذف المستخدم."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// SUBJECTS
-// =========================================================
-
-app.get(
-  "/api/subjects",
-  async (req, res) => {
-
-    try {
-
-      const result =
-        await pool.query(`
-          SELECT
-            id,
-            name,
-            description,
-            image_url,
-            created_at
-          FROM subjects
-          ORDER BY id ASC
-        `);
-
-      res.json({
-
-        success: true,
-
-        subjects:
-          result.rows
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get subjects error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل المواد."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - ADD SUBJECT
-// =========================================================
-
-app.post(
-  "/api/admin/subjects",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const {
-        name,
-        description,
-        image_url
-      } = req.body;
-
-      if (!name) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "اسم المادة مطلوب."
-
-        });
-
-      }
-
-      const result =
-        await pool.query(
-          `
-          INSERT INTO subjects
-          (
-            name,
-            description,
-            image_url
-          )
-          VALUES ($1, $2, $3)
-          RETURNING *
-          `,
-          [
-            name.trim(),
-            description || null,
-            image_url || null
-          ]
-        );
-
-      res.status(201).json({
-
-        success: true,
-
-        subject:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Create subject error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر إنشاء المادة."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// UNITS
-// =========================================================
-
-app.get(
-  "/api/subjects/:subjectId/units",
-  async (req, res) => {
-
-    try {
-
-      const subjectId =
-        Number(req.params.subjectId);
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            id,
-            subject_id,
-            name,
-            description,
-            unit_order,
-            created_at
-          FROM units
-          WHERE subject_id = $1
-          ORDER BY unit_order ASC, id ASC
-          `,
-          [subjectId]
-        );
-
-      res.json({
-
-        success: true,
-
-        units:
-          result.rows
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get units error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل الوحدات."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - ADD UNIT
-// =========================================================
-
-app.post(
-  "/api/admin/units",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const {
-        subject_id,
-        name,
-        description,
-        unit_order
-      } = req.body;
-
-      if (
-        !subject_id ||
-        !name
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "المادة واسم الوحدة مطلوبان."
-
-        });
-
-      }
-
-      const result =
-        await pool.query(
-          `
-          INSERT INTO units
-          (
-            subject_id,
-            name,
-            description,
-            unit_order
-          )
-          VALUES ($1, $2, $3, $4)
-          RETURNING *
-          `,
-          [
-            subject_id,
-            name.trim(),
-            description || null,
-            Number(unit_order) || 0
-          ]
-        );
-
-      res.status(201).json({
-
-        success: true,
-
-        unit:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Create unit error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر إنشاء الوحدة."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// LESSONS
-// =========================================================
-
-app.get(
-  "/api/units/:unitId/lessons",
-  async (req, res) => {
-
-    try {
-
-      const unitId =
-        Number(req.params.unitId);
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            id,
-            unit_id,
-            name,
-            description,
-            lesson_order,
-            created_at
-          FROM lessons
-          WHERE unit_id = $1
-          ORDER BY lesson_order ASC, id ASC
-          `,
-          [unitId]
-        );
-
-      res.json({
-
-        success: true,
-
-        lessons:
-          result.rows
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get lessons error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل الدروس."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - ADD LESSON
-// =========================================================
-
-app.post(
-  "/api/admin/lessons",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const {
-        unit_id,
-        name,
-        description,
-        lesson_order
-      } = req.body;
-
-      if (
-        !unit_id ||
-        !name
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "الوحدة واسم الدرس مطلوبان."
-
-        });
-
-      }
-
-      const result =
-        await pool.query(
-          `
-          INSERT INTO lessons
-          (
-            unit_id,
-            name,
-            description,
-            lesson_order
-          )
-          VALUES ($1, $2, $3, $4)
-          RETURNING *
-          `,
-          [
-            unit_id,
-            name.trim(),
-            description || null,
-            Number(lesson_order) || 0
-          ]
-        );
-
-      res.status(201).json({
-
-        success: true,
-
-        lesson:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Create lesson error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر إنشاء الدرس."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// GET COMPLETE LESSON
-// =========================================================
-
-app.get(
-  "/api/lessons/:lessonId",
-  async (req, res) => {
-
-    try {
-
-      const lessonId =
-        Number(req.params.lessonId);
-
-      const lessonResult =
-        await pool.query(
-          `
-          SELECT
-            l.id,
-            l.unit_id,
-            l.name,
-            l.description,
-            l.lesson_order,
-
-            lc.video_url AS explanation_video_url,
-            lc.pdf_url AS explanation_pdf_url,
-            lc.explanation AS explanation_text,
-
-            ls.video_url AS solution_video_url,
-            ls.pdf_url AS solution_pdf_url,
-            ls.explanation AS solution_text
-
-          FROM lessons l
-
-          LEFT JOIN lesson_content lc
-            ON lc.lesson_id = l.id
-
-          LEFT JOIN lesson_solution ls
-            ON ls.lesson_id = l.id
-
-          WHERE l.id = $1
-          `,
-          [lessonId]
-        );
-
-      if (
-        lessonResult.rows.length === 0
-      ) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "الدرس غير موجود."
-
-        });
-
-      }
-
-      const quizResult =
-        await pool.query(
-          `
-          SELECT
-            id,
-            title,
-            description,
-            passing_percentage,
-            questions_per_page
-          FROM quizzes
-          WHERE lesson_id = $1
-          `,
-          [lessonId]
-        );
-
-      res.json({
-
-        success: true,
-
-        lesson:
-          lessonResult.rows[0],
-
-        quiz:
-          quizResult.rows[0] || null
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get lesson error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل الدرس."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - SAVE LESSON CONTENT
-// شرح الدرس
-// =========================================================
-
-app.post(
-  "/api/admin/lessons/:lessonId/content",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const lessonId =
-        Number(req.params.lessonId);
-
-      if (!Number.isInteger(lessonId)) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "معرف الدرس غير صحيح."
-
-        });
-
-      }
-
-      const {
-        video_url,
-        pdf_url,
-        explanation
-      } = req.body;
-
-      const result =
-        await pool.query(
-          `
-          INSERT INTO lesson_content
-          (
-            lesson_id,
-            video_url,
-            pdf_url,
-            explanation
-          )
-          VALUES ($1, $2, $3, $4)
-
-          ON CONFLICT (lesson_id)
-
-          DO UPDATE SET
-            video_url = EXCLUDED.video_url,
-            pdf_url = EXCLUDED.pdf_url,
-            explanation = EXCLUDED.explanation,
-            updated_at = CURRENT_TIMESTAMP
-
-          RETURNING *
-          `,
-          [
-            lessonId,
-            video_url || null,
-            pdf_url || null,
-            explanation || null
-          ]
-        );
-
-      res.json({
-
-        success: true,
-
-        message:
-          "تم حفظ شرح الدرس بنجاح.",
-
-        content:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Lesson content error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر حفظ محتوى الدرس."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - SAVE LESSON SOLUTION
-// حل الدرس: فيديو + PDF
-// =========================================================
-
-app.post(
-  "/api/admin/lessons/:lessonId/solution",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const lessonId =
-        Number(req.params.lessonId);
-
-      if (!Number.isInteger(lessonId)) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "معرف الدرس غير صحيح."
-
-        });
-
-      }
-
-      const {
-        video_url,
-        pdf_url,
-        explanation
-      } = req.body;
-
-      const result =
-        await pool.query(
-          `
-          INSERT INTO lesson_solution
-          (
-            lesson_id,
-            video_url,
-            pdf_url,
-            explanation
-          )
-
-          VALUES ($1, $2, $3, $4)
-
-          ON CONFLICT (lesson_id)
-
-          DO UPDATE SET
-            video_url = EXCLUDED.video_url,
-            pdf_url = EXCLUDED.pdf_url,
-            explanation = EXCLUDED.explanation,
-            updated_at = CURRENT_TIMESTAMP
-
-          RETURNING *
-          `,
-          [
-            lessonId,
-            video_url || null,
-            pdf_url || null,
-            explanation || null
-          ]
-        );
-
-      res.json({
-
-        success: true,
-
-        message:
-          "تم حفظ حل الدرس بنجاح.",
-
-        solution:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Lesson solution error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر حفظ حل الدرس."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - GET LESSON CONTENT
-// =========================================================
-
-app.get(
-  "/api/admin/lessons/:lessonId/content",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const lessonId =
-        Number(req.params.lessonId);
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            l.id,
-            l.name,
-
-            lc.video_url AS explanation_video_url,
-            lc.pdf_url AS explanation_pdf_url,
-            lc.explanation AS explanation_text,
-
-            ls.video_url AS solution_video_url,
-            ls.pdf_url AS solution_pdf_url,
-            ls.explanation AS solution_text
-
-          FROM lessons l
-
-          LEFT JOIN lesson_content lc
-            ON lc.lesson_id = l.id
-
-          LEFT JOIN lesson_solution ls
-            ON ls.lesson_id = l.id
-
-          WHERE l.id = $1
-          `,
-          [lessonId]
-        );
-
-      if (result.rows.length === 0) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "الدرس غير موجود."
-
-        });
-
-      }
-
-      res.json({
-
-        success: true,
-
-        content:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get admin lesson content error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل محتوى الدرس."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - CREATE / UPDATE QUIZ
-// =========================================================
-
-app.post(
-  "/api/admin/quizzes",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const {
-        lesson_id,
-        title,
-        description,
-        passing_percentage,
-        questions_per_page
-      } = req.body;
-
-      if (
-        !lesson_id ||
-        !title
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "الدرس واسم الاختبار مطلوبان."
-
-        });
-
-      }
-
-      const passing =
-        Number(passing_percentage) || 50;
-
-      const perPage =
-        Number(questions_per_page) || 10;
-
-      const result =
-        await pool.query(
-          `
-          INSERT INTO quizzes
-          (
-            lesson_id,
-            title,
-            description,
-            passing_percentage,
-            questions_per_page
-          )
-          VALUES ($1, $2, $3, $4, $5)
-
-          ON CONFLICT (lesson_id)
-
-          DO UPDATE SET
-            title = EXCLUDED.title,
-            description = EXCLUDED.description,
-            passing_percentage =
-              EXCLUDED.passing_percentage,
-            questions_per_page =
-              EXCLUDED.questions_per_page
-
-          RETURNING *
-          `,
-          [
-            lesson_id,
-            title.trim(),
-            description || null,
-            passing,
-            perPage
-          ]
-        );
-
-      res.status(201).json({
-
-        success: true,
-
-        message:
-          "تم إنشاء أو تحديث الاختبار بنجاح.",
-
-        quiz:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Create quiz error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر إنشاء الاختبار."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - ADD QUESTION
-// =========================================================
-
-app.post(
-  "/api/admin/quizzes/:quizId/questions",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const quizId =
-        Number(req.params.quizId);
-
-      const {
-        question_text,
-        option_a,
-        option_b,
-        option_c,
-        option_d,
-        correct_answer,
-        explanation,
-        question_order
-      } = req.body;
-
-      const correct =
-        String(correct_answer || "")
-          .toUpperCase();
-
-      if (
-        !question_text ||
-        !option_a ||
-        !option_b ||
-        !option_c ||
-        !option_d ||
-        !["A", "B", "C", "D"].includes(correct)
-      ) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "بيانات السؤال غير مكتملة."
-
-        });
-
-      }
-
-      const result =
-        await pool.query(
-          `
-          INSERT INTO quiz_questions
-          (
-            quiz_id,
-            question_text,
-            option_a,
-            option_b,
-            option_c,
-            option_d,
-            correct_answer,
-            explanation,
-            question_order
-          )
-          VALUES
-          ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-
-          RETURNING *
-          `,
-          [
-            quizId,
-            question_text,
-            option_a,
-            option_b,
-            option_c,
-            option_d,
-            correct,
-            explanation || null,
-            Number(question_order) || 0
-          ]
-        );
-
-      res.status(201).json({
-
-        success: true,
-
-        message:
-          "تمت إضافة السؤال بنجاح.",
-
-        question:
-          result.rows[0]
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Create question error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر إضافة السؤال."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// START QUIZ
-// =========================================================
-
-app.post(
-  "/api/quizzes/:quizId/start",
-  requireUser,
-  async (req, res) => {
-
-    const client =
-      await pool.connect();
-
-    try {
-
-      const quizId =
-        Number(req.params.quizId);
-
-      if (!Number.isInteger(quizId)) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "معرف الاختبار غير صحيح."
-
-        });
-
-      }
-
-      await client.query("BEGIN");
-
-      const quizResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            title,
-            description,
-            passing_percentage,
-            questions_per_page
-          FROM quizzes
-          WHERE id = $1
-          `,
-          [quizId]
-        );
-
-      if (
-        quizResult.rows.length === 0
-      ) {
-
-        await client.query("ROLLBACK");
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "الاختبار غير موجود."
-
-        });
-
-      }
-
-      // -----------------------------------------------------
-      // محاولة واحدة فقط
-      // -----------------------------------------------------
-
-      const existingAttempt =
-        await client.query(
-          `
-          SELECT *
-          FROM quiz_attempts
-          WHERE user_id = $1
-          AND quiz_id = $2
-          `,
-          [
-            req.user.id,
-            quizId
-          ]
-        );
-
-      if (
-        existingAttempt.rows.length > 0
-      ) {
-
-        await client.query("ROLLBACK");
-
-        const attempt =
-          existingAttempt.rows[0];
-
-        return res.status(409).json({
-
-          success: false,
-
-          already_attempted: true,
-
-          message:
-            "لقد بدأت أو أنهيت هذا الاختبار من قبل، ولا يمكن فتحه مرة أخرى.",
-
-          attempt: {
-
-            id:
-              attempt.id,
-
-            status:
-              attempt.status,
-
-            score:
-              attempt.score,
-
-            total_questions:
-              attempt.total_questions,
-
-            percentage:
-              attempt.percentage,
-
-            passed:
-              attempt.passed
-
-          }
-
-        });
-
-      }
-
-      const questionsResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            question_text,
-            option_a,
-            option_b,
-            option_c,
-            option_d,
-            question_order
-
-          FROM quiz_questions
-
-          WHERE quiz_id = $1
-
-          ORDER BY question_order ASC, id ASC
-          `,
-          [quizId]
-        );
-
-      if (
-        questionsResult.rows.length === 0
-      ) {
-
-        await client.query("ROLLBACK");
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "لا توجد أسئلة في هذا الاختبار."
-
-        });
-
-      }
-
-      const attemptResult =
-        await client.query(
-          `
-          INSERT INTO quiz_attempts
-          (
-            user_id,
-            quiz_id,
-            total_questions,
-            status
-          )
-
-          VALUES
-          ($1, $2, $3, 'started')
-
-          RETURNING *
-          `,
-          [
-            req.user.id,
-            quizId,
-            questionsResult.rows.length
-          ]
-        );
-
-      const attempt =
-        attemptResult.rows[0];
-
-      await client.query("COMMIT");
-
-      res.status(201).json({
-
-        success: true,
-
-        message:
-          "تم بدء الاختبار.",
-
-        attempt: {
-
-          id:
-            attempt.id,
-
-          quiz_id:
-            quizId,
-
-          started_at:
-            attempt.started_at,
-
-          status:
-            attempt.status
-
-        },
-
-        quiz:
-          quizResult.rows[0],
-
-        questions:
-          questionsResult.rows
-
-      });
-
-    } catch (error) {
-
-      try {
-        await client.query("ROLLBACK");
-      } catch (_) {}
-
-      console.error(
-        "Start quiz error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر بدء الاختبار."
-
-      });
-
-    } finally {
-
-      client.release();
-
-    }
-
-  }
-);
-
-// =========================================================
-// SUBMIT QUIZ
-// =========================================================
-
-app.post(
-  "/api/quizzes/attempts/:attemptId/submit",
-  requireUser,
-  async (req, res) => {
-
-    const client =
-      await pool.connect();
-
-    try {
-
-      const attemptId =
-        Number(req.params.attemptId);
-
-      if (!Number.isInteger(attemptId)) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "معرف المحاولة غير صحيح."
-
-        });
-
-      }
-
-      const answers =
-        Array.isArray(req.body.answers)
-          ? req.body.answers
-          : [];
-
-      await client.query("BEGIN");
-
-      const attemptResult =
-        await client.query(
-          `
-          SELECT
-            a.*,
-            q.passing_percentage
-          FROM quiz_attempts a
-          JOIN quizzes q
-            ON q.id = a.quiz_id
-          WHERE a.id = $1
-          AND a.user_id = $2
-          FOR UPDATE
-          `,
-          [
-            attemptId,
-            req.user.id
-          ]
-        );
-
-      if (
-        attemptResult.rows.length === 0
-      ) {
-
-        await client.query("ROLLBACK");
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "المحاولة غير موجودة."
-
-        });
-
-      }
-
-      const attempt =
-        attemptResult.rows[0];
-
-      if (
-        attempt.status !== "started"
-      ) {
-
-        await client.query("ROLLBACK");
-
-        return res.status(409).json({
-
-          success: false,
-
-          message:
-            "هذه المحاولة تم إرسالها بالفعل ولا يمكن إرسالها مرة أخرى."
-
-        });
-
-      }
-
-      const questionsResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            question_text,
-            option_a,
-            option_b,
-            option_c,
-            option_d,
-            correct_answer,
-            explanation,
-            question_order
-
-          FROM quiz_questions
-
-          WHERE quiz_id = $1
-
-          ORDER BY question_order ASC, id ASC
-          `,
-          [attempt.quiz_id]
-        );
-
-      const questions =
-        questionsResult.rows;
-
-      if (questions.length === 0) {
-
-        await client.query("ROLLBACK");
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "لا توجد أسئلة لهذا الاختبار."
-
-        });
-
-      }
-
-      if (answers.length !== questions.length) {
-
-        await client.query("ROLLBACK");
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            `يجب الإجابة عن جميع الأسئلة قبل تسليم الاختبار. عدد الأسئلة: ${questions.length}`,
-
-          required:
-            questions.length,
-
-          received:
-            answers.length
-
-        });
-
-      }
-
-      const answerMap =
-        new Map();
-
-      for (const item of answers) {
-
-        const questionId =
-          Number(item.question_id);
-
-        const selected =
-          String(
-            item.selected_answer || ""
-          ).toUpperCase();
-
-        if (
-          !Number.isInteger(questionId) ||
-          !["A", "B", "C", "D"].includes(selected)
-        ) {
-
-          await client.query("ROLLBACK");
-
-          return res.status(400).json({
-
-            success: false,
-
-            message:
-              "يوجد جواب غير صحيح في البيانات المرسلة."
-
-          });
-
-        }
-
-        if (answerMap.has(questionId)) {
-
-          await client.query("ROLLBACK");
-
-          return res.status(400).json({
-
-            success: false,
-
-            message:
-              "تم إرسال السؤال أكثر من مرة."
-
-          });
-
-        }
-
-        answerMap.set(
-          questionId,
-          selected
-        );
-
-      }
-
-      for (const question of questions) {
-
-        if (!answerMap.has(question.id)) {
-
-          await client.query("ROLLBACK");
-
-          return res.status(400).json({
-
-            success: false,
-
-            message:
-              "يجب الإجابة عن جميع الأسئلة."
-
-          });
-
-        }
-
-      }
-
-      let score = 0;
-
-      const results = [];
-
-      for (const question of questions) {
-
-        const selectedAnswer =
-          answerMap.get(question.id);
-
-        const isCorrect =
-          selectedAnswer ===
-          question.correct_answer;
-
-        if (isCorrect) {
-          score++;
-        }
-
-        await client.query(
-          `
-          INSERT INTO quiz_answers
-          (
-            attempt_id,
-            question_id,
-            selected_answer,
-            is_correct
-          )
-
-          VALUES ($1, $2, $3, $4)
-
-          ON CONFLICT
-          (attempt_id, question_id)
-
-          DO UPDATE SET
-            selected_answer =
-              EXCLUDED.selected_answer,
-
-            is_correct =
-              EXCLUDED.is_correct,
-
-            answered_at =
-              CURRENT_TIMESTAMP
-          `,
-          [
-            attemptId,
-            question.id,
-            selectedAnswer,
-            isCorrect
-          ]
-        );
-
-        results.push({
-
-          question_id:
-            question.id,
-
-          question_text:
-            question.question_text,
-
-          selected_answer:
-            selectedAnswer,
-
-          correct_answer:
-            question.correct_answer,
-
-          is_correct:
-            isCorrect,
-
-          explanation:
-            isCorrect
-              ? null
-              : (
-                  question.explanation ||
-                  "لم تتم إضافة شرح لهذا السؤال بعد."
-                )
-
-        });
-
-      }
-
-      const totalQuestions =
-        questions.length;
-
-      const percentage =
-        Number(
-          (
-            (score / totalQuestions) *
-            100
-          ).toFixed(2)
-        );
-
-      const passingPercentage =
-        Number(attempt.passing_percentage) || 50;
-
-      const passed =
-        percentage >= passingPercentage;
-
-      await client.query(
-        `
-        UPDATE quiz_attempts
-
-        SET
-          finished_at =
-            CURRENT_TIMESTAMP,
-
-          score =
-            $1,
-
-          total_questions =
-            $2,
-
-          percentage =
-            $3,
-
-          passed =
-            $4,
-
-          status =
-            'finished'
-
-        WHERE id = $5
-        `,
-        [
-          score,
-          totalQuestions,
-          percentage,
-          passed,
-          attemptId
-        ]
-      );
-
-      await client.query("COMMIT");
-
-      res.json({
-
-        success: true,
-
-        message:
-          passed
-            ? "مبروك! نجحت في الاختبار 🎉"
-            : "لم تصل إلى نسبة النجاح، راجع أخطاءك.",
-
-        result: {
-
-          attempt_id:
-            attemptId,
-
-          score,
-
-          total_questions:
-            totalQuestions,
-
-          percentage,
-
-          passing_percentage:
-            passingPercentage,
-
-          passed,
-
-          status:
-            "finished"
-
-        },
-
-        questions:
-          results
-
-      });
-
-    } catch (error) {
-
-      try {
-        await client.query("ROLLBACK");
-      } catch (_) {}
-
-      console.error(
-        "Submit quiz error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تسليم الاختبار."
-
-      });
-
-    } finally {
-
-      client.release();
-
-    }
-
-  }
-);
-
-// =========================================================
-// GET ATTEMPT RESULT
-// =========================================================
-
-app.get(
-  "/api/quizzes/attempts/:attemptId/result",
-  requireUser,
-  async (req, res) => {
-
-    try {
-
-      const attemptId =
-        Number(req.params.attemptId);
-
-      const attemptResult =
-        await pool.query(
-          `
-          SELECT
-            a.id,
-            a.quiz_id,
-            a.started_at,
-            a.finished_at,
-            a.score,
-            a.total_questions,
-            a.percentage,
-            a.passed,
-            a.status,
-            q.title,
-            q.passing_percentage
-
-          FROM quiz_attempts a
-
-          JOIN quizzes q
-            ON q.id = a.quiz_id
-
-          WHERE a.id = $1
-          AND a.user_id = $2
-          `,
-          [
-            attemptId,
-            req.user.id
-          ]
-        );
-
-      if (
-        attemptResult.rows.length === 0
-      ) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "نتيجة الاختبار غير موجودة."
-
-        });
-
-      }
-
-      const attempt =
-        attemptResult.rows[0];
-
-      const answersResult =
-        await pool.query(
-          `
-          SELECT
-            qa.question_id,
-            qa.selected_answer,
-            qa.is_correct,
-
-            qq.question_text,
-            qq.option_a,
-            qq.option_b,
-            qq.option_c,
-            qq.option_d,
-            qq.correct_answer,
-            qq.explanation,
-            qq.question_order
-
-          FROM quiz_answers qa
-
-          JOIN quiz_questions qq
-            ON qq.id = qa.question_id
-
-          WHERE qa.attempt_id = $1
-
-          ORDER BY
-            qq.question_order ASC,
-            qq.id ASC
-          `,
-          [attemptId]
-        );
-
-      const questions =
-        answersResult.rows.map(item => ({
-
-          question_id:
-            item.question_id,
-
-          question_text:
-            item.question_text,
-
-          options: {
-
-            A:
-              item.option_a,
-
-            B:
-              item.option_b,
-
-            C:
-              item.option_c,
-
-            D:
-              item.option_d
-
-          },
-
-          selected_answer:
-            item.selected_answer,
-
-          correct_answer:
-            item.correct_answer,
-
-          is_correct:
-            item.is_correct,
-
-          explanation:
-            item.explanation ||
-            "لم تتم إضافة شرح لهذا السؤال بعد."
-
-        }));
-
-      res.json({
-
-        success: true,
-
-        result: {
-
-          id:
-            attempt.id,
-
-          quiz_id:
-            attempt.quiz_id,
-
-          title:
-            attempt.title,
-
-          started_at:
-            attempt.started_at,
-
-          finished_at:
-            attempt.finished_at,
-
-          score:
-            attempt.score,
-
-          total_questions:
-            attempt.total_questions,
-
-          percentage:
-            attempt.percentage,
-
-          passing_percentage:
-            attempt.passing_percentage,
-
-          passed:
-            attempt.passed,
-
-          status:
-            attempt.status
-
-        },
-
-        questions
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get attempt result error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل نتيجة الاختبار."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// GET USER QUIZ ATTEMPTS
-// =========================================================
-
-app.get(
-  "/api/quizzes/my-attempts",
-  requireUser,
-  async (req, res) => {
-
-    try {
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            a.id,
-            a.quiz_id,
-            q.title,
-            a.started_at,
-            a.finished_at,
-            a.score,
-            a.total_questions,
-            a.percentage,
-            a.passed,
-            a.status
-
-          FROM quiz_attempts a
-
-          JOIN quizzes q
-            ON q.id = a.quiz_id
-
-          WHERE a.user_id = $1
-
-          ORDER BY a.started_at DESC
-          `,
-          [req.user.id]
-        );
-
-      res.json({
-
-        success: true,
-
-        attempts:
-          result.rows
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get my attempts error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل اختباراتك."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// GET QUIZ QUESTIONS FOR ADMIN
-// =========================================================
-
-app.get(
-  "/api/admin/quizzes/:quizId/questions",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const quizId =
-        Number(req.params.quizId);
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            id,
-            quiz_id,
-            question_text,
-            option_a,
-            option_b,
-            option_c,
-            option_d,
-            correct_answer,
-            explanation,
-            question_order,
-            created_at
-
-          FROM quiz_questions
-
-          WHERE quiz_id = $1
-
-          ORDER BY question_order ASC, id ASC
-          `,
-          [quizId]
-        );
-
-      res.json({
-
-        success: true,
-
-        questions:
-          result.rows
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get admin questions error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل أسئلة الاختبار."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - GET QUIZZES
-// =========================================================
-
-app.get(
-  "/api/admin/quizzes",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            q.id,
-            q.lesson_id,
-            q.title,
-            q.description,
-            q.passing_percentage,
-            q.questions_per_page,
-            q.created_at,
-
-            l.name AS lesson_name
-
-          FROM quizzes q
-
-          JOIN lessons l
-            ON l.id = q.lesson_id
-
-          ORDER BY q.id DESC
-          `
-        );
-
-      res.json({
-
-        success: true,
-
-        quizzes:
-          result.rows
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Get admin quizzes error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر تحميل الاختبارات."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - DELETE QUESTION
-// =========================================================
-
-app.delete(
-  "/api/admin/quizzes/questions/:questionId",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const questionId =
-        Number(req.params.questionId);
-
-      if (!Number.isInteger(questionId)) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "معرف السؤال غير صحيح."
-
-        });
-
-      }
-
-      const result =
-        await pool.query(
-          `
-          DELETE FROM quiz_questions
-          WHERE id = $1
-          RETURNING id
-          `,
-          [questionId]
-        );
-
-      if (result.rows.length === 0) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "السؤال غير موجود."
-
-        });
-
-      }
-
-      res.json({
-
-        success: true,
-
-        message:
-          "تم حذف السؤال بنجاح."
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Delete question error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر حذف السؤال."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// ADMIN - DELETE QUIZ
-// =========================================================
-
-app.delete(
-  "/api/admin/quizzes/:quizId",
-  requireAdmin,
-  async (req, res) => {
-
-    try {
-
-      const quizId =
-        Number(req.params.quizId);
-
-      if (!Number.isInteger(quizId)) {
-
-        return res.status(400).json({
-
-          success: false,
-
-          message:
-            "معرف الاختبار غير صحيح."
-
-        });
-
-      }
-
-      const result =
-        await pool.query(
-          `
-          DELETE FROM quizzes
-          WHERE id = $1
-          RETURNING id
-          `,
-          [quizId]
-        );
-
-      if (result.rows.length === 0) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "الاختبار غير موجود."
-
-        });
-
-      }
-
-      res.json({
-
-        success: true,
-
-        message:
-          "تم حذف الاختبار بنجاح."
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Delete quiz error:",
-        error
-      );
-
-      res.status(500).json({
-
-        success: false,
-
-        message:
-          "تعذر حذف الاختبار."
-
-      });
-
-    }
-
-  }
-);
-
-// =========================================================
-// STATIC WEBSITE
-// =========================================================
-
-app.use(
-  express.static(
-    path.join(__dirname)
-  )
-);
-
-app.get(
-  "/",
-  (req, res) => {
-
-    res.sendFile(
-      path.join(
-        __dirname,
-        "index.html"
-      )
+    const percentage = total > 0 ? (score / total) * 100 : 0;
+    const passed = percentage >= 50; // نسبة النجاح المطلوبة لفتح الدرس التالي (50%)
+
+    const attemptRes = await pool.query(
+      'INSERT INTO quiz_attempts (user_id, quiz_id, score, total, passed) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [userId, quizId, score, total, passed]
     );
 
-  }
-);
-
-// =========================================================
-// 404 API
-// =========================================================
-
-app.use(
-  "/api",
-  (req, res) => {
-
-    res.status(404).json({
-
-      success: false,
-
-      message:
-        "API endpoint not found."
-
+    res.json({
+      message: passed ? 'مبروك! لقد اجتزت الاختبار وتم فتح الدرس التالي.' : 'لم تجتاز الاختبار بحد أدنى 50%، يرجى المحاولة مجدداً.',
+      score,
+      total,
+      percentage,
+      passed
     });
-
+  } catch (err) {
+    res.status(500).json({ error: 'فشل إرسال إجابات الاختبار' });
   }
-);
+});
 
-// =========================================================
-// START SERVER
-// =========================================================
+// Root Route Check
+app.get('/', (req, res) => {
+  res.send('DrNotes API Server with Automatic Locking is up and running!');
+});
 
-app.listen(
-  PORT,
-  "0.0.0.0",
-  async () => {
-
-    console.log(
-      `DrNotes server running on port ${PORT}`
-    );
-
-    await initializeDatabase();
-
-  }
-);
+// Start Server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
