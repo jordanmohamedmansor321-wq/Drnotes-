@@ -2359,8 +2359,20 @@
         const data = await apiRequest('/subjects');
         const apiSubjects = Array.isArray(data.subjects) ? data.subjects : [];
 
+        // منع تكرار نفس المادة في منصة الطالب (خصوصًا لو توجد مادتان باسم الأحياء).
+        // نحتفظ بأول مادة بنفس الاسم ونحذف النسخ المكررة من العرض.
+        const uniqueSubjects = [];
+        const seenSubjectNames = new Set();
+
+        for (const subject of apiSubjects) {
+          const normalizedName = String(subject?.name || '').trim().toLowerCase();
+          if (!normalizedName || seenSubjectNames.has(normalizedName)) continue;
+          seenSubjectNames.add(normalizedName);
+          uniqueSubjects.push(subject);
+        }
+
         const loaded = await Promise.all(
-          apiSubjects.map(async (subject) => {
+          uniqueSubjects.map(async (subject) => {
             let lessons = [];
 
             try {
@@ -3505,6 +3517,49 @@ function setAuthLoading(
     }
 
 
+    function normalizeVideoUrl(url) {
+
+      const raw = String(url || '').trim();
+
+      if (!raw) return '';
+
+      try {
+        const parsed = new URL(raw);
+        const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
+
+        // YouTube watch links: https://www.youtube.com/watch?v=VIDEO_ID
+        if (host === 'youtube.com' || host === 'm.youtube.com') {
+          const videoId = parsed.searchParams.get('v');
+          if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+
+          // YouTube Shorts: https://youtube.com/shorts/VIDEO_ID
+          const shortsMatch = parsed.pathname.match(/^\/shorts\/([^/?#]+)/);
+          if (shortsMatch) return `https://www.youtube.com/embed/${shortsMatch[1]}`;
+
+          // Already an embed URL.
+          if (parsed.pathname.startsWith('/embed/')) return raw;
+        }
+
+        // Short YouTube links: https://youtu.be/VIDEO_ID
+        if (host === 'youtu.be') {
+          const videoId = parsed.pathname.split('/').filter(Boolean)[0];
+          if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+        }
+
+        // Vimeo normal links.
+        if (host === 'vimeo.com') {
+          const parts = parsed.pathname.split('/').filter(Boolean);
+          const videoId = parts[parts.length - 1];
+          if (/^\d+$/.test(videoId)) return `https://player.vimeo.com/video/${videoId}`;
+        }
+      } catch (error) {
+        // If the URL is not a standard URL, keep it as-is.
+      }
+
+      return raw;
+    }
+
+
     function renderVideo(videoUrl) {
 
       if (!videoUrl) {
@@ -3531,17 +3586,19 @@ function setAuthLoading(
 
       }
 
+      const normalizedUrl =
+        normalizeVideoUrl(videoUrl);
+
       const safeUrl =
-        escapeAttribute(videoUrl);
+        escapeAttribute(normalizedUrl);
 
       /*
-        دعم روابط الفيديو المباشرة و iframe.
+        دعم روابط YouTube/Vimeo العادية وتحويلها تلقائيًا إلى embed.
       */
 
       if (
-        videoUrl.includes("youtube.com") ||
-        videoUrl.includes("youtu.be") ||
-        videoUrl.includes("vimeo.com")
+        normalizedUrl.includes("youtube.com/embed/") ||
+        normalizedUrl.includes("player.vimeo.com/video/")
       ) {
 
         return `
@@ -4882,8 +4939,8 @@ html.dr-dark .modal-content {
 
   position: fixed;
 
-  top: 18px;
-  left: 18px;
+  bottom: 22px;
+  left: 22px;
 
   width: 48px;
   height: 48px;
@@ -4935,8 +4992,8 @@ html.dr-dark .modal-content {
     width: 42px;
     height: 42px;
 
-    top: 12px;
-    left: 12px;
+    bottom: 14px;
+    left: 14px;
 
     font-size: 19px;
   }
@@ -5922,16 +5979,15 @@ body * {
 
   function drRenderVideo(url) {
 
-    const safe =
-      escapeAttribute(url);
+    const normalizedUrl =
+      normalizeVideoUrl(url);
 
-    const lower =
-      String(url).toLowerCase();
+    const safe =
+      escapeAttribute(normalizedUrl);
 
     if (
-      lower.includes("youtube.com") ||
-      lower.includes("youtu.be") ||
-      lower.includes("vimeo.com")
+      normalizedUrl.includes("youtube.com/embed/") ||
+      normalizedUrl.includes("player.vimeo.com/video/")
     ) {
 
       return `
