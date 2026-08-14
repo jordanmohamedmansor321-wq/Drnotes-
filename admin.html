@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
   <meta charset="UTF-8">
 
@@ -19,13 +18,9 @@
     }
 
     body {
-      font-family:
-        Arial,
-        Tahoma,
-        sans-serif;
-
+      font-family: Arial, Tahoma, sans-serif;
       background: #f4f7fb;
-      color: #1f2937;
+      color: #172033;
       min-height: 100vh;
     }
 
@@ -40,270 +35,96 @@
       cursor: pointer;
     }
 
-    /* =========================
-       HEADER
-    ========================= */
-
-    header {
-      background: #ffffff;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 15px 20px;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      position: sticky;
-      top: 0;
-      z-index: 100;
+    .hidden {
+      display: none !important;
     }
 
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #2563eb;
-    }
+    /* =====================================================
+       LOGIN
+    ===================================================== */
 
-    .logo span {
-      color: #111827;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logout-btn {
-      border: none;
-      background: #ef4444;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-
-    .logout-btn:hover {
-      background: #dc2626;
-    }
-
-    /* =========================
-       CONTAINER
-    ========================= */
-
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 25px 15px 50px;
-    }
-
-    .page-title {
-      margin-bottom: 8px;
-      font-size: 28px;
-    }
-
-    .page-description {
-      color: #6b7280;
-      margin-bottom: 25px;
-    }
-
-    /* =========================
-       ALERT
-    ========================= */
-
-    #alert {
-      display: none;
-      padding: 13px 16px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      font-weight: bold;
-    }
-
-    #alert.success {
-      display: block;
-      background: #dcfce7;
-      color: #166534;
-      border: 1px solid #bbf7d0;
-    }
-
-    #alert.error {
-      display: block;
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
-    }
-
-    #alert.info {
-      display: block;
-      background: #dbeafe;
-      color: #1e40af;
-      border: 1px solid #bfdbfe;
-    }
-
-    /* =========================
-       SECTIONS
-    ========================= */
-
-    .section {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 20px;
-
-      box-shadow:
-        0 3px 15px rgba(0, 0, 0, 0.05);
-    }
-
-    .section-title {
-      font-size: 21px;
-      margin-bottom: 15px;
-    }
-
-    /* =========================
-       SUBJECTS
-    ========================= */
-
-    .subjects-grid {
-      display: grid;
-
-      grid-template-columns:
-        repeat(auto-fit, minmax(180px, 1fr));
-
-      gap: 15px;
-    }
-
-    .subject-card {
-      border: 2px solid #e5e7eb;
-      background: #fff;
-
-      border-radius: 14px;
-      padding: 20px 15px;
-
-      text-align: center;
-
-      transition: 0.2s;
-    }
-
-    .subject-card:hover {
-      border-color: #2563eb;
-      transform: translateY(-2px);
-    }
-
-    .subject-card.active {
-      border-color: #2563eb;
-      background: #eff6ff;
-    }
-
-    .subject-icon {
-      width: 55px;
-      height: 55px;
-
-      margin: 0 auto 10px;
-
-      border-radius: 50%;
-
-      background: #dbeafe;
-      color: #2563eb;
-
+    #loginScreen {
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-
-      font-size: 25px;
+      padding: 20px;
+      background:
+        linear-gradient(
+          135deg,
+          #0f766e,
+          #0f172a
+        );
     }
 
-    .subject-name {
+    .login-card {
+      width: 100%;
+      max-width: 430px;
+      background: white;
+      border-radius: 22px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 34px;
+      font-weight: 900;
+      color: #0f766e;
+      margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 7px;
       font-weight: bold;
-      font-size: 18px;
     }
 
-    /* =========================
-       BREADCRUMB
-    ========================= */
-
-    .breadcrumb {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-
-      align-items: center;
-
-      margin-bottom: 15px;
-
-      color: #6b7280;
-    }
-
-    .breadcrumb button {
-      border: none;
-      background: none;
-      color: #2563eb;
-      font-weight: bold;
-      padding: 0;
-    }
-
-    /* =========================
-       LISTS
-    ========================= */
-
-    .items-grid {
-      display: grid;
-
-      grid-template-columns:
-        repeat(auto-fit, minmax(220px, 1fr));
-
-      gap: 12px;
-    }
-
-    .item-card {
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 15px;
+    .form-control {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #d8dee8;
+      border-radius: 11px;
+      outline: none;
+      font-size: 15px;
       background: #fff;
     }
 
-    .item-card:hover {
-      border-color: #93c5fd;
+    .form-control:focus {
+      border-color: #0f766e;
+      box-shadow: 0 0 0 3px rgba(15,118,110,.1);
     }
-
-    .item-name {
-      font-size: 17px;
-      font-weight: bold;
-      margin-bottom: 7px;
-    }
-
-    .item-description {
-      color: #6b7280;
-      font-size: 14px;
-      margin-bottom: 12px;
-      line-height: 1.6;
-    }
-
-    /* =========================
-       BUTTONS
-    ========================= */
 
     .btn {
       border: none;
-      border-radius: 8px;
-
-      padding: 10px 15px;
-
+      border-radius: 11px;
+      padding: 12px 18px;
+      font-size: 15px;
       font-weight: bold;
-      font-size: 14px;
+      transition: .2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
     }
 
     .btn-primary {
-      background: #2563eb;
+      background: #0f766e;
       color: white;
     }
 
     .btn-primary:hover {
-      background: #1d4ed8;
-    }
-
-    .btn-success {
-      background: #16a34a;
-      color: white;
+      background: #0b5f59;
     }
 
     .btn-danger {
@@ -311,161 +132,388 @@
       color: white;
     }
 
+    .btn-warning {
+      background: #d97706;
+      color: white;
+    }
+
     .btn-secondary {
-      background: #e5e7eb;
-      color: #111827;
+      background: #64748b;
+      color: white;
     }
 
-    .btn-small {
-      padding: 8px 12px;
-      font-size: 13px;
+    .btn-light {
+      background: #e8eef5;
+      color: #172033;
     }
 
-    /* =========================
-       FORMS
-    ========================= */
+    .btn-success {
+      background: #15803d;
+      color: white;
+    }
 
-    .form-grid {
+    .full {
+      width: 100%;
+    }
+
+    .error-message,
+    .success-message {
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      display: none;
+      line-height: 1.6;
+    }
+
+    .error-message {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .success-message {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* =====================================================
+       ADMIN LAYOUT
+    ===================================================== */
+
+    #adminScreen {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      background: #0f172a;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-title {
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .admin-layout {
       display: grid;
-
-      grid-template-columns:
-        repeat(auto-fit, minmax(230px, 1fr));
-
-      gap: 15px;
+      grid-template-columns: 280px 1fr;
+      min-height: calc(100vh - 70px);
     }
 
-    .form-group {
+    .sidebar {
+      background: white;
+      border-left: 1px solid #e2e8f0;
+      padding: 20px;
+    }
+
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 900;
       margin-bottom: 15px;
     }
 
-    .form-group.full {
-      grid-column: 1 / -1;
+    .subject-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
     }
 
-    label {
-      display: block;
+    .subject-item {
+      width: 100%;
+      text-align: right;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 13px;
+      font-weight: bold;
+      transition: .2s;
+    }
+
+    .subject-item:hover {
+      border-color: #0f766e;
+    }
+
+    .subject-item.active {
+      background: #0f766e;
+      color: white;
+      border-color: #0f766e;
+    }
+
+    .main-content {
+      padding: 25px;
+      min-width: 0;
+    }
+
+    .page-header {
+      margin-bottom: 22px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
       margin-bottom: 7px;
+    }
+
+    .page-header p {
+      color: #64748b;
+    }
+
+    .breadcrumb {
+      margin-bottom: 20px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .breadcrumb span {
+      color: #0f766e;
       font-weight: bold;
     }
 
-    input,
-    textarea,
-    select {
-      width: 100%;
+    /* =====================================================
+       CARDS
+    ===================================================== */
 
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-
-      padding: 11px 12px;
-
-      outline: none;
+    .card {
       background: white;
-    }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: #2563eb;
-
-      box-shadow:
-        0 0 0 3px rgba(37, 99, 235, 0.1);
-    }
-
-    textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    /* =========================
-       LESSON PANEL
-    ========================= */
-
-    .lesson-header {
-      background: #eff6ff;
-      border-radius: 12px;
-      padding: 15px;
+      border-radius: 17px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(15,23,42,.06);
+      border: 1px solid #e8edf4;
       margin-bottom: 20px;
     }
 
-    .lesson-header h3 {
-      color: #1d4ed8;
-      margin-bottom: 5px;
+    .card-title {
+      font-size: 19px;
+      font-weight: 900;
+      margin-bottom: 15px;
     }
 
-    .content-box {
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
+    .empty {
+      padding: 35px 20px;
+      text-align: center;
+      color: #64748b;
+      background: #f8fafc;
+      border-radius: 14px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 15px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .item-card {
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      border-radius: 14px;
+      padding: 17px;
+      transition: .2s;
+    }
+
+    .item-card:hover {
+      border-color: #0f766e;
+      box-shadow: 0 5px 18px rgba(15,118,110,.08);
+    }
+
+    .item-title {
+      font-size: 17px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .item-description {
+      color: #64748b;
+      line-height: 1.6;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .item-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* =====================================================
+       FORMS
+    ===================================================== */
+
+    textarea.form-control {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .section-label {
+      font-weight: 900;
+      margin-bottom: 12px;
+      display: block;
+      font-size: 16px;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 25px 0;
+    }
+
+    /* =====================================================
+       LESSON EDITOR
+    ===================================================== */
+
+    .lesson-header {
+      background: #f0fdfa;
+      border: 1px solid #ccfbf1;
+      border-radius: 14px;
       padding: 18px;
       margin-bottom: 20px;
     }
 
-    .content-box h3 {
+    .lesson-header h2 {
+      color: #115e59;
+      margin-bottom: 6px;
+    }
+
+    .content-section {
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .content-section h3 {
       margin-bottom: 15px;
     }
 
-    .form-actions {
+    .content-section.explanation {
+      border-right: 4px solid #0f766e;
+    }
+
+    .content-section.solution {
+      border-right: 4px solid #d97706;
+    }
+
+    .content-section.quiz {
+      border-right: 4px solid #2563eb;
+    }
+
+    .button-row {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
     }
 
-    /* =========================
-       QUIZ
-    ========================= */
-
-    .quiz-info {
-      background: #f9fafb;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
+    /* =====================================================
+       QUESTIONS
+    ===================================================== */
 
     .question-card {
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 13px;
       padding: 15px;
       margin-bottom: 12px;
     }
 
-    .question-text {
-      font-weight: bold;
-      margin-bottom: 10px;
-      line-height: 1.7;
+    .question-number {
+      font-weight: 900;
+      color: #0f766e;
+      margin-bottom: 8px;
     }
 
     .question-options {
-      color: #4b5563;
-      line-height: 1.9;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .option-box {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 9px;
       font-size: 14px;
     }
 
-    .correct-answer {
-      color: #15803d;
-      font-weight: bold;
-      margin-top: 5px;
+    .correct-option {
+      border-color: #16a34a;
+      background: #f0fdf4;
     }
 
-    /* =========================
+    /* =====================================================
+       USERS
+    ===================================================== */
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 650px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: right;
+    }
+
+    th {
+      background: #f8fafc;
+      font-weight: 900;
+    }
+
+    /* =====================================================
        LOADING
-    ========================= */
+    ===================================================== */
 
     .loading {
-      text-align: center;
       padding: 30px;
-      color: #6b7280;
+      text-align: center;
+      color: #64748b;
     }
 
     .spinner {
-      width: 35px;
-      height: 35px;
-
-      border: 4px solid #e5e7eb;
-      border-top-color: #2563eb;
-
+      width: 30px;
+      height: 30px;
+      border: 3px solid #dbe5e5;
+      border-top-color: #0f766e;
       border-radius: 50%;
-
-      animation: spin 0.8s linear infinite;
-
+      animation: spin .8s linear infinite;
       margin: 0 auto 10px;
     }
 
@@ -475,105 +523,63 @@
       }
     }
 
-    .empty {
-      text-align: center;
-      padding: 25px;
-      color: #6b7280;
-      border: 1px dashed #d1d5db;
-      border-radius: 10px;
-    }
-
-    /* =========================
-       MODAL
-    ========================= */
-
-    .modal {
-      display: none;
-
-      position: fixed;
-      inset: 0;
-
-      background: rgba(0, 0, 0, 0.55);
-
-      z-index: 500;
-
-      padding: 20px;
-
-      overflow-y: auto;
-    }
-
-    .modal.show {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-
-    .modal-content {
-      background: white;
-
-      width: 100%;
-      max-width: 600px;
-
-      border-radius: 15px;
-
-      padding: 20px;
-
-      margin-top: 40px;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      margin-bottom: 20px;
-    }
-
-    .close-btn {
-      border: none;
-      background: #f3f4f6;
-
-      width: 35px;
-      height: 35px;
-
-      border-radius: 50%;
-
-      font-size: 20px;
-    }
-
-    /* =========================
+    /* =====================================================
        RESPONSIVE
-    ========================= */
+    ===================================================== */
 
-    @media (max-width: 600px) {
+    @media (max-width: 900px) {
 
-      header {
-        padding: 12px;
+      .admin-layout {
+        grid-template-columns: 1fr;
       }
 
-      .container {
-        padding: 18px 10px 40px;
+      .sidebar {
+        border-left: none;
+        border-bottom: 1px solid #e2e8f0;
       }
 
-      .page-title {
-        font-size: 23px;
+      .subject-list {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
       }
 
-      .section {
+      .grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+    }
+
+    @media (max-width: 650px) {
+
+      .topbar {
+        padding: 0 12px;
+      }
+
+      .topbar-title {
+        font-size: 17px;
+      }
+
+      .main-content {
         padding: 15px;
       }
 
-      .subjects-grid {
-        grid-template-columns:
-          repeat(2, 1fr);
+      .subject-list {
+        grid-template-columns: repeat(2, 1fr);
       }
 
-      .subject-card {
-        padding: 15px 8px;
+      .grid-2,
+      .grid-3,
+      .form-row,
+      .form-row-3 {
+        grid-template-columns: 1fr;
       }
 
-      .subject-name {
-        font-size: 15px;
+      .question-options {
+        grid-template-columns: 1fr;
+      }
+
+      .login-card {
+        padding: 22px;
       }
 
     }
@@ -582,20 +588,101 @@
 
 <body>
 
-  <!-- =====================================================
-       HEADER
-  ====================================================== -->
+<!-- =====================================================
+     LOGIN SCREEN
+===================================================== -->
 
-  <header>
+<section id="loginScreen">
+
+  <div class="login-card">
 
     <div class="logo">
-      Dr<span>Notes</span>
+      DrNotes
     </div>
 
-    <div class="header-right">
+    <div class="login-subtitle">
+      لوحة إدارة المنصة
+    </div>
+
+    <div
+      id="loginError"
+      class="error-message"
+    ></div>
+
+    <form id="loginForm">
+
+      <div class="form-group">
+
+        <label>
+          البريد الإلكتروني
+        </label>
+
+        <input
+          id="adminEmail"
+          class="form-control"
+          type="email"
+          placeholder="أدخل بريد المدير"
+          required
+        >
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          كلمة المرور
+        </label>
+
+        <input
+          id="adminPassword"
+          class="form-control"
+          type="password"
+          placeholder="أدخل كلمة المرور"
+          required
+        >
+
+      </div>
 
       <button
-        class="logout-btn"
+        class="btn btn-primary full"
+        type="submit"
+      >
+        تسجيل دخول المدير
+      </button>
+
+    </form>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     ADMIN SCREEN
+===================================================== -->
+
+<section
+  id="adminScreen"
+  class="hidden"
+>
+
+  <header class="topbar">
+
+    <div class="topbar-title">
+      DrNotes - لوحة الإدارة
+    </div>
+
+    <div class="topbar-actions">
+
+      <button
+        class="btn btn-light"
+        onclick="showUsers()"
+      >
+        المستخدمون
+      </button>
+
+      <button
+        class="btn btn-danger"
         onclick="logout()"
       >
         تسجيل الخروج
@@ -606,36 +693,21 @@
   </header>
 
 
-  <!-- =====================================================
-       MAIN
-  ====================================================== -->
+  <div class="admin-layout">
 
-  <main class="container">
+    <!-- =================================================
+         SIDEBAR
+    ================================================== -->
 
-    <h1 class="page-title">
-      لوحة إدارة DrNotes
-    </h1>
+    <aside class="sidebar">
 
-    <p class="page-description">
-      إدارة المواد والوحدات والدروس والمحتوى والاختبارات.
-    </p>
-
-    <div id="alert"></div>
-
-
-    <!-- ===================================================
-         SUBJECTS
-    ==================================================== -->
-
-    <section class="section">
-
-      <h2 class="section-title">
-        📚 المواد الدراسية
-      </h2>
+      <div class="sidebar-title">
+        المواد الدراسية
+      </div>
 
       <div
-        id="subjectsContainer"
-        class="subjects-grid"
+        id="subjectsList"
+        class="subject-list"
       >
 
         <div class="loading">
@@ -645,108 +717,1484 @@
 
       </div>
 
-    </section>
+    </aside>
 
 
-    <!-- ===================================================
-         NAVIGATION
-    ==================================================== -->
+    <!-- =================================================
+         MAIN
+    ================================================== -->
 
-    <section
-      class="section"
-      id="navigationSection"
-      style="display:none;"
-    >
+    <main class="main-content">
+
+      <div class="page-header">
+
+        <h1 id="pageTitle">
+          لوحة الإدارة
+        </h1>
+
+        <p id="pageSubtitle">
+          اختر مادة من القائمة للبدء.
+        </p>
+
+      </div>
 
       <div
         id="breadcrumb"
         class="breadcrumb"
+      >
+        الرئيسية
+      </div>
+
+
+      <!-- ===============================================
+           ALERT
+      ================================================ -->
+
+      <div
+        id="successMessage"
+        class="success-message"
+      ></div>
+
+      <div
+        id="errorMessage"
+        class="error-message"
       ></div>
 
 
-      <!-- UNITS -->
+      <!-- ===============================================
+           MAIN CONTENT AREA
+      ================================================ -->
 
-      <div id="unitsPanel">
+      <div id="contentArea">
 
-        <h2
-          class="section-title"
-          id="selectedSubjectTitle"
-        >
-          الوحدات
-        </h2>
+        <div class="card">
 
-        <div
-          id="unitsContainer"
-          class="items-grid"
-        ></div>
+          <div class="card-title">
+            مرحبًا بك في لوحة إدارة DrNotes
+          </div>
 
-        <br>
+          <div class="empty">
 
-        <button
-          class="btn btn-primary"
-          onclick="openAddUnitModal()"
-        >
-          + إضافة وحدة
-        </button>
+            اختر واحدة من المواد الست الموجودة
+            في منصة الطالب:
 
-      </div>
+            <br><br>
 
+            <strong>
+              الفيزياء - الكيمياء - الأحياء -
+              العربي - الإنجليزي - الحاسوب
+            </strong>
 
-      <!-- LESSONS -->
-
-      <div
-        id="lessonsPanel"
-        style="display:none;"
-      >
-
-        <h2
-          class="section-title"
-          id="selectedUnitTitle"
-        >
-          الدروس
-        </h2>
-
-        <div
-          id="lessonsContainer"
-          class="items-grid"
-        ></div>
-
-        <br>
-
-        <button
-          class="btn btn-primary"
-          onclick="openAddLessonModal()"
-        >
-          + إضافة درس
-        </button>
-
-      </div>
-
-
-      <!-- LESSON MANAGEMENT -->
-
-      <div
-        id="lessonPanel"
-        style="display:none;"
-      >
-
-        <div class="lesson-header">
-
-          <h3 id="selectedLessonTitle">
-            الدرس
-          </h3>
-
-          <p id="selectedLessonDescription"></p>
+          </div>
 
         </div>
 
+      </div>
 
-        <!-- EXPLANATION -->
+    </main>
 
-        <div class="content-box">
+  </div>
+
+</section>
+
+
+<script>
+
+  /* =====================================================
+     CONFIG
+  ===================================================== */
+
+  const API_BASE = window.location.origin;
+
+  const SUBJECT_NAMES = [
+    "الفيزياء",
+    "الكيمياء",
+    "الأحياء",
+    "العربي",
+    "الإنجليزي",
+    "الحاسوب"
+  ];
+
+
+  /* =====================================================
+     STATE
+  ===================================================== */
+
+  let adminToken =
+    localStorage.getItem("drnotes_admin_token") || "";
+
+  let subjects = [];
+
+  let currentSubject = null;
+
+  let currentUnit = null;
+
+  let currentLesson = null;
+
+  let currentQuiz = null;
+
+
+  /* =====================================================
+     HELPERS
+  ===================================================== */
+
+  function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+      return "";
+    }
+
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  }
+
+
+  function showError(message) {
+
+    const box =
+      document.getElementById("errorMessage");
+
+    box.textContent = message;
+
+    box.style.display = "block";
+
+    setTimeout(() => {
+      box.style.display = "none";
+    }, 5000);
+
+  }
+
+
+  function showSuccess(message) {
+
+    const box =
+      document.getElementById("successMessage");
+
+    box.textContent = message;
+
+    box.style.display = "block";
+
+    setTimeout(() => {
+      box.style.display = "none";
+    }, 4000);
+
+  }
+
+
+  async function api(
+    url,
+    options = {}
+  ) {
+
+    const headers = {
+      ...(options.headers || {})
+    };
+
+    if (
+      options.body &&
+      !headers["Content-Type"]
+    ) {
+
+      headers["Content-Type"] =
+        "application/json";
+
+    }
+
+    if (adminToken) {
+
+      headers["Authorization"] =
+        "Bearer " + adminToken;
+
+    }
+
+    const response =
+      await fetch(
+        API_BASE + url,
+        {
+          ...options,
+          headers
+        }
+      );
+
+    let data = null;
+
+    try {
+      data = await response.json();
+    } catch (_) {
+      data = {};
+    }
+
+    if (
+      response.status === 401 &&
+      adminToken
+    ) {
+
+      logout();
+
+      throw new Error(
+        "انتهت جلسة المدير، يرجى تسجيل الدخول مرة أخرى."
+      );
+
+    }
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message ||
+        "حدث خطأ في الاتصال بالخادم."
+      );
+
+    }
+
+    return data;
+
+  }
+
+
+  /* =====================================================
+     LOGIN
+  ===================================================== */
+
+  document
+    .getElementById("loginForm")
+    .addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+        const email =
+          document
+            .getElementById("adminEmail")
+            .value
+            .trim();
+
+        const password =
+          document
+            .getElementById("adminPassword")
+            .value;
+
+        const errorBox =
+          document
+            .getElementById("loginError");
+
+        errorBox.style.display =
+          "none";
+
+        try {
+
+          const response =
+            await fetch(
+              API_BASE +
+              "/api/admin/login",
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify({
+                    email,
+                    password
+                  })
+              }
+            );
+
+          const data =
+            await response.json();
+
+          if (!response.ok) {
+
+            throw new Error(
+              data.message ||
+              "بيانات تسجيل الدخول غير صحيحة."
+            );
+
+          }
+
+          adminToken =
+            data.token;
+
+          localStorage.setItem(
+            "drnotes_admin_token",
+            adminToken
+          );
+
+          showAdminScreen();
+
+        } catch (error) {
+
+          errorBox.textContent =
+            error.message;
+
+          errorBox.style.display =
+            "block";
+
+        }
+
+      }
+    );
+
+
+  /* =====================================================
+     SHOW ADMIN
+  ===================================================== */
+
+  function showAdminScreen() {
+
+    document
+      .getElementById("loginScreen")
+      .classList
+      .add("hidden");
+
+    document
+      .getElementById("adminScreen")
+      .classList
+      .remove("hidden");
+
+    loadSubjects();
+
+  }
+
+
+  /* =====================================================
+     LOGOUT
+  ===================================================== */
+
+  function logout() {
+
+    localStorage.removeItem(
+      "drnotes_admin_token"
+    );
+
+    adminToken = "";
+
+    location.reload();
+
+  }
+
+
+  /* =====================================================
+     LOAD SUBJECTS
+  ===================================================== */
+
+  async function loadSubjects() {
+
+    const list =
+      document.getElementById(
+        "subjectsList"
+      );
+
+    list.innerHTML = `
+      <div class="loading">
+        <div class="spinner"></div>
+        جاري تحميل المواد...
+      </div>
+    `;
+
+    try {
+
+      const data =
+        await api(
+          "/api/subjects"
+        );
+
+      subjects =
+        Array.isArray(data.subjects)
+          ? data.subjects
+          : [];
+
+      /*
+       * نضمن وجود المواد الست.
+       *
+       * لو مادة موجودة بالفعل:
+       * لا نضيفها مرة ثانية.
+       *
+       * لو غير موجودة:
+       * ننشئها تلقائيًا.
+       */
+
+      for (
+        const subjectName
+        of SUBJECT_NAMES
+      ) {
+
+        const exists =
+          subjects.some(
+            subject =>
+              subject.name
+                .trim()
+                .toLowerCase() ===
+              subjectName
+                .trim()
+                .toLowerCase()
+          );
+
+        if (!exists) {
+
+          try {
+
+            await api(
+              "/api/admin/subjects",
+              {
+                method: "POST",
+
+                body:
+                  JSON.stringify({
+                    name:
+                      subjectName,
+                    description:
+                      "مادة دراسية في منصة DrNotes"
+                  })
+              }
+            );
+
+          } catch (error) {
+
+            console.error(
+              "Create default subject error:",
+              error
+            );
+
+          }
+
+        }
+
+      }
+
+      /*
+       * إعادة تحميل المواد بعد
+       * إنشاء المواد الناقصة.
+       */
+
+      const refreshed =
+        await api(
+          "/api/subjects"
+        );
+
+      subjects =
+        Array.isArray(
+          refreshed.subjects
+        )
+          ? refreshed.subjects
+          : [];
+
+      /*
+       * ترتيب المواد بنفس ترتيب
+       * صفحة الطالب.
+       */
+
+      subjects.sort(
+        (a, b) => {
+
+          const ai =
+            SUBJECT_NAMES.indexOf(
+              a.name.trim()
+            );
+
+          const bi =
+            SUBJECT_NAMES.indexOf(
+              b.name.trim()
+            );
+
+          return (
+            (ai === -1 ? 999 : ai) -
+            (bi === -1 ? 999 : bi)
+          );
+
+        }
+      );
+
+      renderSubjects();
+
+    } catch (error) {
+
+      list.innerHTML = `
+        <div class="empty">
+          تعذر تحميل المواد.
+          <br><br>
+          ${escapeHtml(error.message)}
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     RENDER SUBJECTS
+  ===================================================== */
+
+  function renderSubjects() {
+
+    const list =
+      document.getElementById(
+        "subjectsList"
+      );
+
+    if (!subjects.length) {
+
+      list.innerHTML = `
+        <div class="empty">
+          لا توجد مواد.
+        </div>
+      `;
+
+      return;
+
+    }
+
+    list.innerHTML =
+      subjects
+        .map(subject => {
+
+          const active =
+            currentSubject &&
+            currentSubject.id === subject.id
+              ? "active"
+              : "";
+
+          return `
+            <button
+              class="subject-item ${active}"
+              onclick="selectSubject(${subject.id})"
+            >
+              ${escapeHtml(subject.name)}
+            </button>
+          `;
+
+        })
+        .join("");
+
+  }
+
+
+  /* =====================================================
+     SELECT SUBJECT
+  ===================================================== */
+
+  async function selectSubject(
+    subjectId
+  ) {
+
+    currentSubject =
+      subjects.find(
+        subject =>
+          subject.id === subjectId
+      ) || null;
+
+    currentUnit = null;
+    currentLesson = null;
+    currentQuiz = null;
+
+    renderSubjects();
+
+    if (!currentSubject) {
+      return;
+    }
+
+    document
+      .getElementById("pageTitle")
+      .textContent =
+        currentSubject.name;
+
+    document
+      .getElementById("pageSubtitle")
+      .textContent =
+        "الوحدات والدروس الموجودة داخل المادة.";
+
+    document
+      .getElementById("breadcrumb")
+      .innerHTML =
+        `الرئيسية ← <span>${escapeHtml(
+          currentSubject.name
+        )}</span>`;
+
+    await loadUnits(
+      currentSubject.id
+    );
+
+  }
+
+
+  /* =====================================================
+     LOAD UNITS
+  ===================================================== */
+
+  async function loadUnits(
+    subjectId
+  ) {
+
+    const area =
+      document.getElementById(
+        "contentArea"
+      );
+
+    area.innerHTML = `
+      <div class="card">
+        <div class="loading">
+          <div class="spinner"></div>
+          جاري تحميل الوحدات...
+        </div>
+      </div>
+    `;
+
+    try {
+
+      const data =
+        await api(
+          `/api/subjects/${subjectId}/units`
+        );
+
+      const units =
+        Array.isArray(data.units)
+          ? data.units
+          : [];
+
+      renderUnits(units);
+
+    } catch (error) {
+
+      area.innerHTML = `
+        <div class="card">
+          <div class="empty">
+            تعذر تحميل الوحدات.
+            <br><br>
+            ${escapeHtml(error.message)}
+          </div>
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     RENDER UNITS
+  ===================================================== */
+
+  function renderUnits(
+    units
+  ) {
+
+    const area =
+      document.getElementById(
+        "contentArea"
+      );
+
+    let html = `
+      <div class="card">
+
+        <div class="card-title">
+          وحدات مادة ${escapeHtml(
+            currentSubject.name
+          )}
+        </div>
+    `;
+
+    if (!units.length) {
+
+      html += `
+        <div class="empty">
+          لا توجد وحدات مضافة لهذه المادة حتى الآن.
+          <br><br>
+
+          يمكنك إضافة وحدة من الزر التالي.
+        </div>
+      `;
+
+    } else {
+
+      html += `
+        <div class="grid grid-3">
+      `;
+
+      units.forEach(unit => {
+
+        html += `
+          <div class="item-card">
+
+            <div class="item-title">
+              ${escapeHtml(unit.name)}
+            </div>
+
+            <div class="item-description">
+              ${escapeHtml(
+                unit.description ||
+                "لا يوجد وصف."
+              )}
+            </div>
+
+            <div class="item-actions">
+
+              <button
+                class="btn btn-primary"
+                onclick="selectUnit(${unit.id})"
+              >
+                فتح الوحدة
+              </button>
+
+            </div>
+
+          </div>
+        `;
+
+      });
+
+      html += `
+        </div>
+      `;
+
+    }
+
+    html += `
+        <div class="divider"></div>
+
+        <button
+          class="btn btn-success"
+          onclick="showAddUnitForm()"
+        >
+          + إضافة وحدة جديدة
+        </button>
+
+        <div
+          id="addUnitFormContainer"
+          class="hidden"
+        ></div>
+
+      </div>
+    `;
+
+    area.innerHTML = html;
+
+  }
+
+
+  /* =====================================================
+     ADD UNIT FORM
+  ===================================================== */
+
+  function showAddUnitForm() {
+
+    const container =
+      document.getElementById(
+        "addUnitFormContainer"
+      );
+
+    container.classList.remove(
+      "hidden"
+    );
+
+    container.innerHTML = `
+
+      <div class="content-section">
+
+        <h3>
+          إضافة وحدة جديدة
+        </h3>
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label>
+              اسم الوحدة
+            </label>
+
+            <input
+              id="newUnitName"
+              class="form-control"
+              placeholder="مثال: الوحدة الأولى"
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              ترتيب الوحدة
+            </label>
+
+            <input
+              id="newUnitOrder"
+              class="form-control"
+              type="number"
+              value="0"
+            >
+
+          </div>
+
+        </div>
+
+        <div class="form-group">
+
+          <label>
+            وصف الوحدة
+          </label>
+
+          <textarea
+            id="newUnitDescription"
+            class="form-control"
+            placeholder="وصف مختصر للوحدة"
+          ></textarea>
+
+        </div>
+
+        <div class="button-row">
+
+          <button
+            class="btn btn-success"
+            onclick="addUnit()"
+          >
+            حفظ الوحدة
+          </button>
+
+          <button
+            class="btn btn-light"
+            onclick="hideAddUnitForm()"
+          >
+            إلغاء
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+
+
+  function hideAddUnitForm() {
+
+    const container =
+      document.getElementById(
+        "addUnitFormContainer"
+      );
+
+    if (container) {
+
+      container.classList.add(
+        "hidden"
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     ADD UNIT
+  ===================================================== */
+
+  async function addUnit() {
+
+    const name =
+      document
+        .getElementById("newUnitName")
+        .value
+        .trim();
+
+    const description =
+      document
+        .getElementById(
+          "newUnitDescription"
+        )
+        .value
+        .trim();
+
+    const unitOrder =
+      Number(
+        document
+          .getElementById(
+            "newUnitOrder"
+          )
+          .value
+      ) || 0;
+
+    if (!name) {
+
+      showError(
+        "اكتب اسم الوحدة أولًا."
+      );
+
+      return;
+
+    }
+
+    try {
+
+      await api(
+        "/api/admin/units",
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+
+              subject_id:
+                currentSubject.id,
+
+              name,
+
+              description,
+
+              unit_order:
+                unitOrder
+
+            })
+        }
+      );
+
+      showSuccess(
+        "تمت إضافة الوحدة بنجاح."
+      );
+
+      await loadUnits(
+        currentSubject.id
+      );
+
+    } catch (error) {
+
+      showError(
+        error.message
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     SELECT UNIT
+  ===================================================== */
+
+  async function selectUnit(
+    unitId
+  ) {
+
+    currentUnit = {
+      id: unitId
+    };
+
+    await loadLessons(
+      unitId
+    );
+
+  }
+
+
+  /* =====================================================
+     LOAD LESSONS
+  ===================================================== */
+
+  async function loadLessons(
+    unitId
+  ) {
+
+    const area =
+      document.getElementById(
+        "contentArea"
+      );
+
+    area.innerHTML = `
+      <div class="card">
+        <div class="loading">
+          <div class="spinner"></div>
+          جاري تحميل الدروس...
+        </div>
+      </div>
+    `;
+
+    try {
+
+      const data =
+        await api(
+          `/api/units/${unitId}/lessons`
+        );
+
+      const lessons =
+        Array.isArray(data.lessons)
+          ? data.lessons
+          : [];
+
+      renderLessons(lessons);
+
+    } catch (error) {
+
+      area.innerHTML = `
+        <div class="card">
+          <div class="empty">
+            تعذر تحميل الدروس.
+            <br><br>
+            ${escapeHtml(error.message)}
+          </div>
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     RENDER LESSONS
+  ===================================================== */
+
+  function renderLessons(
+    lessons
+  ) {
+
+    const area =
+      document.getElementById(
+        "contentArea"
+      );
+
+    let html = `
+      <div class="card">
+
+        <div class="button-row">
+
+          <button
+            class="btn btn-light"
+            onclick="selectSubject(${currentSubject.id})"
+          >
+            ← العودة للمادة
+          </button>
+
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-title">
+          دروس الوحدة
+        </div>
+    `;
+
+    if (!lessons.length) {
+
+      html += `
+        <div class="empty">
+          لا توجد دروس في هذه الوحدة حتى الآن.
+        </div>
+      `;
+
+    } else {
+
+      html += `
+        <div class="grid grid-2">
+      `;
+
+      lessons.forEach(
+        lesson => {
+
+          html += `
+            <div class="item-card">
+
+              <div class="item-title">
+                ${escapeHtml(
+                  lesson.name
+                )}
+              </div>
+
+              <div class="item-description">
+                ${escapeHtml(
+                  lesson.description ||
+                  "لا يوجد وصف."
+                )}
+              </div>
+
+              <div class="item-actions">
+
+                <button
+                  class="btn btn-primary"
+                  onclick="openLesson(${lesson.id})"
+                >
+                  إدارة الدرس
+                </button>
+
+              </div>
+
+            </div>
+          `;
+
+        }
+      );
+
+      html += `
+        </div>
+      `;
+
+    }
+
+    html += `
+
+      <div class="divider"></div>
+
+      <button
+        class="btn btn-success"
+        onclick="showAddLessonForm()"
+      >
+        + إضافة درس جديد
+      </button>
+
+      <div
+        id="addLessonFormContainer"
+        class="hidden"
+      ></div>
+
+      </div>
+    `;
+
+    area.innerHTML = html;
+
+  }
+
+
+  /* =====================================================
+     ADD LESSON FORM
+  ===================================================== */
+
+  function showAddLessonForm() {
+
+    const container =
+      document.getElementById(
+        "addLessonFormContainer"
+      );
+
+    container.classList.remove(
+      "hidden"
+    );
+
+    container.innerHTML = `
+
+      <div class="content-section">
+
+        <h3>
+          إضافة درس جديد
+        </h3>
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label>
+              اسم الدرس
+            </label>
+
+            <input
+              id="newLessonName"
+              class="form-control"
+              placeholder="مثال: الدرس الأول"
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              ترتيب الدرس
+            </label>
+
+            <input
+              id="newLessonOrder"
+              class="form-control"
+              type="number"
+              value="0"
+            >
+
+          </div>
+
+        </div>
+
+        <div class="form-group">
+
+          <label>
+            وصف الدرس
+          </label>
+
+          <textarea
+            id="newLessonDescription"
+            class="form-control"
+            placeholder="وصف الدرس"
+          ></textarea>
+
+        </div>
+
+        <div class="button-row">
+
+          <button
+            class="btn btn-success"
+            onclick="addLesson()"
+          >
+            حفظ الدرس
+          </button>
+
+          <button
+            class="btn btn-light"
+            onclick="hideAddLessonForm()"
+          >
+            إلغاء
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  function hideAddLessonForm() {
+
+    const container =
+      document.getElementById(
+        "addLessonFormContainer"
+      );
+
+    if (container) {
+
+      container.classList.add(
+        "hidden"
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     ADD LESSON
+  ===================================================== */
+
+  async function addLesson() {
+
+    const name =
+      document
+        .getElementById(
+          "newLessonName"
+        )
+        .value
+        .trim();
+
+    const description =
+      document
+        .getElementById(
+          "newLessonDescription"
+        )
+        .value
+        .trim();
+
+    const lessonOrder =
+      Number(
+        document
+          .getElementById(
+            "newLessonOrder"
+          )
+          .value
+      ) || 0;
+
+    if (!name) {
+
+      showError(
+        "اكتب اسم الدرس أولًا."
+      );
+
+      return;
+
+    }
+
+    try {
+
+      await api(
+        "/api/admin/lessons",
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+
+              unit_id:
+                currentUnit.id,
+
+              name,
+
+              description,
+
+              lesson_order:
+                lessonOrder
+
+            })
+        }
+      );
+
+      showSuccess(
+        "تمت إضافة الدرس بنجاح."
+      );
+
+      await loadLessons(
+        currentUnit.id
+      );
+
+    } catch (error) {
+
+      showError(
+        error.message
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     OPEN LESSON
+  ===================================================== */
+
+  async function openLesson(
+    lessonId
+  ) {
+
+    currentLesson = null;
+
+    const area =
+      document.getElementById(
+        "contentArea"
+      );
+
+    area.innerHTML = `
+      <div class="card">
+        <div class="loading">
+          <div class="spinner"></div>
+          جاري تحميل بيانات الدرس...
+        </div>
+      </div>
+    `;
+
+    try {
+
+      const data =
+        await api(
+          `/api/lessons/${lessonId}`
+        );
+
+      currentLesson =
+        data.lesson;
+
+      currentQuiz =
+        data.quiz || null;
+
+      renderLessonEditor();
+
+    } catch (error) {
+
+      area.innerHTML = `
+        <div class="card">
+          <div class="empty">
+            تعذر تحميل الدرس.
+            <br><br>
+            ${escapeHtml(error.message)}
+          </div>
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     RENDER LESSON EDITOR
+  ===================================================== */
+
+  function renderLessonEditor() {
+
+    const lesson =
+      currentLesson;
+
+    const area =
+      document.getElementById(
+        "contentArea"
+      );
+
+    document
+      .getElementById("pageTitle")
+      .textContent =
+        lesson.name;
+
+    document
+      .getElementById("pageSubtitle")
+      .textContent =
+        "إدارة شرح الدرس والحل والاختبار.";
+
+    document
+      .getElementById("breadcrumb")
+      .innerHTML = `
+        الرئيسية ←
+        <span>
+          ${escapeHtml(
+            currentSubject.name
+          )}
+        </span>
+        ←
+        <span>
+          الدرس
+        </span>
+      `;
+
+    area.innerHTML = `
+
+      <div class="button-row">
+
+        <button
+          class="btn btn-light"
+          onclick="loadLessons(${currentUnit.id})"
+        >
+          ← العودة للدروس
+        </button>
+
+      </div>
+
+      <br>
+
+      <div class="lesson-header">
+
+        <h2>
+          ${escapeHtml(
+            lesson.name
+          )}
+        </h2>
+
+        <div>
+          ${escapeHtml(
+            lesson.description ||
+            "لا يوجد وصف للدرس."
+          )}
+        </div>
+
+      </div>
+
+
+      <!-- ============================================
+           EXPLANATION
+      ============================================= -->
+
+      <div class="card">
+
+        <div class="content-section explanation">
 
           <h3>
-            📖 شرح الدرس
+            📚 شرح الدرس
           </h3>
 
           <div class="form-group">
@@ -756,13 +2204,16 @@
             </label>
 
             <input
-              type="url"
               id="explanationVideo"
+              class="form-control"
+              type="url"
+              value="${escapeHtml(
+                lesson.explanation_video_url || ""
+              )}"
               placeholder="https://..."
             >
 
           </div>
-
 
           <div class="form-group">
 
@@ -771,45 +2222,48 @@
             </label>
 
             <input
-              type="url"
               id="explanationPdf"
+              class="form-control"
+              type="url"
+              value="${escapeHtml(
+                lesson.explanation_pdf_url || ""
+              )}"
               placeholder="https://..."
             >
 
           </div>
 
-
           <div class="form-group">
 
             <label>
-              نص الشرح
+              نص شرح الدرس
             </label>
 
             <textarea
               id="explanationText"
+              class="form-control"
               placeholder="اكتب شرح الدرس هنا..."
-            ></textarea>
+            >${escapeHtml(
+              lesson.explanation_text || ""
+            )}</textarea>
 
           </div>
 
-
-          <div class="form-actions">
-
-            <button
-              class="btn btn-success"
-              onclick="saveLessonContent()"
-            >
-              💾 حفظ شرح الدرس
-            </button>
-
-          </div>
+          <button
+            class="btn btn-primary"
+            onclick="saveExplanation()"
+          >
+            حفظ شرح الدرس
+          </button>
 
         </div>
 
 
-        <!-- SOLUTION -->
+        <!-- ==========================================
+             SOLUTION
+        =========================================== -->
 
-        <div class="content-box">
+        <div class="content-section solution">
 
           <h3>
             📝 حل الدرس
@@ -822,13 +2276,16 @@
             </label>
 
             <input
-              type="url"
               id="solutionVideo"
+              class="form-control"
+              type="url"
+              value="${escapeHtml(
+                lesson.solution_video_url || ""
+              )}"
               placeholder="https://..."
             >
 
           </div>
-
 
           <div class="form-group">
 
@@ -837,13 +2294,16 @@
             </label>
 
             <input
-              type="url"
               id="solutionPdf"
+              class="form-control"
+              type="url"
+              value="${escapeHtml(
+                lesson.solution_pdf_url || ""
+              )}"
               placeholder="https://..."
             >
 
           </div>
-
 
           <div class="form-group">
 
@@ -853,36 +2313,35 @@
 
             <textarea
               id="solutionText"
+              class="form-control"
               placeholder="اكتب الحل هنا..."
-            ></textarea>
+            >${escapeHtml(
+              lesson.solution_text || ""
+            )}</textarea>
 
           </div>
 
-
-          <div class="form-actions">
-
-            <button
-              class="btn btn-success"
-              onclick="saveLessonSolution()"
-            >
-              💾 حفظ حل الدرس
-            </button>
-
-          </div>
+          <button
+            class="btn btn-warning"
+            onclick="saveSolution()"
+          >
+            حفظ حل الدرس
+          </button>
 
         </div>
 
 
-        <!-- QUIZ -->
+        <!-- ==========================================
+             QUIZ
+        =========================================== -->
 
-        <div class="content-box">
+        <div class="content-section quiz">
 
           <h3>
             🧠 اختبار الدرس
           </h3>
 
-
-          <div class="form-grid">
+          <div class="form-row">
 
             <div class="form-group">
 
@@ -892,29 +2351,41 @@
 
               <input
                 id="quizTitle"
-                type="text"
+                class="form-control"
+                value="${escapeHtml(
+                  currentQuiz
+                    ? currentQuiz.title
+                    : ""
+                )}"
                 placeholder="اختبار الدرس"
               >
 
             </div>
 
-
             <div class="form-group">
 
               <label>
-                نسبة النجاح
+                نسبة النجاح %
               </label>
 
               <input
-                id="passingPercentage"
+                id="quizPassing"
+                class="form-control"
                 type="number"
                 min="1"
                 max="100"
-                value="50"
+                value="${
+                  currentQuiz
+                    ? currentQuiz.passing_percentage
+                    : 50
+                }"
               >
 
             </div>
 
+          </div>
+
+          <div class="form-row">
 
             <div class="form-group">
 
@@ -923,1744 +2394,369 @@
               </label>
 
               <input
-                id="questionsPerPage"
+                id="quizQuestionsPerPage"
+                class="form-control"
                 type="number"
                 min="1"
-                value="10"
+                value="${
+                  currentQuiz
+                    ? currentQuiz.questions_per_page
+                    : 10
+                }"
               >
 
             </div>
 
-
-            <div class="form-group full">
+            <div class="form-group">
 
               <label>
                 وصف الاختبار
               </label>
 
-              <textarea
+              <input
                 id="quizDescription"
-                placeholder="وصف الاختبار..."
-              ></textarea>
+                class="form-control"
+                value="${escapeHtml(
+                  currentQuiz
+                    ? currentQuiz.description || ""
+                    : ""
+                )}"
+                placeholder="وصف الاختبار"
+              >
 
             </div>
 
           </div>
 
-
-          <div class="form-actions">
-
-            <button
-              class="btn btn-success"
-              onclick="saveQuiz()"
-            >
-              💾 حفظ الاختبار
-            </button>
-
-          </div>
-
-
-          <hr style="margin:20px 0;border:none;border-top:1px solid #e5e7eb;">
-
-
-          <h3>
-            ➕ إضافة سؤال
-          </h3>
-
-
-          <div class="form-group">
-
-            <label>
-              السؤال
-            </label>
-
-            <textarea
-              id="questionText"
-              placeholder="اكتب السؤال..."
-            ></textarea>
-
-          </div>
-
-
-          <div class="form-grid">
-
-            <div class="form-group">
-
-              <label>
-                الاختيار A
-              </label>
-
-              <input
-                id="optionA"
-                type="text"
-              >
-
-            </div>
-
-
-            <div class="form-group">
-
-              <label>
-                الاختيار B
-              </label>
-
-              <input
-                id="optionB"
-                type="text"
-              >
-
-            </div>
-
-
-            <div class="form-group">
-
-              <label>
-                الاختيار C
-              </label>
-
-              <input
-                id="optionC"
-                type="text"
-              >
-
-            </div>
-
-
-            <div class="form-group">
-
-              <label>
-                الاختيار D
-              </label>
-
-              <input
-                id="optionD"
-                type="text"
-              >
-
-            </div>
-
-
-            <div class="form-group">
-
-              <label>
-                الإجابة الصحيحة
-              </label>
-
-              <select id="correctAnswer">
-
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-                <option value="D">D</option>
-
-              </select>
-
-            </div>
-
-
-            <div class="form-group">
-
-              <label>
-                ترتيب السؤال
-              </label>
-
-              <input
-                id="questionOrder"
-                type="number"
-                value="0"
-              >
-
-            </div>
-
-
-            <div class="form-group full">
-
-              <label>
-                شرح الإجابة
-              </label>
-
-              <textarea
-                id="questionExplanation"
-                placeholder="شرح يظهر للطالب بعد الاختبار..."
-              ></textarea>
-
-            </div>
-
-          </div>
-
-
-          <div class="form-actions">
-
-            <button
-              class="btn btn-primary"
-              onclick="addQuestion()"
-            >
-              ➕ إضافة السؤال
-            </button>
-
-          </div>
-
-
-          <br>
-
-
-          <h3>
-            الأسئلة الموجودة
-          </h3>
+          <button
+            class="btn btn-primary"
+            onclick="saveQuiz()"
+          >
+            حفظ الاختبار
+          </button>
 
           <div
-            id="questionsContainer"
+            id="quizManagement"
+            style="margin-top:20px;"
           ></div>
 
         </div>
 
       </div>
 
-    </section>
+    `;
 
-  </main>
+    loadQuizManagement();
 
+  }
 
-  <!-- =====================================================
-       ADD UNIT MODAL
-  ====================================================== -->
 
-  <div
-    class="modal"
-    id="unitModal"
-  >
+  /* =====================================================
+     SAVE EXPLANATION
+  ===================================================== */
 
-    <div class="modal-content">
+  async function saveExplanation() {
 
-      <div class="modal-header">
+    try {
 
-        <h2>
-          إضافة وحدة
-        </h2>
+      const video =
+        document
+          .getElementById(
+            "explanationVideo"
+          )
+          .value
+          .trim();
 
-        <button
-          class="close-btn"
-          onclick="closeModal('unitModal')"
-        >
-          ×
-        </button>
+      const pdf =
+        document
+          .getElementById(
+            "explanationPdf"
+          )
+          .value
+          .trim();
 
-      </div>
+      const explanation =
+        document
+          .getElementById(
+            "explanationText"
+          )
+          .value;
 
+      await api(
+        `/api/admin/lessons/${currentLesson.id}/content`,
+        {
+          method: "POST",
 
-      <div class="form-group">
+          body:
+            JSON.stringify({
 
-        <label>
-          اسم الوحدة
-        </label>
+              video_url:
+                video || null,
 
-        <input
-          id="unitName"
-          type="text"
-          placeholder="مثال: الوحدة الأولى"
-        >
+              pdf_url:
+                pdf || null,
 
-      </div>
+              explanation:
+                explanation || null
 
-
-      <div class="form-group">
-
-        <label>
-          وصف الوحدة
-        </label>
-
-        <textarea
-          id="unitDescription"
-        ></textarea>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label>
-          ترتيب الوحدة
-        </label>
-
-        <input
-          id="unitOrder"
-          type="number"
-          value="0"
-        >
-
-      </div>
-
-
-      <button
-        class="btn btn-primary"
-        onclick="addUnit()"
-      >
-        حفظ الوحدة
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <!-- =====================================================
-       ADD LESSON MODAL
-  ====================================================== -->
-
-  <div
-    class="modal"
-    id="lessonModal"
-  >
-
-    <div class="modal-content">
-
-      <div class="modal-header">
-
-        <h2>
-          إضافة درس
-        </h2>
-
-        <button
-          class="close-btn"
-          onclick="closeModal('lessonModal')"
-        >
-          ×
-        </button>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label>
-          اسم الدرس
-        </label>
-
-        <input
-          id="lessonName"
-          type="text"
-          placeholder="مثال: مقدمة في الفيزياء"
-        >
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label>
-          وصف الدرس
-        </label>
-
-        <textarea
-          id="lessonDescription"
-        ></textarea>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label>
-          ترتيب الدرس
-        </label>
-
-        <input
-          id="lessonOrder"
-          type="number"
-          value="0"
-        >
-
-      </div>
-
-
-      <button
-        class="btn btn-primary"
-        onclick="addLesson()"
-      >
-        حفظ الدرس
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <script>
-
-    // =====================================================
-    // API
-    // =====================================================
-
-    const API =
-      window.location.origin + "/api";
-
-
-    // =====================================================
-    // STATE
-    // =====================================================
-
-    let adminToken =
-      localStorage.getItem("adminToken");
-
-    let subjects = [];
-
-    let selectedSubject = null;
-
-    let selectedUnit = null;
-
-    let selectedLesson = null;
-
-    let currentQuiz = null;
-
-
-    // =====================================================
-    // REQUIRED SUBJECTS
-    // =====================================================
-
-    const requiredSubjects = [
-
-      {
-        name: "الفيزياء",
-        description: "مادة الفيزياء"
-      },
-
-      {
-        name: "الكيمياء",
-        description: "مادة الكيمياء"
-      },
-
-      {
-        name: "الأحياء",
-        description: "مادة الأحياء"
-      },
-
-      {
-        name: "العربي",
-        description: "مادة اللغة العربية"
-      },
-
-      {
-        name: "الإنجليزي",
-        description: "مادة اللغة الإنجليزية"
-      },
-
-      {
-        name: "الحاسوب",
-        description: "مادة الحاسوب"
-      }
-
-    ];
-
-
-    // =====================================================
-    // INIT
-    // =====================================================
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      async () => {
-
-        if (!adminToken) {
-
-          alert(
-            "يجب تسجيل دخول المدير أولاً."
-          );
-
-          window.location.href =
-            "admin-login.html";
-
-          return;
-
+            })
         }
+      );
 
-        await loadSubjects();
+      showSuccess(
+        "تم حفظ شرح الدرس بنجاح."
+      );
 
-      }
-    );
+    } catch (error) {
 
-
-    // =====================================================
-    // API REQUEST
-    // =====================================================
-
-    async function api(
-      endpoint,
-      options = {}
-    ) {
-
-      const headers = {
-        "Content-Type": "application/json",
-        ...(options.headers || {})
-      };
-
-
-      if (adminToken) {
-
-        headers.Authorization =
-          `Bearer ${adminToken}`;
-
-      }
-
-
-      const response =
-        await fetch(
-          API + endpoint,
-          {
-            ...options,
-            headers
-          }
-        );
-
-
-      let data = {};
-
-      try {
-
-        data =
-          await response.json();
-
-      } catch (_) {
-
-        data = {};
-
-      }
-
-
-      if (
-        response.status === 401 ||
-        response.status === 403
-      ) {
-
-        localStorage.removeItem(
-          "adminToken"
-        );
-
-        alert(
-          "انتهت جلسة المدير. سجل الدخول مرة أخرى."
-        );
-
-        window.location.href =
-          "admin-login.html";
-
-        throw new Error(
-          "Unauthorized"
-        );
-
-      }
-
-
-      if (!response.ok) {
-
-        throw new Error(
-          data.message ||
-          "حدث خطأ في الخادم."
-        );
-
-      }
-
-
-      return data;
-
-    }
-
-
-    // =====================================================
-    // ALERT
-    // =====================================================
-
-    function showAlert(
-      message,
-      type = "success"
-    ) {
-
-      const alertBox =
-        document.getElementById(
-          "alert"
-        );
-
-      alertBox.textContent =
-        message;
-
-      alertBox.className =
-        type;
-
-      setTimeout(
-        () => {
-
-          alertBox.className = "";
-          alertBox.textContent = "";
-
-        },
-        3500
+      showError(
+        error.message
       );
 
     }
 
-
-    // =====================================================
-    // LOAD SUBJECTS
-    // =====================================================
-
-    async function loadSubjects() {
-
-      const container =
-        document.getElementById(
-          "subjectsContainer"
-        );
-
-      container.innerHTML = `
-        <div class="loading">
-          <div class="spinner"></div>
-          جاري تحميل المواد...
-        </div>
-      `;
+  }
 
 
-      try {
+  /* =====================================================
+     SAVE SOLUTION
+  ===================================================== */
 
-        const data =
-          await api(
-            "/subjects",
-            {
-              headers: {}
-            }
-          );
+  async function saveSolution() {
 
+    try {
 
-        subjects =
-          data.subjects || [];
-
-
-        // -------------------------------------------------
-        // إنشاء المواد الستة الناقصة تلقائيًا
-        // -------------------------------------------------
-
-        for (
-          const required of requiredSubjects
-        ) {
-
-          const exists =
-            subjects.some(
-              subject =>
-                subject.name.trim() ===
-                required.name
-            );
-
-
-          if (!exists) {
-
-            try {
-
-              const created =
-                await api(
-                  "/admin/subjects",
-                  {
-                    method: "POST",
-
-                    body:
-                      JSON.stringify(
-                        {
-                          name:
-                            required.name,
-
-                          description:
-                            required.description,
-
-                          image_url:
-                            null
-                        }
-                      )
-                  }
-                );
-
-
-              if (
-                created.subject
-              ) {
-
-                subjects.push(
-                  created.subject
-                );
-
-              }
-
-            } catch (error) {
-
-              console.error(
-                "Subject creation error:",
-                required.name,
-                error
-              );
-
-            }
-
-          }
-
-        }
-
-
-        // -------------------------------------------------
-        // ترتيب المواد الستة
-        // -------------------------------------------------
-
-        subjects =
-          sortRequiredSubjects(
-            subjects
-          );
-
-
-        renderSubjects();
-
-
-      } catch (error) {
-
-        console.error(error);
-
-        container.innerHTML = `
-          <div class="empty">
-            تعذر تحميل المواد.<br><br>
-            ${escapeHtml(error.message)}
-          </div>
-        `;
-
-      }
-
-    }
-
-
-    // =====================================================
-    // SORT SUBJECTS
-    // =====================================================
-
-    function sortRequiredSubjects(
-      list
-    ) {
-
-      return [
-        ...requiredSubjects
-          .map(required =>
-            list.find(
-              subject =>
-                subject.name.trim() ===
-                required.name
-            )
+      const video =
+        document
+          .getElementById(
+            "solutionVideo"
           )
-          .filter(Boolean),
-
-        ...list.filter(
-          subject =>
-            !requiredSubjects.some(
-              required =>
-                required.name ===
-                subject.name.trim()
-            )
-        )
-
-      ];
-
-    }
-
-
-    // =====================================================
-    // SUBJECT ICON
-    // =====================================================
-
-    function getSubjectIcon(
-      name
-    ) {
-
-      const icons = {
-
-        "الفيزياء": "⚡",
-
-        "الكيمياء": "🧪",
-
-        "الأحياء": "🧬",
-
-        "العربي": "📖",
-
-        "الإنجليزي": "🔤",
-
-        "الحاسوب": "💻"
-
-      };
-
-      return icons[name] || "📚";
-
-    }
-
-
-    // =====================================================
-    // RENDER SUBJECTS
-    // =====================================================
-
-    function renderSubjects() {
-
-      const container =
-        document.getElementById(
-          "subjectsContainer"
-        );
-
-
-      if (!subjects.length) {
-
-        container.innerHTML = `
-          <div class="empty">
-            لا توجد مواد.
-          </div>
-        `;
-
-        return;
-
-      }
-
-
-      container.innerHTML =
-        subjects
-          .map(subject => `
-
-            <button
-              class="subject-card ${
-                selectedSubject &&
-                selectedSubject.id === subject.id
-                  ? "active"
-                  : ""
-              }"
-              onclick="selectSubject(${subject.id})"
-            >
-
-              <div class="subject-icon">
-                ${getSubjectIcon(
-                  escapeHtml(subject.name)
-                )}
-              </div>
-
-              <div class="subject-name">
-                ${escapeHtml(
-                  subject.name
-                )}
-              </div>
-
-            </button>
-
-          `)
-          .join("");
-
-    }
-
-
-    // =====================================================
-    // SELECT SUBJECT
-    // =====================================================
-
-    async function selectSubject(
-      subjectId
-    ) {
-
-      selectedSubject =
-        subjects.find(
-          subject =>
-            subject.id === subjectId
-        );
-
-
-      if (!selectedSubject) {
-        return;
-      }
-
-
-      selectedUnit = null;
-      selectedLesson = null;
-      currentQuiz = null;
-
-
-      renderSubjects();
-
-
-      document.getElementById(
-        "navigationSection"
-      ).style.display = "block";
-
-
-      document.getElementById(
-        "unitsPanel"
-      ).style.display = "block";
-
-
-      document.getElementById(
-        "lessonsPanel"
-      ).style.display = "none";
-
-
-      document.getElementById(
-        "lessonPanel"
-      ).style.display = "none";
-
-
-      document.getElementById(
-        "selectedSubjectTitle"
-      ).textContent =
-        `وحدات مادة: ${selectedSubject.name}`;
-
-
-      updateBreadcrumb();
-
-
-      await loadUnits();
-
-    }
-
-
-    // =====================================================
-    // LOAD UNITS
-    // =====================================================
-
-    async function loadUnits() {
-
-      const container =
-        document.getElementById(
-          "unitsContainer"
-        );
-
-
-      container.innerHTML = `
-        <div class="loading">
-          <div class="spinner"></div>
-          جاري تحميل الوحدات...
-        </div>
-      `;
-
-
-      try {
-
-        const data =
-          await api(
-            `/subjects/${selectedSubject.id}/units`,
-            {
-              headers: {}
-            }
-          );
-
-
-        const units =
-          data.units || [];
-
-
-        if (!units.length) {
-
-          container.innerHTML = `
-            <div class="empty">
-              لا توجد وحدات في هذه المادة حتى الآن.
-            </div>
-          `;
-
-          return;
-
+          .value
+          .trim();
+
+      const pdf =
+        document
+          .getElementById(
+            "solutionPdf"
+          )
+          .value
+          .trim();
+
+      const explanation =
+        document
+          .getElementById(
+            "solutionText"
+          )
+          .value;
+
+      await api(
+        `/api/admin/lessons/${currentLesson.id}/solution`,
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+
+              video_url:
+                video || null,
+
+              pdf_url:
+                pdf || null,
+
+              explanation:
+                explanation || null
+
+            })
         }
+      );
 
+      showSuccess(
+        "تم حفظ حل الدرس بنجاح."
+      );
 
-        container.innerHTML =
-          units.map(
-            unit => `
+    } catch (error) {
 
-              <div class="item-card">
-
-                <div class="item-name">
-                  ${escapeHtml(
-                    unit.name
-                  )}
-                </div>
-
-                <div class="item-description">
-                  ${
-                    escapeHtml(
-                      unit.description || ""
-                    ) ||
-                    "لا يوجد وصف."
-                  }
-                </div>
-
-                <button
-                  class="btn btn-primary btn-small"
-                  onclick="selectUnit(${unit.id}, ${JSON.stringify(unit.name).replace(/"/g, '&quot;')})"
-                >
-                  فتح الوحدة
-                </button>
-
-              </div>
-
-            `
-          ).join("");
-
-      } catch (error) {
-
-        container.innerHTML = `
-          <div class="empty">
-            ${escapeHtml(error.message)}
-          </div>
-        `;
-
-      }
+      showError(
+        error.message
+      );
 
     }
 
+  }
 
-    // =====================================================
-    // SELECT UNIT
-    // =====================================================
 
-    async function selectUnit(
-      unitId,
-      unitName
-    ) {
+  /* =====================================================
+     SAVE QUIZ
+  ===================================================== */
 
-      selectedUnit = {
-        id: unitId,
-        name: unitName
-      };
+  async function saveQuiz() {
 
-
-      selectedLesson = null;
-      currentQuiz = null;
-
-
-      document.getElementById(
-        "lessonsPanel"
-      ).style.display = "block";
-
-
-      document.getElementById(
-        "lessonPanel"
-      ).style.display = "none";
-
-
-      document.getElementById(
-        "selectedUnitTitle"
-      ).textContent =
-        `دروس: ${unitName}`;
-
-
-      updateBreadcrumb();
-
-
-      await loadLessons();
-
-    }
-
-
-    // =====================================================
-    // LOAD LESSONS
-    // =====================================================
-
-    async function loadLessons() {
-
-      const container =
-        document.getElementById(
-          "lessonsContainer"
-        );
-
-
-      container.innerHTML = `
-        <div class="loading">
-          <div class="spinner"></div>
-          جاري تحميل الدروس...
-        </div>
-      `;
-
-
-      try {
-
-        const data =
-          await api(
-            `/units/${selectedUnit.id}/lessons`,
-            {
-              headers: {}
-            }
-          );
-
-
-        const lessons =
-          data.lessons || [];
-
-
-        if (!lessons.length) {
-
-          container.innerHTML = `
-            <div class="empty">
-              لا توجد دروس في هذه الوحدة حتى الآن.
-            </div>
-          `;
-
-          return;
-
-        }
-
-
-        container.innerHTML =
-          lessons.map(
-            lesson => `
-
-              <div class="item-card">
-
-                <div class="item-name">
-                  ${escapeHtml(
-                    lesson.name
-                  )}
-                </div>
-
-                <div class="item-description">
-                  ${
-                    escapeHtml(
-                      lesson.description || ""
-                    ) ||
-                    "لا يوجد وصف."
-                  }
-                </div>
-
-                <button
-                  class="btn btn-primary btn-small"
-                  onclick="selectLesson(${lesson.id})"
-                >
-                  إدارة الدرس
-                </button>
-
-              </div>
-
-            `
-          ).join("");
-
-      } catch (error) {
-
-        container.innerHTML = `
-          <div class="empty">
-            ${escapeHtml(error.message)}
-          </div>
-        `;
-
-      }
-
-    }
-
-
-    // =====================================================
-    // SELECT LESSON
-    // =====================================================
-
-    async function selectLesson(
-      lessonId
-    ) {
-
-      try {
-
-        const data =
-          await api(
-            `/lessons/${lessonId}`,
-            {
-              headers: {}
-            }
-          );
-
-
-        selectedLesson =
-          data.lesson;
-
-
-        currentQuiz =
-          data.quiz || null;
-
-
-        document.getElementById(
-          "lessonPanel"
-        ).style.display = "block";
-
-
-        document.getElementById(
-          "selectedLessonTitle"
-        ).textContent =
-          selectedLesson.name;
-
-
-        document.getElementById(
-          "selectedLessonDescription"
-        ).textContent =
-          selectedLesson.description || "";
-
-
-        fillLessonData(
-          selectedLesson
-        );
-
-
-        fillQuizData(
-          currentQuiz
-        );
-
-
-        await loadQuestions();
-
-
-        updateBreadcrumb();
-
-
-        document.getElementById(
-          "lessonPanel"
-        ).scrollIntoView({
-          behavior: "smooth"
-        });
-
-      } catch (error) {
-
-        showAlert(
-          error.message,
-          "error"
-        );
-
-      }
-
-    }
-
-
-    // =====================================================
-    // FILL LESSON DATA
-    // =====================================================
-
-    function fillLessonData(
-      lesson
-    ) {
-
-      document.getElementById(
-        "explanationVideo"
-      ).value =
-        lesson.explanation_video_url || "";
-
-
-      document.getElementById(
-        "explanationPdf"
-      ).value =
-        lesson.explanation_pdf_url || "";
-
-
-      document.getElementById(
-        "explanationText"
-      ).value =
-        lesson.explanation_text || "";
-
-
-      document.getElementById(
-        "solutionVideo"
-      ).value =
-        lesson.solution_video_url || "";
-
-
-      document.getElementById(
-        "solutionPdf"
-      ).value =
-        lesson.solution_pdf_url || "";
-
-
-      document.getElementById(
-        "solutionText"
-      ).value =
-        lesson.solution_text || "";
-
-    }
-
-
-    // =====================================================
-    // SAVE LESSON CONTENT
-    // =====================================================
-
-    async function saveLessonContent() {
-
-      if (!selectedLesson) {
-        return;
-      }
-
-
-      try {
-
-        await api(
-          `/admin/lessons/${selectedLesson.id}/content`,
-          {
-            method: "POST",
-
-            body:
-              JSON.stringify({
-
-                video_url:
-                  document.getElementById(
-                    "explanationVideo"
-                  ).value.trim(),
-
-                pdf_url:
-                  document.getElementById(
-                    "explanationPdf"
-                  ).value.trim(),
-
-                explanation:
-                  document.getElementById(
-                    "explanationText"
-                  ).value.trim()
-
-              })
-
-          }
-        );
-
-
-        showAlert(
-          "تم حفظ شرح الدرس بنجاح ✅"
-        );
-
-
-        await selectLesson(
-          selectedLesson.id
-        );
-
-      } catch (error) {
-
-        showAlert(
-          error.message,
-          "error"
-        );
-
-      }
-
-    }
-
-
-    // =====================================================
-    // SAVE LESSON SOLUTION
-    // =====================================================
-
-    async function saveLessonSolution() {
-
-      if (!selectedLesson) {
-        return;
-      }
-
-
-      try {
-
-        await api(
-          `/admin/lessons/${selectedLesson.id}/solution`,
-          {
-            method: "POST",
-
-            body:
-              JSON.stringify({
-
-                video_url:
-                  document.getElementById(
-                    "solutionVideo"
-                  ).value.trim(),
-
-                pdf_url:
-                  document.getElementById(
-                    "solutionPdf"
-                  ).value.trim(),
-
-                explanation:
-                  document.getElementById(
-                    "solutionText"
-                  ).value.trim()
-
-              })
-
-          }
-        );
-
-
-        showAlert(
-          "تم حفظ حل الدرس بنجاح ✅"
-        );
-
-
-        await selectLesson(
-          selectedLesson.id
-        );
-
-      } catch (error) {
-
-        showAlert(
-          error.message,
-          "error"
-        );
-
-      }
-
-    }
-
-
-    // =====================================================
-    // FILL QUIZ
-    // =====================================================
-
-    function fillQuizData(
-      quiz
-    ) {
-
-      if (!quiz) {
-
-        document.getElementById(
-          "quizTitle"
-        ).value = "";
-
-        document.getElementById(
-          "quizDescription"
-        ).value = "";
-
-        document.getElementById(
-          "passingPercentage"
-        ).value = 50;
-
-        document.getElementById(
-          "questionsPerPage"
-        ).value = 10;
-
-        return;
-
-      }
-
-
-      document.getElementById(
-        "quizTitle"
-      ).value =
-        quiz.title || "";
-
-
-      document.getElementById(
-        "quizDescription"
-      ).value =
-        quiz.description || "";
-
-
-      document.getElementById(
-        "passingPercentage"
-      ).value =
-        quiz.passing_percentage ?? 50;
-
-
-      document.getElementById(
-        "questionsPerPage"
-      ).value =
-        quiz.questions_per_page ?? 10;
-
-    }
-
-
-    // =====================================================
-    // SAVE QUIZ
-    // =====================================================
-
-    async function saveQuiz() {
-
-      if (!selectedLesson) {
-
-        showAlert(
-          "اختر درسًا أولًا.",
-          "error"
-        );
-
-        return;
-
-      }
-
+    try {
 
       const title =
-        document.getElementById(
-          "quizTitle"
-        ).value.trim();
+        document
+          .getElementById(
+            "quizTitle"
+          )
+          .value
+          .trim();
 
+      const description =
+        document
+          .getElementById(
+            "quizDescription"
+          )
+          .value
+          .trim();
+
+      const passing =
+        Number(
+          document
+            .getElementById(
+              "quizPassing"
+            )
+            .value
+        ) || 50;
+
+      const perPage =
+        Number(
+          document
+            .getElementById(
+              "quizQuestionsPerPage"
+            )
+            .value
+        ) || 10;
 
       if (!title) {
 
-        showAlert(
-          "اكتب اسم الاختبار.",
-          "error"
+        showError(
+          "اكتب اسم الاختبار."
         );
 
         return;
 
       }
 
-
-      try {
-
-        const data =
-          await api(
-            "/admin/quizzes",
-            {
-              method: "POST",
-
-              body:
-                JSON.stringify({
-
-                  lesson_id:
-                    selectedLesson.id,
-
-                  title,
-
-                  description:
-                    document.getElementById(
-                      "quizDescription"
-                    ).value.trim(),
-
-                  passing_percentage:
-                    Number(
-                      document.getElementById(
-                        "passingPercentage"
-                      ).value
-                    ),
-
-                  questions_per_page:
-                    Number(
-                      document.getElementById(
-                        "questionsPerPage"
-                      ).value
-                    )
-
-                })
-
-            }
-          );
-
-
-        currentQuiz =
-          data.quiz;
-
-
-        showAlert(
-          "تم حفظ الاختبار بنجاح ✅"
-        );
-
-
-        await selectLesson(
-          selectedLesson.id
-        );
-
-      } catch (error) {
-
-        showAlert(
-          error.message,
-          "error"
-        );
-
-      }
-
-    }
-
-
-    // =====================================================
-    // ADD QUESTION
-    // =====================================================
-
-    async function addQuestion() {
-
-      if (!selectedLesson) {
-
-        showAlert(
-          "اختر درسًا أولًا.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      if (!currentQuiz) {
-
-        showAlert(
-          "احفظ الاختبار أولًا قبل إضافة الأسئلة.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      const questionText =
-        document.getElementById(
-          "questionText"
-        ).value.trim();
-
-
-      const optionA =
-        document.getElementById(
-          "optionA"
-        ).value.trim();
-
-
-      const optionB =
-        document.getElementById(
-          "optionB"
-        ).value.trim();
-
-
-      const optionC =
-        document.getElementById(
-          "optionC"
-        ).value.trim();
-
-
-      const optionD =
-        document.getElementById(
-          "optionD"
-        ).value.trim();
-
-
-      const correct =
-        document.getElementById(
-          "correctAnswer"
-        ).value;
-
-
-      if (
-        !questionText ||
-        !optionA ||
-        !optionB ||
-        !optionC ||
-        !optionD
-      ) {
-
-        showAlert(
-          "يجب كتابة السؤال وجميع الاختيارات.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      try {
-
+      const data =
         await api(
-          `/admin/quizzes/${currentQuiz.id}/questions`,
+          "/api/admin/quizzes",
           {
             method: "POST",
 
             body:
               JSON.stringify({
 
-                question_text:
-                  questionText,
+                lesson_id:
+                  currentLesson.id,
 
-                option_a:
-                  optionA,
+                title,
 
-                option_b:
-                  optionB,
+                description,
 
-                option_c:
-                  optionC,
+                passing_percentage:
+                  passing,
 
-                option_d:
-                  optionD,
-
-                correct_answer:
-                  correct,
-
-                explanation:
-                  document.getElementById(
-                    "questionExplanation"
-                  ).value.trim(),
-
-                question_order:
-                  Number(
-                    document.getElementById(
-                      "questionOrder"
-                    ).value
-                  ) || 0
+                questions_per_page:
+                  perPage
 
               })
-
           }
         );
 
+      currentQuiz =
+        data.quiz;
 
-        showAlert(
-          "تمت إضافة السؤال بنجاح ✅"
-        );
+      showSuccess(
+        "تم حفظ الاختبار بنجاح."
+      );
 
+      await loadQuizManagement();
 
-        clearQuestionForm();
+    } catch (error) {
 
-
-        await loadQuestions();
-
-      } catch (error) {
-
-        showAlert(
-          error.message,
-          "error"
-        );
-
-      }
+      showError(
+        error.message
+      );
 
     }
 
+  }
 
-    // =====================================================
-    // LOAD QUESTIONS
-    // =====================================================
 
-    async function loadQuestions() {
+  /* =====================================================
+     LOAD QUIZ MANAGEMENT
+  ===================================================== */
 
-      const container =
-        document.getElementById(
-          "questionsContainer"
+  async function loadQuizManagement() {
+
+    const container =
+      document.getElementById(
+        "quizManagement"
+      );
+
+    if (!container) {
+      return;
+    }
+
+    if (!currentQuiz) {
+
+      container.innerHTML = `
+        <div class="empty">
+          احفظ الاختبار أولًا حتى تستطيع إضافة الأسئلة.
+        </div>
+      `;
+
+      return;
+
+    }
+
+    try {
+
+      const data =
+        await api(
+          `/api/admin/quizzes/${currentQuiz.id}/questions`
         );
 
+      const questions =
+        Array.isArray(data.questions)
+          ? data.questions
+          : [];
 
-      if (!currentQuiz) {
+      let html = `
 
-        container.innerHTML = `
+        <div class="divider"></div>
+
+        <h3>
+          أسئلة الاختبار
+        </h3>
+
+      `;
+
+      if (!questions.length) {
+
+        html += `
           <div class="empty">
-            لم يتم إنشاء اختبار لهذا الدرس بعد.
+            لا توجد أسئلة حتى الآن.
           </div>
         `;
 
-        return;
+      } else {
 
-      }
+        html += `
+          <div>
+        `;
 
+        questions.forEach(
+          (question, index) => {
 
-      try {
-
-        const data =
-          await api(
-            `/admin/quizzes/${currentQuiz.id}/questions`
-          );
-
-
-        const questions =
-          data.questions || [];
-
-
-        if (!questions.length) {
-
-          container.innerHTML = `
-            <div class="empty">
-              لا توجد أسئلة في الاختبار حتى الآن.
-            </div>
-          `;
-
-          return;
-
-        }
-
-
-        container.innerHTML =
-          questions.map(
-            (question, index) => `
-
+            html += `
               <div class="question-card">
 
-                <div class="question-text">
-                  ${index + 1}. 
+                <div class="question-number">
+                  السؤال ${index + 1}
+                </div>
+
+                <div style="line-height:1.7;">
                   ${escapeHtml(
                     question.question_text
                   )}
@@ -2668,642 +2764,875 @@
 
                 <div class="question-options">
 
-                  A:
-                  ${escapeHtml(
-                    question.option_a
-                  )}
-                  <br>
+                  <div class="option-box ${
+                    question.correct_answer === "A"
+                      ? "correct-option"
+                      : ""
+                  }">
+                    A:
+                    ${escapeHtml(
+                      question.option_a
+                    )}
+                  </div>
 
-                  B:
-                  ${escapeHtml(
-                    question.option_b
-                  )}
-                  <br>
+                  <div class="option-box ${
+                    question.correct_answer === "B"
+                      ? "correct-option"
+                      : ""
+                  }">
+                    B:
+                    ${escapeHtml(
+                      question.option_b
+                    )}
+                  </div>
 
-                  C:
-                  ${escapeHtml(
-                    question.option_c
-                  )}
-                  <br>
+                  <div class="option-box ${
+                    question.correct_answer === "C"
+                      ? "correct-option"
+                      : ""
+                  }">
+                    C:
+                    ${escapeHtml(
+                      question.option_c
+                    )}
+                  </div>
 
-                  D:
-                  ${escapeHtml(
-                    question.option_d
-                  )}
+                  <div class="option-box ${
+                    question.correct_answer === "D"
+                      ? "correct-option"
+                      : ""
+                  }">
+                    D:
+                    ${escapeHtml(
+                      question.option_d
+                    )}
+                  </div>
 
                 </div>
 
-                <div class="correct-answer">
+                <div style="margin:10px 0;font-size:14px;">
                   الإجابة الصحيحة:
-                  ${escapeHtml(
-                    question.correct_answer
-                  )}
+                  <strong>
+                    ${escapeHtml(
+                      question.correct_answer
+                    )}
+                  </strong>
                 </div>
-
-                ${
-                  question.explanation
-                    ? `
-                      <div
-                        style="
-                          margin-top:8px;
-                          color:#6b7280;
-                        "
-                      >
-                        الشرح:
-                        ${escapeHtml(
-                          question.explanation
-                        )}
-                      </div>
-                    `
-                    : ""
-                }
-
-                <br>
 
                 <button
-                  class="btn btn-danger btn-small"
+                  class="btn btn-danger"
                   onclick="deleteQuestion(${question.id})"
                 >
                   حذف السؤال
                 </button>
 
               </div>
+            `;
 
-            `
-          ).join("");
+          }
+        );
 
-      } catch (error) {
-
-        container.innerHTML = `
-          <div class="empty">
-            ${escapeHtml(error.message)}
+        html += `
           </div>
         `;
 
       }
 
-    }
+      html += `
 
+        <div class="divider"></div>
 
-    // =====================================================
-    // DELETE QUESTION
-    // =====================================================
-
-    async function deleteQuestion(
-      questionId
-    ) {
-
-      if (
-        !confirm(
-          "هل أنت متأكد من حذف هذا السؤال؟"
-        )
-      ) {
-
-        return;
-
-      }
-
-
-      try {
-
-        await api(
-          `/admin/quizzes/questions/${questionId}`,
-          {
-            method: "DELETE"
-          }
-        );
-
-
-        showAlert(
-          "تم حذف السؤال."
-        );
-
-
-        await loadQuestions();
-
-      } catch (error) {
-
-        showAlert(
-          error.message,
-          "error"
-        );
-
-      }
-
-    }
-
-
-    // =====================================================
-    // ADD UNIT MODAL
-    // =====================================================
-
-    function openAddUnitModal() {
-
-      if (!selectedSubject) {
-
-        showAlert(
-          "اختر مادة أولًا.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      document.getElementById(
-        "unitName"
-      ).value = "";
-
-      document.getElementById(
-        "unitDescription"
-      ).value = "";
-
-      document.getElementById(
-        "unitOrder"
-      ).value = 0;
-
-
-      document.getElementById(
-        "unitModal"
-      ).classList.add("show");
-
-    }
-
-
-    // =====================================================
-    // ADD UNIT
-    // =====================================================
-
-    async function addUnit() {
-
-      const name =
-        document.getElementById(
-          "unitName"
-        ).value.trim();
-
-
-      if (!name) {
-
-        showAlert(
-          "اكتب اسم الوحدة.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      try {
-
-        await api(
-          "/admin/units",
-          {
-            method: "POST",
-
-            body:
-              JSON.stringify({
-
-                subject_id:
-                  selectedSubject.id,
-
-                name,
-
-                description:
-                  document.getElementById(
-                    "unitDescription"
-                  ).value.trim(),
-
-                unit_order:
-                  Number(
-                    document.getElementById(
-                      "unitOrder"
-                    ).value
-                  ) || 0
-
-              })
-
-          }
-        );
-
-
-        closeModal(
-          "unitModal"
-        );
-
-
-        showAlert(
-          "تمت إضافة الوحدة بنجاح ✅"
-        );
-
-
-        await loadUnits();
-
-      } catch (error) {
-
-        showAlert(
-          error.message,
-          "error"
-        );
-
-      }
-
-    }
-
-
-    // =====================================================
-    // ADD LESSON MODAL
-    // =====================================================
-
-    function openAddLessonModal() {
-
-      if (!selectedUnit) {
-
-        showAlert(
-          "اختر وحدة أولًا.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      document.getElementById(
-        "lessonName"
-      ).value = "";
-
-      document.getElementById(
-        "lessonDescription"
-      ).value = "";
-
-      document.getElementById(
-        "lessonOrder"
-      ).value = 0;
-
-
-      document.getElementById(
-        "lessonModal"
-      ).classList.add("show");
-
-    }
-
-
-    // =====================================================
-    // ADD LESSON
-    // =====================================================
-
-    async function addLesson() {
-
-      const name =
-        document.getElementById(
-          "lessonName"
-        ).value.trim();
-
-
-      if (!name) {
-
-        showAlert(
-          "اكتب اسم الدرس.",
-          "error"
-        );
-
-        return;
-
-      }
-
-
-      try {
-
-        await api(
-          "/admin/lessons",
-          {
-            method: "POST",
-
-            body:
-              JSON.stringify({
-
-                unit_id:
-                  selectedUnit.id,
-
-                name,
-
-                description:
-                  document.getElementById(
-                    "lessonDescription"
-                  ).value.trim(),
-
-                lesson_order:
-                  Number(
-                    document.getElementById(
-                      "lessonOrder"
-                    ).value
-                  ) || 0
-
-              })
-
-          }
-        );
-
-
-        closeModal(
-          "lessonModal"
-        );
-
-
-        showAlert(
-          "تمت إضافة الدرس بنجاح ✅"
-        );
-
-
-        await loadLessons();
-
-      } catch (error) {
-
-        showAlert(
-          error.message,
-          "error"
-        );
-
-      }
-
-    }
-
-
-    // =====================================================
-    // CLOSE MODAL
-    // =====================================================
-
-    function closeModal(
-      id
-    ) {
-
-      document
-        .getElementById(id)
-        .classList.remove("show");
-
-    }
-
-
-    // =====================================================
-    // CLEAR QUESTION FORM
-    // =====================================================
-
-    function clearQuestionForm() {
-
-      document.getElementById(
-        "questionText"
-      ).value = "";
-
-      document.getElementById(
-        "optionA"
-      ).value = "";
-
-      document.getElementById(
-        "optionB"
-      ).value = "";
-
-      document.getElementById(
-        "optionC"
-      ).value = "";
-
-      document.getElementById(
-        "optionD"
-      ).value = "";
-
-      document.getElementById(
-        "correctAnswer"
-      ).value = "A";
-
-      document.getElementById(
-        "questionExplanation"
-      ).value = "";
-
-      document.getElementById(
-        "questionOrder"
-      ).value = 0;
-
-    }
-
-
-    // =====================================================
-    // BREADCRUMB
-    // =====================================================
-
-    function updateBreadcrumb() {
-
-      const breadcrumb =
-        document.getElementById(
-          "breadcrumb"
-        );
-
-
-      let html = `
         <button
-          onclick="goToSubjects()"
+          class="btn btn-success"
+          onclick="showAddQuestionForm()"
         >
-          المواد
+          + إضافة سؤال
         </button>
+
+        <div
+          id="addQuestionContainer"
+          class="hidden"
+        ></div>
+
       `;
 
-
-      if (selectedSubject) {
-
-        html += `
-          <span>›</span>
-
-          <button
-            onclick="goToSubject()"
-          >
-            ${escapeHtml(
-              selectedSubject.name
-            )}
-          </button>
-        `;
-
-      }
-
-
-      if (selectedUnit) {
-
-        html += `
-          <span>›</span>
-
-          <button
-            onclick="goToUnit()"
-          >
-            ${escapeHtml(
-              selectedUnit.name
-            )}
-          </button>
-        `;
-
-      }
-
-
-      if (selectedLesson) {
-
-        html += `
-          <span>›</span>
-
-          <span>
-            ${escapeHtml(
-              selectedLesson.name
-            )}
-          </span>
-        `;
-
-      }
-
-
-      breadcrumb.innerHTML =
+      container.innerHTML =
         html;
 
-    }
+    } catch (error) {
 
-
-    // =====================================================
-    // GO TO SUBJECTS
-    // =====================================================
-
-    function goToSubjects() {
-
-      selectedSubject = null;
-      selectedUnit = null;
-      selectedLesson = null;
-
-
-      document.getElementById(
-        "navigationSection"
-      ).style.display = "none";
-
-
-      renderSubjects();
+      container.innerHTML = `
+        <div class="empty">
+          تعذر تحميل الأسئلة.
+          <br><br>
+          ${escapeHtml(
+            error.message
+          )}
+        </div>
+      `;
 
     }
 
-
-    // =====================================================
-    // GO TO SUBJECT
-    // =====================================================
-
-    async function goToSubject() {
-
-      if (!selectedSubject) {
-        return;
-      }
+  }
 
 
-      selectedUnit = null;
-      selectedLesson = null;
+  /* =====================================================
+     ADD QUESTION FORM
+  ===================================================== */
 
+  function showAddQuestionForm() {
 
+    const container =
       document.getElementById(
-        "lessonsPanel"
-      ).style.display = "none";
-
-
-      document.getElementById(
-        "lessonPanel"
-      ).style.display = "none";
-
-
-      updateBreadcrumb();
-
-
-      await loadUnits();
-
-    }
-
-
-    // =====================================================
-    // GO TO UNIT
-    // =====================================================
-
-    async function goToUnit() {
-
-      if (!selectedUnit) {
-        return;
-      }
-
-
-      selectedLesson = null;
-
-
-      document.getElementById(
-        "lessonPanel"
-      ).style.display = "none";
-
-
-      updateBreadcrumb();
-
-
-      await loadLessons();
-
-    }
-
-
-    // =====================================================
-    // LOGOUT
-    // =====================================================
-
-    function logout() {
-
-      localStorage.removeItem(
-        "adminToken"
+        "addQuestionContainer"
       );
 
-      window.location.href =
-        "admin-login.html";
+    container.classList.remove(
+      "hidden"
+    );
+
+    container.innerHTML = `
+
+      <div class="content-section">
+
+        <h3>
+          إضافة سؤال جديد
+        </h3>
+
+        <div class="form-group">
+
+          <label>
+            نص السؤال
+          </label>
+
+          <textarea
+            id="questionText"
+            class="form-control"
+            placeholder="اكتب السؤال هنا..."
+          ></textarea>
+
+        </div>
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label>
+              الاختيار A
+            </label>
+
+            <input
+              id="optionA"
+              class="form-control"
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              الاختيار B
+            </label>
+
+            <input
+              id="optionB"
+              class="form-control"
+            >
+
+          </div>
+
+        </div>
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label>
+              الاختيار C
+            </label>
+
+            <input
+              id="optionC"
+              class="form-control"
+            >
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              الاختيار D
+            </label>
+
+            <input
+              id="optionD"
+              class="form-control"
+            >
+
+          </div>
+
+        </div>
+
+        <div class="form-row">
+
+          <div class="form-group">
+
+            <label>
+              الإجابة الصحيحة
+            </label>
+
+            <select
+              id="correctAnswer"
+              class="form-control"
+            >
+
+              <option value="A">
+                A
+              </option>
+
+              <option value="B">
+                B
+              </option>
+
+              <option value="C">
+                C
+              </option>
+
+              <option value="D">
+                D
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>
+              ترتيب السؤال
+            </label>
+
+            <input
+              id="questionOrder"
+              class="form-control"
+              type="number"
+              value="0"
+            >
+
+          </div>
+
+        </div>
+
+        <div class="form-group">
+
+          <label>
+            شرح الإجابة
+          </label>
+
+          <textarea
+            id="questionExplanation"
+            class="form-control"
+            placeholder="اكتب شرح الإجابة..."
+          ></textarea>
+
+        </div>
+
+        <div class="button-row">
+
+          <button
+            class="btn btn-success"
+            onclick="addQuestion()"
+          >
+            حفظ السؤال
+          </button>
+
+          <button
+            class="btn btn-light"
+            onclick="hideAddQuestionForm()"
+          >
+            إلغاء
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  function hideAddQuestionForm() {
+
+    const container =
+      document.getElementById(
+        "addQuestionContainer"
+      );
+
+    if (container) {
+
+      container.classList.add(
+        "hidden"
+      );
 
     }
 
+  }
 
-    // =====================================================
-    // ESCAPE HTML
-    // =====================================================
 
-    function escapeHtml(
-      value
+  /* =====================================================
+     ADD QUESTION
+  ===================================================== */
+
+  async function addQuestion() {
+
+    const questionText =
+      document
+        .getElementById(
+          "questionText"
+        )
+        .value
+        .trim();
+
+    const optionA =
+      document
+        .getElementById(
+          "optionA"
+        )
+        .value
+        .trim();
+
+    const optionB =
+      document
+        .getElementById(
+          "optionB"
+        )
+        .value
+        .trim();
+
+    const optionC =
+      document
+        .getElementById(
+          "optionC"
+        )
+        .value
+        .trim();
+
+    const optionD =
+      document
+        .getElementById(
+          "optionD"
+        )
+        .value
+        .trim();
+
+    const correctAnswer =
+      document
+        .getElementById(
+          "correctAnswer"
+        )
+        .value;
+
+    const explanation =
+      document
+        .getElementById(
+          "questionExplanation"
+        )
+        .value
+        .trim();
+
+    const questionOrder =
+      Number(
+        document
+          .getElementById(
+            "questionOrder"
+          )
+          .value
+      ) || 0;
+
+    if (
+      !questionText ||
+      !optionA ||
+      !optionB ||
+      !optionC ||
+      !optionD
     ) {
 
-      if (
-        value === null ||
-        value === undefined
-      ) {
+      showError(
+        "يجب ملء جميع بيانات السؤال."
+      );
 
-        return "";
+      return;
+
+    }
+
+    try {
+
+      await api(
+        `/api/admin/quizzes/${currentQuiz.id}/questions`,
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+
+              question_text:
+                questionText,
+
+              option_a:
+                optionA,
+
+              option_b:
+                optionB,
+
+              option_c:
+                optionC,
+
+              option_d:
+                optionD,
+
+              correct_answer:
+                correctAnswer,
+
+              explanation:
+                explanation || null,
+
+              question_order:
+                questionOrder
+
+            })
+        }
+      );
+
+      showSuccess(
+        "تمت إضافة السؤال بنجاح."
+      );
+
+      await loadQuizManagement();
+
+    } catch (error) {
+
+      showError(
+        error.message
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     DELETE QUESTION
+  ===================================================== */
+
+  async function deleteQuestion(
+    questionId
+  ) {
+
+    const confirmed =
+      confirm(
+        "هل أنت متأكد من حذف هذا السؤال؟"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+
+      await api(
+        `/api/admin/quizzes/questions/${questionId}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      showSuccess(
+        "تم حذف السؤال."
+      );
+
+      await loadQuizManagement();
+
+    } catch (error) {
+
+      showError(
+        error.message
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     USERS
+  ===================================================== */
+
+  async function showUsers() {
+
+    currentSubject = null;
+    currentUnit = null;
+    currentLesson = null;
+    currentQuiz = null;
+
+    renderSubjects();
+
+    document
+      .getElementById(
+        "pageTitle"
+      )
+      .textContent =
+        "المستخدمون";
+
+    document
+      .getElementById(
+        "pageSubtitle"
+      )
+      .textContent =
+        "إدارة حسابات الطلاب.";
+
+    document
+      .getElementById(
+        "breadcrumb"
+      )
+      .innerHTML =
+        "الرئيسية ← <span>المستخدمون</span>";
+
+    const area =
+      document.getElementById(
+        "contentArea"
+      );
+
+    area.innerHTML = `
+      <div class="card">
+
+        <div class="loading">
+
+          <div class="spinner"></div>
+
+          جاري تحميل المستخدمين...
+
+        </div>
+
+      </div>
+    `;
+
+    try {
+
+      const data =
+        await api(
+          "/api/admin/users"
+        );
+
+      const users =
+        Array.isArray(data.users)
+          ? data.users
+          : [];
+
+      renderUsers(users);
+
+    } catch (error) {
+
+      area.innerHTML = `
+        <div class="card">
+          <div class="empty">
+            تعذر تحميل المستخدمين.
+            <br><br>
+            ${escapeHtml(
+              error.message
+            )}
+          </div>
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =====================================================
+     RENDER USERS
+  ===================================================== */
+
+  function renderUsers(
+    users
+  ) {
+
+    const area =
+      document.getElementById(
+        "contentArea"
+      );
+
+    if (!users.length) {
+
+      area.innerHTML = `
+        <div class="card">
+          <div class="empty">
+            لا يوجد مستخدمون حتى الآن.
+          </div>
+        </div>
+      `;
+
+      return;
+
+    }
+
+    let rows = "";
+
+    users.forEach(
+      user => {
+
+        rows += `
+
+          <tr>
+
+            <td>
+              ${escapeHtml(
+                user.id
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                user.name
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                user.email
+              )}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                user.grade
+              )}
+            </td>
+
+            <td>
+              ${user.created_at
+                ? new Date(
+                    user.created_at
+                  ).toLocaleDateString(
+                    "ar"
+                  )
+                : "-"
+              }
+            </td>
+
+            <td>
+
+              <div
+                class="button-row"
+                style="margin-top:0;"
+              >
+
+                <button
+                  class="btn btn-warning"
+                  onclick="resetUserPassword(${user.id})"
+                >
+                  تغيير كلمة المرور
+                </button>
+
+                <button
+                  class="btn btn-danger"
+                  onclick="deleteUser(${user.id})"
+                >
+                  حذف
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        `;
+
+      }
+    );
+
+    area.innerHTML = `
+
+      <div class="card">
+
+        <div class="card-title">
+          المستخدمون
+        </div>
+
+        <div class="table-wrapper">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  ID
+                </th>
+
+                <th>
+                  الاسم
+                </th>
+
+                <th>
+                  البريد
+                </th>
+
+                <th>
+                  الصف
+                </th>
+
+                <th>
+                  تاريخ التسجيل
+                </th>
+
+                <th>
+                  الإجراءات
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              ${rows}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  /* =====================================================
+     RESET USER PASSWORD
+  ===================================================== */
+
+  async function resetUserPassword(
+    userId
+  ) {
+
+    const newPassword =
+      prompt(
+        "اكتب كلمة المرور الجديدة:"
+      );
+
+    if (newPassword === null) {
+      return;
+    }
+
+    if (
+      newPassword.length < 6
+    ) {
+
+      showError(
+        "كلمة المرور يجب أن تكون 6 أحرف على الأقل."
+      );
+
+      return;
+
+    }
+
+    try {
+
+      await api(
+        `/api/admin/users/${userId}/reset-password`,
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              newPassword
+            })
+        }
+      );
+
+      showSuccess(
+        "تم تغيير كلمة المرور بنجاح."
+      );
+
+    } catch (error) {
+
+      showError(
+        error.message
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     DELETE USER
+  ===================================================== */
+
+  async function deleteUser(
+    userId
+  ) {
+
+    const confirmed =
+      confirm(
+        "هل أنت متأكد من حذف هذا المستخدم؟ سيتم حذف بيانات اختباراته أيضًا."
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+
+      await api(
+        `/api/admin/users/${userId}`,
+        {
+          method: "DELETE"
+        }
+      );
+
+      showSuccess(
+        "تم حذف المستخدم بنجاح."
+      );
+
+      await showUsers();
+
+    } catch (error) {
+
+      showError(
+        error.message
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     INITIALIZATION
+  ===================================================== */
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+      if (adminToken) {
+
+        showAdminScreen();
 
       }
 
-
-      return String(value)
-        .replace(
-          /&/g,
-          "&amp;"
-        )
-        .replace(
-          /</g,
-          "&lt;"
-        )
-        .replace(
-          />/g,
-          "&gt;"
-        )
-        .replace(
-          /"/g,
-          "&quot;"
-        )
-        .replace(
-          /'/g,
-          "&#039;"
-        );
-
     }
+  );
 
-  </script>
+</script>
 
 </body>
-
-  </html>
+      </html>
