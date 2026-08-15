@@ -3921,6 +3921,34 @@ function setAuthLoading(
           lesson.id
         );
 
+        /*
+          حفظ إكمال الدرس مباشرة في قاعدة البيانات.
+          markLessonCompleted() يحدّث الذاكرة المحلية فقط،
+          أما هذا الطلب فيسجل completed = TRUE في lesson_progress.
+        */
+        try {
+
+          await apiRequest(
+            `/progress/lessons/${encodeURIComponent(lesson.id)}/complete`,
+            {
+              method: "POST"
+            }
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Complete lesson API error:",
+            error
+          );
+
+          showToast(
+            "تم حفظ نتيجة الاختبار، لكن تعذر تسجيل إكمال الدرس في السيرفر. حاول مرة أخرى.",
+            "warning"
+          );
+
+        }
+
         showToast(
           "تم حفظ النتيجة وفتح الدرس التالي.",
           "success"
@@ -4028,13 +4056,12 @@ function setAuthLoading(
       lessonId
     ) {
 
-      return Array.isArray(
-        userProgress.completedLessons
-      ) && userProgress.completedLessons.some(
-        item =>
-          String(item?.subjectId) === String(subjectId) &&
-          String(item?.lessonId) === String(lessonId)
-      );
+      return userProgress.completedLessons
+        .some(
+          item =>
+            item.subjectId === subjectId &&
+            item.lessonId === lessonId
+        );
 
     }
 
@@ -4147,26 +4174,19 @@ function setAuthLoading(
 
     function getCompletedCount(subjectId) {
 
-      const completedLessons =
-        Array.isArray(userProgress.completedLessons)
-          ? userProgress.completedLessons
-          : [];
-
-      return completedLessons.filter(
-        item =>
-          String(item?.subjectId) === String(subjectId)
-      ).length;
+      return userProgress.completedLessons
+        .filter(
+          item =>
+            item.subjectId === subjectId
+        )
+        .length;
 
     }
 
 
     function getSubjectProgress(subject) {
 
-      if (
-        !subject ||
-        !Array.isArray(subject.lessons) ||
-        !subject.lessons.length
-      ) {
+      if (!subject || !subject.lessons.length) {
         return 0;
       }
 
@@ -4184,63 +4204,22 @@ function setAuthLoading(
 
     function calculateOverallProgress() {
 
-      /*
-        التقدم العام يعتمد على الدروس المكتملة فقط.
-        لا نلمس طريقة حفظ/تحميل البيانات من السيرفر.
-
-        نحسب الدروس الفعلية المكتملة من خلال:
-        subjectId + lessonId
-        حتى لا يتكرر العد إذا كانت البيانات تحتوي
-        على نفس الدرس أكثر من مرة.
-      */
-
-      let totalLessons = 0;
-
-      for (const subject of subjects) {
-
-        if (
-          subject &&
-          Array.isArray(subject.lessons)
-        ) {
-
-          totalLessons +=
-            subject.lessons.length;
-
-        }
-
-      }
+      const totalLessons =
+        subjects.reduce(
+          (sum, subject) =>
+            sum + subject.lessons.length,
+          0
+        );
 
       if (!totalLessons) return 0;
 
-      const completedLessons =
-        Array.isArray(
-          userProgress.completedLessons
-        )
-          ? userProgress.completedLessons
-          : [];
-
-      const completedKeys =
-        new Set();
-
-      for (const item of completedLessons) {
-
-        if (
-          item?.subjectId === undefined ||
-          item?.lessonId === undefined
-        ) {
-          continue;
-        }
-
-        completedKeys.add(
-          `${String(item.subjectId)}::${String(item.lessonId)}`
-        );
-
-      }
+      const completed =
+        userProgress.completedLessons.length;
 
       return Math.min(
         100,
         Math.round(
-          (completedKeys.size / totalLessons) * 100
+          (completed / totalLessons) * 100
         )
       );
 
