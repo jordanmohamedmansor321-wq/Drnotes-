@@ -4028,12 +4028,29 @@ function setAuthLoading(
       lessonId
     ) {
 
-      return userProgress.completedLessons
-        .some(
-          item =>
-            item.subjectId === subjectId &&
-            item.lessonId === lessonId
-        );
+      const completedLessons =
+        Array.isArray(userProgress.completedLessons)
+          ? userProgress.completedLessons
+          : [];
+
+      return completedLessons.some(
+        item => {
+
+          if (!item) return false;
+
+          const itemSubjectId =
+            item.subjectId ?? item.subject_id;
+
+          const itemLessonId =
+            item.lessonId ?? item.lesson_id;
+
+          return (
+            sameId(itemSubjectId, subjectId) &&
+            sameId(itemLessonId, lessonId)
+          );
+
+        }
+      );
 
     }
 
@@ -4043,26 +4060,27 @@ function setAuthLoading(
       lessonId
     ) {
 
-      const normalizedSubjectId = Number(subjectId);
-      const normalizedLessonId = Number(lessonId);
-
       if (
-        !userProgress.completedLessons.some(item =>
-          Number(item.subjectId) === normalizedSubjectId &&
-          Number(item.lessonId) === normalizedLessonId
+        !isLessonCompleted(
+          subjectId,
+          lessonId
         )
       ) {
+
         userProgress.completedLessons.push({
-          subjectId: normalizedSubjectId,
-          lessonId: normalizedLessonId,
-          completedAt: new Date().toISOString()
+          subjectId,
+          lessonId,
+          completedAt:
+            new Date().toISOString()
         });
+
       }
 
       userProgress.lastLesson = {
-        subjectId: normalizedSubjectId,
-        lessonId: normalizedLessonId
+        subjectId,
+        lessonId
       };
+
     }
 
 
@@ -4143,21 +4161,95 @@ function setAuthLoading(
        PROGRESS
        ========================================================= */
 
+    function sameId(a, b) {
+      return String(a ?? "") === String(b ?? "");
+    }
+
+
+    function getCompletedLessonKeys() {
+
+      const keys = new Set();
+
+      const completedLessons =
+        Array.isArray(userProgress.completedLessons)
+          ? userProgress.completedLessons
+          : [];
+
+      for (const item of completedLessons) {
+
+        if (!item) continue;
+
+        /*
+          ندعم شكل البيانات الحالي:
+          { subjectId, lessonId }
+
+          وكذلك اختلاف نوع الـ ID بين PostgreSQL
+          وJavaScript (رقم / نص).
+        */
+
+        const subjectId =
+          item.subjectId ?? item.subject_id;
+
+        const lessonId =
+          item.lessonId ?? item.lesson_id;
+
+        if (
+          subjectId === undefined ||
+          subjectId === null ||
+          lessonId === undefined ||
+          lessonId === null
+        ) {
+          continue;
+        }
+
+        keys.add(
+          `${String(subjectId)}::${String(lessonId)}`
+        );
+
+      }
+
+      return keys;
+
+    }
+
+
     function getCompletedCount(subjectId) {
 
-      return userProgress.completedLessons
-        .filter(
-          item =>
-            item.subjectId === subjectId
-        )
-        .length;
+      const completedKeys =
+        getCompletedLessonKeys();
+
+      const subject =
+        subjects.find(
+          item => sameId(item.id, subjectId)
+        );
+
+      if (!subject || !Array.isArray(subject.lessons)) {
+        return 0;
+      }
+
+      let count = 0;
+
+      for (const lesson of subject.lessons) {
+
+        if (!lesson) continue;
+
+        const key =
+          `${String(subject.id)}::${String(lesson.id)}`;
+
+        if (completedKeys.has(key)) {
+          count++;
+        }
+
+      }
+
+      return count;
 
     }
 
 
     function getSubjectProgress(subject) {
 
-      if (!subject || !subject.lessons.length) {
+      if (!subject || !Array.isArray(subject.lessons) || !subject.lessons.length) {
         return 0;
       }
 
@@ -4175,17 +4267,55 @@ function setAuthLoading(
 
     function calculateOverallProgress() {
 
+      /*
+        التقدم العام = الدروس المكتملة فعليًا ÷ إجمالي الدروس.
+
+        مثال:
+        لو إجمالي الدروس 100 وتم إكمال درس واحد فقط
+        سيظهر التقدم العام 1% بدل 0%.
+
+        لا نحسب الاختبارات أو المفضلة هنا.
+      */
+
       const totalLessons =
         subjects.reduce(
           (sum, subject) =>
-            sum + subject.lessons.length,
+            sum +
+            (
+              Array.isArray(subject.lessons)
+                ? subject.lessons.length
+                : 0
+            ),
           0
         );
 
       if (!totalLessons) return 0;
 
-      const completed =
-        userProgress.completedLessons.length;
+      const completedKeys =
+        getCompletedLessonKeys();
+
+      let completed = 0;
+
+      for (const subject of subjects) {
+
+        if (!subject || !Array.isArray(subject.lessons)) {
+          continue;
+        }
+
+        for (const lesson of subject.lessons) {
+
+          if (!lesson) continue;
+
+          const key =
+            `${String(subject.id)}::${String(lesson.id)}`;
+
+          if (completedKeys.has(key)) {
+            completed++;
+          }
+
+        }
+
+      }
 
       return Math.min(
         100,
@@ -4198,11 +4328,45 @@ function setAuthLoading(
 
 
     async function saveProgressToBackend() {
-      // التقدم في النسخة الحالية لا يُرسل إلى endpoint قديم /progress.
-      // السيرفر الحالي يحفظ التقدم من خلال endpoints الخاصة بفتح/إكمال الدرس،
-      // والاختبارات، والمفضلة. هذه الدالة تُستخدم فقط لتحديث الواجهة محليًا.
+
       if (!currentUser) return;
-      updateDashboard();
+
+      try {
+
+        await apiRequest(
+          "/progress",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              completedLessons:
+                userProgress.completedLessons,
+
+              quizResults:
+                userProgress.quizResults,
+
+              favorites:
+                userProgress.favorites,
+
+              lastLesson:
+                userProgress.lastLesson
+            })
+          }
+        );
+
+      } catch (error) {
+
+        /*
+          لا نوقف تجربة الطالب إذا كان Backend
+          لم يتم تجهيزه بعد.
+        */
+
+        console.warn(
+          "Progress backend sync pending:",
+          error.message
+        );
+
+      }
+
     }
 
 
@@ -4211,73 +4375,58 @@ function setAuthLoading(
       if (!currentUser) return;
 
       try {
-        const [lessonData, favoriteData, attemptData, dashboardData] =
-          await Promise.all([
-            apiRequest("/progress/lessons"),
-            apiRequest("/favorites"),
-            apiRequest("/quizzes/my-attempts"),
-            apiRequest("/progress/dashboard")
-          ]);
 
-        const completedLessons =
-          (Array.isArray(lessonData?.progress) ? lessonData.progress : [])
-            .filter(item => item.completed)
-            .map(item => ({
-              subjectId: Number(item.subject_id),
-              lessonId: Number(item.lesson_id),
-              completedAt: item.completed_at || null
-            }));
+        const data =
+          await apiRequest(
+            "/progress"
+          );
 
-        const favorites =
-          (Array.isArray(favoriteData?.favorites) ? favoriteData.favorites : [])
-            .map(item => Number(item.lesson_id))
-            .filter(Number.isFinite);
+        if (data) {
 
-        const attempts =
-          Array.isArray(attemptData?.attempts)
-            ? attemptData.attempts
-            : [];
+          userProgress = {
+            subjects:
+              data.subjects || {},
 
-        const quizResults = {};
-        attempts.forEach(attempt => {
-          const key = String(attempt.quiz_id);
-          if (!quizResults[key]) quizResults[key] = [];
-          quizResults[key].push({
-            attemptId: attempt.id,
-            score: attempt.score,
-            total: attempt.total_questions,
-            percentage: Number(attempt.percentage || 0),
-            passed: Boolean(attempt.passed),
-            status: attempt.status,
-            createdAt: attempt.finished_at || attempt.started_at || null
-          });
-        });
+            completedLessons:
+              Array.isArray(data.completedLessons)
+                ? data.completedLessons.map(item => ({
+                    subjectId:
+                      item?.subjectId ?? item?.subject_id,
+                    lessonId:
+                      item?.lessonId ?? item?.lesson_id,
+                    completedAt:
+                      item?.completedAt ??
+                      item?.completed_at ??
+                      null
+                  }))
+                : [],
 
-        const lastLessonFromDashboard =
-          dashboardData?.progress?.last_lesson || null;
+            quizResults:
+              data.quizResults || {},
 
-        userProgress = {
-          subjects: {},
-          completedLessons,
-          quizResults,
-          favorites,
-          lastLesson: lastLessonFromDashboard
-            ? {
-                subjectId: Number(lastLessonFromDashboard.subject_id),
-                lessonId: Number(lastLessonFromDashboard.id)
-              }
-            : null
-        };
+            favorites:
+              data.favorites || [],
 
-        renderSubjects();
-        updateDashboard();
+            lastLesson:
+              data.lastLesson || null
+          };
+
+        }
 
       } catch (error) {
+
+        /*
+          Backend سيتم ربطه لاحقًا.
+          لا نكسر Firebase login إذا API غير متاحة.
+        */
+
         console.warn(
           "Could not load backend progress:",
           error.message
         );
+
       }
+
     }
 
 
@@ -4455,56 +4604,54 @@ function setAuthLoading(
     ) {
 
       if (!currentUser) {
+
         showToast(
           "يجب تسجيل الدخول أولًا.",
           "warning"
         );
+
         openAuth("login");
+
         return;
+
       }
 
-      const numericLessonId = Number(lessonId);
-      const currentlyFavorite = isFavorite(numericLessonId);
+      if (
+        isFavorite(lessonId)
+      ) {
 
-      try {
-        if (currentlyFavorite) {
-          const data = await apiRequest(
-            `/favorites/${numericLessonId}`,
-            { method: "DELETE" }
-          );
+        userProgress.favorites =
+          userProgress.favorites
+            .filter(
+              id => id !== lessonId
+            );
 
-          userProgress.favorites = userProgress.favorites
-            .filter(id => Number(id) !== numericLessonId);
-
-          showToast(
-            data?.message || "تمت إزالة الدرس من المفضلة.",
-            "success"
-          );
-        } else {
-          const data = await apiRequest(
-            `/favorites/${numericLessonId}`,
-            { method: "POST" }
-          );
-
-          if (!userProgress.favorites.some(id => Number(id) === numericLessonId)) {
-            userProgress.favorites.push(numericLessonId);
-          }
-
-          showToast(
-            data?.message || "تمت إضافة الدرس إلى المفضلة.",
-            "success"
-          );
-        }
-
-        updateDashboard();
-        renderLesson(currentLessonIndex);
-
-      } catch (error) {
         showToast(
-          error.message || "تعذر تحديث المفضلة.",
-          "error"
+          "تمت إزالة الدرس من المفضلة.",
+          "success"
         );
+
+      } else {
+
+        userProgress.favorites.push(
+          lessonId
+        );
+
+        showToast(
+          "تمت إضافة الدرس إلى المفضلة.",
+          "success"
+        );
+
       }
+
+      await saveProgressToBackend();
+
+      updateDashboard();
+
+      renderLesson(
+        currentLessonIndex
+      );
+
     }
 
 
@@ -5870,19 +6017,6 @@ body * {
       drCurrentLessonId =
         lesson.id;
 
-      // تسجيل فتح الدرس على السيرفر حتى يستمر التقدم بعد تسجيل الخروج أو من جهاز آخر.
-      try {
-        await apiRequest(
-          `/progress/lessons/${lesson.id}/open`,
-          { method: "POST" }
-        );
-      } catch (progressError) {
-        console.warn(
-          "Could not record lesson opening:",
-          progressError.message
-        );
-      }
-
       if (currentSubject && Array.isArray(currentSubject.lessons)) {
         const foundIndex = currentSubject.lessons.findIndex(
           item => String(item.id) === String(lesson.id)
@@ -5890,18 +6024,6 @@ body * {
         if (foundIndex >= 0) {
           currentLessonIndex = foundIndex;
         }
-      }
-
-      const lessonSubjectId = currentSubject
-        ? Number(currentSubject.id)
-        : null;
-
-      if (lessonSubjectId !== null) {
-        userProgress.lastLesson = {
-          subjectId: lessonSubjectId,
-          lessonId: Number(lesson.id)
-        };
-        updateDashboard();
       }
 
       content.innerHTML = `
@@ -6604,22 +6726,6 @@ body * {
       drRenderQuizResult(
         data
       );
-
-      // السيرفر يحفظ نتيجة الاختبار وتقدم الدرس، لذلك نعيد تحميل
-      // التقدم الحقيقي بعد التسليم بدل الاعتماد على بيانات قديمة في الواجهة.
-      if (data?.result?.passed && currentSubject && drCurrentLessonId) {
-        markLessonCompleted(
-          Number(currentSubject.id),
-          Number(drCurrentLessonId)
-        );
-      }
-
-      try {
-        await loadUserProgress();
-      } catch (_) {}
-
-      renderLessonsList();
-      updateDashboard();
 
     } catch (error) {
 
