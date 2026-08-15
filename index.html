@@ -5972,6 +5972,12 @@ body * {
       const lesson =
         data.lesson;
 
+      const lessonContent =
+        data.content || {};
+
+      const lessonSolution =
+        data.solution || {};
+
       const quiz =
         data.quiz;
 
@@ -6053,9 +6059,9 @@ body * {
           </div>
 
           ${
-            lesson.explanation_video_url
+            lessonContent.video_url
               ? drRenderVideo(
-                  lesson.explanation_video_url
+                  lessonContent.video_url
                 )
               : `
                 <div class="empty-state">
@@ -6066,7 +6072,7 @@ body * {
           }
 
           ${
-            lesson.explanation_pdf_url
+            lessonContent.pdf_url
               ? `
                 <div class="dr-pdf-box">
 
@@ -6080,7 +6086,7 @@ body * {
                   <a
                     class="btn btn-primary"
                     href="${escapeAttribute(
-                      lesson.explanation_pdf_url
+                      lessonContent.pdf_url
                     )}"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -6095,7 +6101,7 @@ body * {
           }
 
           ${
-            lesson.explanation_text
+            lessonContent.explanation
               ? `
                 <div class="dr-explanation">
 
@@ -6107,7 +6113,7 @@ body * {
                   <br><br>
 
                   ${escapeHtml(
-                    lesson.explanation_text
+                    lessonContent.explanation
                   )}
 
                 </div>
