@@ -1694,10 +1694,10 @@
 
     try {
 
-const data =
-  await api(
-    `/api/admin/units/${unitId}/lessons`
-  );
+      const data =
+        await api(
+          `/api/admin/units/${unitId}/lessons`
+        );
 
       const lessons =
         Array.isArray(data.lessons)
@@ -1857,162 +1857,177 @@ const data =
 
   function showAddLessonForm() {
 
-    const container = document.getElementById("addLessonFormContainer");
+    const container =
+      document.getElementById(
+        "addLessonFormContainer"
+      );
+
     container.classList.remove("hidden");
 
     container.innerHTML = `
+
       <div class="content-section">
-        <h3>إضافة درس جديد ومحتواه</h3>
+
+        <h3>
+          إضافة درس جديد
+        </h3>
 
         <div class="form-row">
+
           <div class="form-group">
-            <label>اسم الدرس</label>
-            <input id="newLessonName" class="form-control" placeholder="مثال: الدرس الأول">
+
+            <label>
+              اسم الدرس
+            </label>
+
+            <input
+              id="newLessonName"
+              class="form-control"
+              placeholder="مثال: الدرس الأول"
+            >
+
           </div>
+
           <div class="form-group">
-            <label>ترتيب الدرس</label>
-            <input id="newLessonOrder" class="form-control" type="number" value="0">
+
+            <label>
+              ترتيب الدرس
+            </label>
+
+            <input
+              id="newLessonOrder"
+              class="form-control"
+              type="number"
+              value="0"
+            >
+
           </div>
+
         </div>
 
         <div class="form-group">
-          <label>وصف الدرس</label>
-          <textarea id="newLessonDescription" class="form-control" placeholder="وصف مختصر للدرس"></textarea>
-        </div>
 
-        <div class="divider"></div>
-        <h4>📚 محتوى شرح الدرس</h4>
+          <label>
+            وصف الدرس
+          </label>
 
-        <div class="form-group">
-          <label>رابط فيديو الشرح</label>
-          <input id="newExplanationVideo" class="form-control" type="url" placeholder="https://...">
-        </div>
+          <textarea
+            id="newLessonDescription"
+            class="form-control"
+            placeholder="وصف الدرس"
+          ></textarea>
 
-        <div class="form-group">
-          <label>رابط PDF الشرح</label>
-          <input id="newExplanationPdf" class="form-control" type="url" placeholder="https://...">
-        </div>
-
-        <div class="form-group">
-          <label>نص شرح الدرس</label>
-          <textarea id="newExplanationText" class="form-control" rows="7" placeholder="اكتب شرح الدرس هنا..."></textarea>
-        </div>
-
-        <div class="divider"></div>
-        <h4>📝 حل الدرس</h4>
-
-        <div class="form-group">
-          <label>رابط فيديو الحل</label>
-          <input id="newSolutionVideo" class="form-control" type="url" placeholder="https://...">
-        </div>
-
-        <div class="form-group">
-          <label>رابط PDF الحل</label>
-          <input id="newSolutionPdf" class="form-control" type="url" placeholder="https://...">
-        </div>
-
-        <div class="form-group">
-          <label>نص الحل</label>
-          <textarea id="newSolutionText" class="form-control" rows="7" placeholder="اكتب حل الدرس هنا..."></textarea>
         </div>
 
         <div class="button-row">
-          <button class="btn btn-success" onclick="addLesson()">💾 حفظ الدرس والمحتوى</button>
-          <button class="btn btn-light" onclick="hideAddLessonForm()">إلغاء</button>
+
+          <button
+            class="btn btn-success"
+            onclick="addLesson()"
+          >
+            حفظ الدرس
+          </button>
+
+          <button
+            class="btn btn-light"
+            onclick="hideAddLessonForm()"
+          >
+            إلغاء
+          </button>
+
         </div>
+
       </div>
+
     `;
+
   }
+
 
   function hideAddLessonForm() {
-    const container = document.getElementById("addLessonFormContainer");
-    if (container) container.classList.add("hidden");
+
+    const container =
+      document.getElementById(
+        "addLessonFormContainer"
+      );
+
+    if (container) {
+      container.classList.add("hidden");
+    }
+
   }
 
+
   /* =====================================================
-     ADD LESSON + CONTENT
+     ADD LESSON
   ===================================================== */
 
   async function addLesson() {
-    const name = document.getElementById("newLessonName").value.trim();
-    const description = document.getElementById("newLessonDescription").value.trim();
-    const lessonOrder = Number(document.getElementById("newLessonOrder").value) || 0;
+
+    const name =
+      document
+        .getElementById("newLessonName")
+        .value
+        .trim();
+
+    const description =
+      document
+        .getElementById("newLessonDescription")
+        .value
+        .trim();
+
+    const lessonOrder =
+      Number(
+        document
+          .getElementById("newLessonOrder")
+          .value
+      ) || 0;
 
     if (!name) {
-      showError("اكتب اسم الدرس أولًا.");
-      return;
-    }
 
-    const content = {
-      explanationVideo: document.getElementById("newExplanationVideo").value.trim(),
-      explanationPdf: document.getElementById("newExplanationPdf").value.trim(),
-      explanationText: document.getElementById("newExplanationText").value,
-      solutionVideo: document.getElementById("newSolutionVideo").value.trim(),
-      solutionPdf: document.getElementById("newSolutionPdf").value.trim(),
-      solutionText: document.getElementById("newSolutionText").value
-    };
+      showError(
+        "اكتب اسم الدرس أولًا."
+      );
+
+      return;
+
+    }
 
     try {
-      const created = await api("/api/admin/lessons", {
-        method: "POST",
-        body: JSON.stringify({
-          unit_id: currentUnit.id,
-          name,
-          description,
-          lesson_order: lessonOrder
-        })
-      });
 
-      let lessonId = created?.lesson?.id || created?.id || created?.lessonId;
-
-      // بعض نسخ السيرفر لا تعيد id الدرس من POST؛ لذلك نعيد تحميل الدروس ونبحث عنه.
-      if (!lessonId) {
-        const lessonsData = await api(`/api/units/${currentUnit.id}/lessons`);
-        const lessons = Array.isArray(lessonsData.lessons) ? lessonsData.lessons : [];
-        const found = lessons.find(l =>
-          String(l.name || '').trim() === name &&
-          Number(l.lesson_order ?? l.order ?? 0) === lessonOrder
-        );
-        lessonId = found?.id;
-      }
-
-      if (!lessonId) {
-        throw new Error("تم إنشاء الدرس، لكن تعذر تحديد معرفه لحفظ المحتوى.");
-      }
-
-      const hasExplanation =
-        content.explanationVideo || content.explanationPdf || content.explanationText.trim();
-      const hasSolution =
-        content.solutionVideo || content.solutionPdf || content.solutionText.trim();
-
-      if (hasExplanation) {
-        await api(`/api/admin/lessons/${lessonId}/content`, {
+      await api(
+        "/api/admin/lessons",
+        {
           method: "POST",
-          body: JSON.stringify({
-            video_url: content.explanationVideo || null,
-            pdf_url: content.explanationPdf || null,
-            explanation: content.explanationText || null
-          })
-        });
-      }
 
-      if (hasSolution) {
-        await api(`/api/admin/lessons/${lessonId}/solution`, {
-          method: "POST",
-          body: JSON.stringify({
-            video_url: content.solutionVideo || null,
-            pdf_url: content.solutionPdf || null,
-            explanation: content.solutionText || null
-          })
-        });
-      }
+          body:
+            JSON.stringify({
+              unit_id:
+                currentUnit.id,
+              name,
+              description,
+              lesson_order:
+                lessonOrder
+            })
+        }
+      );
 
-      showSuccess("تمت إضافة الدرس وحفظ محتوى الشرح والحل بنجاح.");
-      await loadLessons(currentUnit.id);
+      showSuccess(
+        "تمت إضافة الدرس بنجاح."
+      );
+
+      await loadLessons(
+        currentUnit.id
+      );
 
     } catch (error) {
-      showError(error.message);
+
+      showError(
+        error.message
+      );
+
     }
+
   }
 
 
@@ -2042,7 +2057,7 @@ const data =
 
       const data =
         await api(
-          `/api/lessons/${lessonId}`
+          `/api/admin/lessons/${lessonId}`
         );
 
       const lesson =
@@ -2317,7 +2332,7 @@ const data =
 
       const data =
         await api(
-          `/api/lessons/${lessonId}`
+          `/api/admin/lessons/${lessonId}`
         );
 
       currentLesson =
