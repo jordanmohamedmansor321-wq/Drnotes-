@@ -1694,10 +1694,10 @@
 
     try {
 
-      const data =
-        await api(
-          `/api/units/${unitId}/lessons`
-        );
+const data =
+  await api(
+    `/api/admin/units/${unitId}/lessons`
+  );
 
       const lessons =
         Array.isArray(data.lessons)
