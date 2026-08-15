@@ -4043,27 +4043,26 @@ function setAuthLoading(
       lessonId
     ) {
 
+      const normalizedSubjectId = Number(subjectId);
+      const normalizedLessonId = Number(lessonId);
+
       if (
-        !isLessonCompleted(
-          subjectId,
-          lessonId
+        !userProgress.completedLessons.some(item =>
+          Number(item.subjectId) === normalizedSubjectId &&
+          Number(item.lessonId) === normalizedLessonId
         )
       ) {
-
         userProgress.completedLessons.push({
-          subjectId,
-          lessonId,
-          completedAt:
-            new Date().toISOString()
+          subjectId: normalizedSubjectId,
+          lessonId: normalizedLessonId,
+          completedAt: new Date().toISOString()
         });
-
       }
 
       userProgress.lastLesson = {
-        subjectId,
-        lessonId
+        subjectId: normalizedSubjectId,
+        lessonId: normalizedLessonId
       };
-
     }
 
 
@@ -4199,45 +4198,11 @@ function setAuthLoading(
 
 
     async function saveProgressToBackend() {
-
+      // التقدم في النسخة الحالية لا يُرسل إلى endpoint قديم /progress.
+      // السيرفر الحالي يحفظ التقدم من خلال endpoints الخاصة بفتح/إكمال الدرس،
+      // والاختبارات، والمفضلة. هذه الدالة تُستخدم فقط لتحديث الواجهة محليًا.
       if (!currentUser) return;
-
-      try {
-
-        await apiRequest(
-          "/progress",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              completedLessons:
-                userProgress.completedLessons,
-
-              quizResults:
-                userProgress.quizResults,
-
-              favorites:
-                userProgress.favorites,
-
-              lastLesson:
-                userProgress.lastLesson
-            })
-          }
-        );
-
-      } catch (error) {
-
-        /*
-          لا نوقف تجربة الطالب إذا كان Backend
-          لم يتم تجهيزه بعد.
-        */
-
-        console.warn(
-          "Progress backend sync pending:",
-          error.message
-        );
-
-      }
-
+      updateDashboard();
     }
 
 
@@ -4246,47 +4211,73 @@ function setAuthLoading(
       if (!currentUser) return;
 
       try {
+        const [lessonData, favoriteData, attemptData, dashboardData] =
+          await Promise.all([
+            apiRequest("/progress/lessons"),
+            apiRequest("/favorites"),
+            apiRequest("/quizzes/my-attempts"),
+            apiRequest("/progress/dashboard")
+          ]);
 
-        const data =
-          await apiRequest(
-            "/progress"
-          );
+        const completedLessons =
+          (Array.isArray(lessonData?.progress) ? lessonData.progress : [])
+            .filter(item => item.completed)
+            .map(item => ({
+              subjectId: Number(item.subject_id),
+              lessonId: Number(item.lesson_id),
+              completedAt: item.completed_at || null
+            }));
 
-        if (data) {
+        const favorites =
+          (Array.isArray(favoriteData?.favorites) ? favoriteData.favorites : [])
+            .map(item => Number(item.lesson_id))
+            .filter(Number.isFinite);
 
-          userProgress = {
-            subjects:
-              data.subjects || {},
+        const attempts =
+          Array.isArray(attemptData?.attempts)
+            ? attemptData.attempts
+            : [];
 
-            completedLessons:
-              data.completedLessons || [],
+        const quizResults = {};
+        attempts.forEach(attempt => {
+          const key = String(attempt.quiz_id);
+          if (!quizResults[key]) quizResults[key] = [];
+          quizResults[key].push({
+            attemptId: attempt.id,
+            score: attempt.score,
+            total: attempt.total_questions,
+            percentage: Number(attempt.percentage || 0),
+            passed: Boolean(attempt.passed),
+            status: attempt.status,
+            createdAt: attempt.finished_at || attempt.started_at || null
+          });
+        });
 
-            quizResults:
-              data.quizResults || {},
+        const lastLessonFromDashboard =
+          dashboardData?.progress?.last_lesson || null;
 
-            favorites:
-              data.favorites || [],
+        userProgress = {
+          subjects: {},
+          completedLessons,
+          quizResults,
+          favorites,
+          lastLesson: lastLessonFromDashboard
+            ? {
+                subjectId: Number(lastLessonFromDashboard.subject_id),
+                lessonId: Number(lastLessonFromDashboard.id)
+              }
+            : null
+        };
 
-            lastLesson:
-              data.lastLesson || null
-          };
-
-        }
+        renderSubjects();
+        updateDashboard();
 
       } catch (error) {
-
-        /*
-          Backend سيتم ربطه لاحقًا.
-          لا نكسر Firebase login إذا API غير متاحة.
-        */
-
         console.warn(
           "Could not load backend progress:",
           error.message
         );
-
       }
-
     }
 
 
@@ -4464,54 +4455,56 @@ function setAuthLoading(
     ) {
 
       if (!currentUser) {
-
         showToast(
           "يجب تسجيل الدخول أولًا.",
           "warning"
         );
-
         openAuth("login");
-
         return;
-
       }
 
-      if (
-        isFavorite(lessonId)
-      ) {
+      const numericLessonId = Number(lessonId);
+      const currentlyFavorite = isFavorite(numericLessonId);
 
-        userProgress.favorites =
-          userProgress.favorites
-            .filter(
-              id => id !== lessonId
-            );
+      try {
+        if (currentlyFavorite) {
+          const data = await apiRequest(
+            `/favorites/${numericLessonId}`,
+            { method: "DELETE" }
+          );
 
+          userProgress.favorites = userProgress.favorites
+            .filter(id => Number(id) !== numericLessonId);
+
+          showToast(
+            data?.message || "تمت إزالة الدرس من المفضلة.",
+            "success"
+          );
+        } else {
+          const data = await apiRequest(
+            `/favorites/${numericLessonId}`,
+            { method: "POST" }
+          );
+
+          if (!userProgress.favorites.some(id => Number(id) === numericLessonId)) {
+            userProgress.favorites.push(numericLessonId);
+          }
+
+          showToast(
+            data?.message || "تمت إضافة الدرس إلى المفضلة.",
+            "success"
+          );
+        }
+
+        updateDashboard();
+        renderLesson(currentLessonIndex);
+
+      } catch (error) {
         showToast(
-          "تمت إزالة الدرس من المفضلة.",
-          "success"
+          error.message || "تعذر تحديث المفضلة.",
+          "error"
         );
-
-      } else {
-
-        userProgress.favorites.push(
-          lessonId
-        );
-
-        showToast(
-          "تمت إضافة الدرس إلى المفضلة.",
-          "success"
-        );
-
       }
-
-      await saveProgressToBackend();
-
-      updateDashboard();
-
-      renderLesson(
-        currentLessonIndex
-      );
-
     }
 
 
@@ -5877,6 +5870,19 @@ body * {
       drCurrentLessonId =
         lesson.id;
 
+      // تسجيل فتح الدرس على السيرفر حتى يستمر التقدم بعد تسجيل الخروج أو من جهاز آخر.
+      try {
+        await apiRequest(
+          `/progress/lessons/${lesson.id}/open`,
+          { method: "POST" }
+        );
+      } catch (progressError) {
+        console.warn(
+          "Could not record lesson opening:",
+          progressError.message
+        );
+      }
+
       if (currentSubject && Array.isArray(currentSubject.lessons)) {
         const foundIndex = currentSubject.lessons.findIndex(
           item => String(item.id) === String(lesson.id)
@@ -5884,6 +5890,18 @@ body * {
         if (foundIndex >= 0) {
           currentLessonIndex = foundIndex;
         }
+      }
+
+      const lessonSubjectId = currentSubject
+        ? Number(currentSubject.id)
+        : null;
+
+      if (lessonSubjectId !== null) {
+        userProgress.lastLesson = {
+          subjectId: lessonSubjectId,
+          lessonId: Number(lesson.id)
+        };
+        updateDashboard();
       }
 
       content.innerHTML = `
@@ -6586,6 +6604,22 @@ body * {
       drRenderQuizResult(
         data
       );
+
+      // السيرفر يحفظ نتيجة الاختبار وتقدم الدرس، لذلك نعيد تحميل
+      // التقدم الحقيقي بعد التسليم بدل الاعتماد على بيانات قديمة في الواجهة.
+      if (data?.result?.passed && currentSubject && drCurrentLessonId) {
+        markLessonCompleted(
+          Number(currentSubject.id),
+          Number(drCurrentLessonId)
+        );
+      }
+
+      try {
+        await loadUserProgress();
+      } catch (_) {}
+
+      renderLessonsList();
+      updateDashboard();
 
     } catch (error) {
 
