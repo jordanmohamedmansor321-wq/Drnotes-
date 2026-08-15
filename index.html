@@ -5694,7 +5694,6 @@ body * {
       );
 
       drUnits = data.units || [];
-      window.drUnits = drUnits;
 
       return drUnits;
 
@@ -5845,13 +5844,6 @@ body * {
 
     if (!unit) return;
 
-    if (!unit.has_access) {
-      if (window.drPurchaseUnit) {
-        await window.drPurchaseUnit(unitId);
-      }
-      return;
-    }
-
     const box =
       document.getElementById(
         `dr-unit-lessons-${unitId}`
@@ -5903,7 +5895,7 @@ body * {
         <button
           type="button"
           class="dr-lesson-row"
-          onclick="drOpenLesson(${lesson.id})"
+          onclick="drOpenLesson(${lesson.id}, ${unit.has_access ? 'true' : 'false'})"
         >
 
           <span class="dr-lesson-info">
@@ -5921,19 +5913,24 @@ body * {
                 lesson.description
                   ? `
                     <span class="dr-lesson-description">
-                      ${escapeHtml(
-                        lesson.description
-                      )}
+                      ${escapeHtml(lesson.description)}
                     </span>
                   `
                   : ""
               }
 
+              <span class="dr-lesson-description" style="margin-top:5px;">
+                ${lesson.has_video ? '🎥 فيديو شرح' : ''}
+                ${lesson.has_pdf ? ' · 📄 PDF' : ''}
+                ${lesson.has_quiz ? ' · 📝 اختبار' : ''}
+                ${(!lesson.has_video && !lesson.has_pdf && !lesson.has_quiz) ? 'محتوى الدرس' : ''}
+              </span>
+
             </span>
 
           </span>
 
-          <i class="fa-solid fa-arrow-left dr-arrow"></i>
+          <i class="fa-solid ${unit.has_access ? 'fa-arrow-left' : 'fa-lock'} dr-arrow"></i>
 
         </button>
       `).join("");
@@ -5944,7 +5941,7 @@ body * {
      فتح الدرس
   ========================================================= */
 
-  window.drOpenLesson = async function (lessonId) {
+  window.drOpenLesson = async function (lessonId, hasAccessOverride = null) {
 
     drCurrentLessonId =
       lessonId;
@@ -5955,6 +5952,37 @@ body * {
       );
 
     if (!content) return;
+
+    const previewLessons = await drLoadLessons(drCurrentUnitId || 0).catch(() => []);
+    const previewLesson = previewLessons.find(item => Number(item.id) === Number(lessonId));
+    const previewUnit = drUnits.find(item => Number(item.id) === Number(previewLesson?.unit_id));
+    const hasAccess = hasAccessOverride === null ? !!previewUnit?.has_access : !!hasAccessOverride;
+
+    if (!hasAccess) {
+      content.innerHTML = `
+        <div class="dr-content-box">
+          <div class="dr-content-title">
+            <i class="fa-solid fa-lock"></i>
+            <div>
+              <h2>${escapeHtml(previewLesson?.name || 'الدرس')}</h2>
+              ${previewLesson?.description ? `<p style="color:var(--text-light);font-size:12px;">${escapeHtml(previewLesson.description)}</p>` : ''}
+            </div>
+          </div>
+          <div style="padding:18px;border:1px dashed var(--border);border-radius:14px;background:var(--bg-soft);">
+            <strong>محتوى الدرس متاح بعد الاشتراك</strong>
+            <div style="margin-top:10px;color:var(--text-light);line-height:2;">
+              ${previewLesson?.has_video ? '🎥 فيديو شرح<br>' : ''}
+              ${previewLesson?.has_pdf ? '📄 ملف PDF<br>' : ''}
+              ${previewLesson?.has_quiz ? '📝 اختبار<br>' : ''}
+            </div>
+            <button type="button" class="btn btn-primary" style="margin-top:12px;" onclick="drPurchaseUnit(${previewLesson?.unit_id || 0})">
+              <i class="fa-solid fa-cart-shopping"></i> اشتراك في الوحدة
+            </button>
+          </div>
+        </div>`;
+      content.scrollIntoView({behavior:'smooth', block:'start'});
+      return;
+    }
 
     content.innerHTML = `
       <div class="empty-state">
@@ -5970,11 +5998,15 @@ body * {
           `/lessons/${lessonId}`
         );
 
-      const lesson =
-        data.lesson;
+      const lesson = data.lesson;
+      const lessonContent = data.content || {};
+      const quiz = data.quiz;
 
-      const quiz =
-        data.quiz;
+      if (lesson) {
+        lesson.explanation_video_url = lessonContent.video_url || null;
+        lesson.explanation_pdf_url = lessonContent.pdf_url || null;
+        lesson.explanation_text = lessonContent.explanation || null;
+      }
 
       if (!lesson) {
 
@@ -7121,7 +7153,7 @@ body * {
       return;
     }
 
-    const unit = (window.drUnits || [])
+    const unit = (typeof drUnits !== "undefined" ? drUnits : [])
       .find(item => Number(item.id) === Number(unitId));
 
     if (!unit) return;
