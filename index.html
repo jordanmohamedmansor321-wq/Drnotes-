@@ -5821,10 +5821,10 @@ body * {
                 `}
               </div>
 
-              ${access
-                ? `<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>جاري تحميل الدروس...</p></div>`
-                : `<div class="empty-state"><i class="fa-solid fa-lock"></i><p>اشترِ الوحدة لفتح دروسها ومحتواها.</p></div>`
-              }
+              <div class="empty-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>اضغط على الوحدة لعرض الدروس ومحتوياتها.</p>
+              </div>
             </div>
           </div>
         `;
@@ -5875,6 +5875,10 @@ body * {
         "fa-solid fa-chevron-up";
     }
 
+    // مهم: نحدد الوحدة الحالية حتى يستطيع drOpenLesson
+    // تحميل بيانات المعاينة الصحيحة للدرس.
+    drCurrentUnitId = Number(unitId);
+
     const lessons =
       await drLoadLessons(unitId);
 
@@ -5890,50 +5894,71 @@ body * {
       return;
     }
 
-    box.innerHTML =
-      lessons.map((lesson, index) => `
-        <button
-          type="button"
-          class="dr-lesson-row"
-          onclick="drOpenLesson(${lesson.id}, ${unit.has_access ? 'true' : 'false'})"
-        >
+    // الدروس تظهر للجميع، لكن فتح محتوى الدرس نفسه
+    // يظل محميًا بالسيرفر وبحالة الاشتراك.
+    box.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 5px 12px;">
+        <span class="dr-unit-access">
+          ${unit.has_access ? "✓ متاحة لك — يمكنك فتح المحتوى" : "👁️ يمكنك معاينة الدروس — اشترك لفتح المحتوى"}
+        </span>
+        ${unit.has_access ? "" : `
+          <button
+            type="button"
+            class="dr-unit-buy"
+            onclick="event.stopPropagation();drPurchaseUnit(${unit.id})"
+          >
+            <i class="fa-solid fa-cart-shopping"></i>
+            ${unit.is_free ? "فتح الوحدة" : "اشتراك في الوحدة"}
+          </button>
+        `}
+      </div>
 
-          <span class="dr-lesson-info">
+      <div class="dr-lessons-list">
+        ${lessons.map((lesson, index) => `
+          <button
+            type="button"
+            class="dr-lesson-row"
+            onclick="drOpenLesson(${lesson.id}, ${unit.has_access ? 'true' : 'false'})"
+          >
 
-            <span class="dr-lesson-number">
-              ${index + 1}
-            </span>
+            <span class="dr-lesson-info">
 
-            <span>
-              <span class="dr-lesson-name">
-                ${escapeHtml(lesson.name)}
+              <span class="dr-lesson-number">
+                ${index + 1}
               </span>
 
-              ${
-                lesson.description
-                  ? `
-                    <span class="dr-lesson-description">
-                      ${escapeHtml(lesson.description)}
-                    </span>
-                  `
-                  : ""
-              }
+              <span>
+                <span class="dr-lesson-name">
+                  ${escapeHtml(lesson.name)}
+                </span>
 
-              <span class="dr-lesson-description" style="margin-top:5px;">
-                ${lesson.has_video ? '🎥 فيديو شرح' : ''}
-                ${lesson.has_pdf ? ' · 📄 PDF' : ''}
-                ${lesson.has_quiz ? ' · 📝 اختبار' : ''}
-                ${(!lesson.has_video && !lesson.has_pdf && !lesson.has_quiz) ? 'محتوى الدرس' : ''}
+                ${
+                  lesson.description
+                    ? `
+                      <span class="dr-lesson-description">
+                        ${escapeHtml(lesson.description)}
+                      </span>
+                    `
+                    : ""
+                }
+
+                <span class="dr-lesson-description" style="margin-top:5px;">
+                  ${lesson.has_video ? '🎥 فيديو شرح' : ''}
+                  ${lesson.has_pdf ? ' · 📄 PDF' : ''}
+                  ${lesson.has_quiz ? ' · 📝 اختبار' : ''}
+                  ${(!lesson.has_video && !lesson.has_pdf && !lesson.has_quiz) ? 'محتوى الدرس' : ''}
+                </span>
+
               </span>
 
             </span>
 
-          </span>
+            <i class="fa-solid ${unit.has_access ? 'fa-arrow-left' : 'fa-lock'} dr-arrow"></i>
 
-          <i class="fa-solid ${unit.has_access ? 'fa-arrow-left' : 'fa-lock'} dr-arrow"></i>
-
-        </button>
-      `).join("");
+          </button>
+        `).join("")}
+      </div>
+    `;
 
   };
 
@@ -7189,15 +7214,21 @@ body * {
         setBalance(data.balance);
       }
 
+      // تحديث الحالة محليًا فورًا حتى لا يحتاج الطالب
+      // إلى تسجيل الخروج أو إعادة تحميل الصفحة.
       unit.has_access = true;
 
       showToast(
-        data?.message || "تم شراء الوحدة بنجاح.",
+        data?.message || "تم الاشتراك في الوحدة بنجاح.",
         "success"
       );
 
       await loadSubscriptions(false);
+
+      // إعادة رسم الوحدات ثم فتح نفس الوحدة تلقائيًا
+      // وإظهار الدروس ومحتواها المتاح للمشترك.
       await drRenderUnits(drCurrentSubjectId);
+      await drToggleUnit(unitId);
 
     } catch (error) {
       showToast(
