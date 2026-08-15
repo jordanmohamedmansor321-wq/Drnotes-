@@ -1719,7 +1719,6 @@ app.get(
 // =========================================================
 // GET LESSONS BY UNIT - STUDENT
 // =========================================================
-
 app.get(
   "/api/units/:unitId/lessons",
   requireUser,
@@ -1734,166 +1733,41 @@ app.get(
         });
       }
 
-      const unitResult = await pool.query(
-        `
-        SELECT
-          u.id,
-          u.name,
-          u.is_free,
-          u.price
-        FROM units u
-        WHERE u.id = $1
-        `,
-        [unitId]
-      );
-
-      if (unitResult.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "الوحدة غير موجودة."
-        });
-      }
-
       const access = await checkUnitAccess(
         req.user.id,
         unitId
       );
 
-      const hasAccess = Boolean(
-        access && access.has_access
-      );
+      if (!access || !access.has_access) {
+        return res.status(403).json({
+          success: false,
+          requires_subscription: true,
+          unit_id: unitId,
+          message: "يجب شراء الوحدة أولًا للوصول إلى دروسها."
+        });
+      }
 
-      const lessonsResult = await pool.query(
+      const result = await pool.query(
         `
         SELECT
           l.id,
+          l.unit_id,
           l.name,
           l.description,
-          l.lesson_order,
-
-          lc.video_url,
-          lc.pdf_url,
-          lc.explanation,
-
-          ls.video_url AS solution_video_url,
-          ls.pdf_url AS solution_pdf_url,
-          ls.explanation AS solution_explanation,
-
-          q.id AS quiz_id,
-          q.title AS quiz_title,
-          q.description AS quiz_description,
-          q.passing_percentage,
-          q.questions_per_page
-
+          l.lesson_order
         FROM lessons l
-
-        LEFT JOIN lesson_content lc
-          ON lc.lesson_id = l.id
-
-        LEFT JOIN lesson_solution ls
-          ON ls.lesson_id = l.id
-
-        LEFT JOIN quizzes q
-          ON q.lesson_id = l.id
-
         WHERE l.unit_id = $1
-
-        ORDER BY
-          l.lesson_order ASC,
-          l.id ASC
+        ORDER BY l.lesson_order ASC, l.id ASC
         `,
         [unitId]
       );
 
-      let lessons = lessonsResult.rows.map((lesson) => ({
-        id: lesson.id,
-        name: lesson.name,
-        title: lesson.name,
-        description: lesson.description || "",
-        lesson_order: lesson.lesson_order,
-
-        // لا نرسل المحتوى المدفوع للطالب قبل الاشتراك.
-        video: hasAccess ? (lesson.video_url || "") : "",
-        video_url: hasAccess ? (lesson.video_url || "") : "",
-        pdf_url: hasAccess ? (lesson.pdf_url || "") : "",
-        explanation: hasAccess ? (lesson.explanation || "") : "",
-
-        solution_video_url: hasAccess
-          ? (lesson.solution_video_url || "")
-          : "",
-        solution_pdf_url: hasAccess
-          ? (lesson.solution_pdf_url || "")
-          : "",
-        solution_explanation: hasAccess
-          ? (lesson.solution_explanation || "")
-          : "",
-
-        quiz: []
-      }));
-
-      // تحميل أسئلة الاختبارات فقط للطالب الذي لديه صلاحية.
-      if (hasAccess) {
-        const quizIds = lessons
-          .map((lesson, index) => ({
-            index,
-            quizId: lessonsResult.rows[index].quiz_id
-          }))
-          .filter((item) => item.quizId);
-
-        for (const item of quizIds) {
-          const questionsResult = await pool.query(
-            `
-            SELECT
-              question_text,
-              option_a,
-              option_b,
-              option_c,
-              option_d,
-              correct_answer,
-              explanation,
-              question_order
-            FROM quiz_questions
-            WHERE quiz_id = $1
-            ORDER BY
-              question_order ASC,
-              id ASC
-            `,
-            [item.quizId]
-          );
-
-          lessons[item.index].quiz =
-            questionsResult.rows.map((question) => ({
-              question: question.question_text,
-              options: [
-                question.option_a,
-                question.option_b,
-                question.option_c,
-                question.option_d
-              ],
-              answer: {
-                A: 0,
-                B: 1,
-                C: 2,
-                D: 3
-              }[String(question.correct_answer).toUpperCase()],
-              explanation: question.explanation || ""
-            }));
-        }
-      }
-
       res.json({
         success: true,
-        has_access: hasAccess,
-        requires_subscription: !hasAccess,
-        unit: unitResult.rows[0],
-        lessons
+        lessons: result.rows
       });
-
     } catch (error) {
-      console.error(
-        "Get student lessons by unit error:",
-        error
-      );
+      console.error("Get lessons by unit error:", error);
 
       res.status(500).json({
         success: false,
