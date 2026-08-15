@@ -1717,6 +1717,65 @@ app.get(
 );
 
 // =========================================================
+// GET LESSONS BY UNIT (PUBLIC / STUDENT)
+// =========================================================
+// The student page calls /api/units/:unitId/lessons when a unit is opened.
+// Keep this endpoint public like the existing subjects/units endpoint;
+// lesson access is enforced when the individual lesson is opened.
+app.get(
+  "/api/units/:unitId/lessons",
+  async (req, res) => {
+    try {
+      const unitId = Number(req.params.unitId);
+
+      if (!Number.isInteger(unitId)) {
+        return res.status(400).json({
+          success: false,
+          message: "معرف الوحدة غير صحيح."
+        });
+      }
+
+      const unitCheck = await pool.query(
+        `SELECT id FROM units WHERE id = $1`,
+        [unitId]
+      );
+
+      if (!unitCheck.rows.length) {
+        return res.status(404).json({
+          success: false,
+          message: "الوحدة غير موجودة."
+        });
+      }
+
+      const result = await pool.query(
+        `SELECT
+           l.id,
+           l.unit_id,
+           l.name,
+           l.description,
+           l.lesson_order,
+           l.created_at
+         FROM lessons l
+         WHERE l.unit_id = $1
+         ORDER BY l.lesson_order ASC, l.id ASC`,
+        [unitId]
+      );
+
+      return res.json({
+        success: true,
+        lessons: result.rows
+      });
+    } catch (error) {
+      console.error("Get student lessons by unit error:", error);
+      return res.status(500).json({
+        success: false,
+        message: "تعذر تحميل دروس الوحدة."
+      });
+    }
+  }
+);
+
+// =========================================================
 // GET LESSON
 // =========================================================
 
@@ -3070,168 +3129,6 @@ app.delete(
     } finally {
 
       client.release();
-    }
-  }
-);
-
-// =========================================================
-// ADMIN - LESSON CRUD
-// =========================================================
-
-app.get(
-  "/api/admin/units/:unitId/lessons",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const unitId = Number(req.params.unitId);
-      if (!Number.isInteger(unitId)) {
-        return res.status(400).json({ success: false, message: "معرف الوحدة غير صحيح." });
-      }
-      const result = await pool.query(
-        `SELECT l.id, l.unit_id, l.name, l.description, l.lesson_order, l.created_at
-         FROM lessons l
-         WHERE l.unit_id = $1
-         ORDER BY l.lesson_order ASC, l.id ASC`,
-        [unitId]
-      );
-      res.json({ success: true, lessons: result.rows });
-    } catch (error) {
-      console.error("Admin get lessons error:", error);
-      res.status(500).json({ success: false, message: "تعذر تحميل الدروس." });
-    }
-  }
-);
-
-app.post(
-  "/api/admin/lessons",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const unitId = Number(req.body.unit_id);
-      const name = String(req.body.name || "").trim();
-      const description = String(req.body.description || "").trim();
-      const lessonOrder = Number(req.body.lesson_order) || 0;
-
-      if (!Number.isInteger(unitId) || !name) {
-        return res.status(400).json({ success: false, message: "الوحدة واسم الدرس مطلوبان." });
-      }
-
-      const unitCheck = await pool.query("SELECT id FROM units WHERE id = $1", [unitId]);
-      if (!unitCheck.rows.length) {
-        return res.status(404).json({ success: false, message: "الوحدة غير موجودة." });
-      }
-
-      const result = await pool.query(
-        `INSERT INTO lessons (unit_id, name, description, lesson_order)
-         VALUES ($1, $2, $3, $4)
-         RETURNING *`,
-        [unitId, name, description || null, lessonOrder]
-      );
-
-      res.status(201).json({ success: true, message: "تمت إضافة الدرس بنجاح.", lesson: result.rows[0] });
-    } catch (error) {
-      console.error("Admin create lesson error:", error);
-      res.status(500).json({ success: false, message: "تعذر إضافة الدرس." });
-    }
-  }
-);
-
-app.get(
-  "/api/admin/lessons/:lessonId",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const lessonId = Number(req.params.lessonId);
-      if (!Number.isInteger(lessonId)) {
-        return res.status(400).json({ success: false, message: "معرف الدرس غير صحيح." });
-      }
-
-      const result = await pool.query(
-        `SELECT l.id, l.unit_id, l.name, l.description, l.lesson_order,
-                lc.video_url AS explanation_video_url,
-                lc.pdf_url AS explanation_pdf_url,
-                lc.explanation AS explanation_text,
-                ls.video_url AS solution_video_url,
-                ls.pdf_url AS solution_pdf_url,
-                ls.explanation AS solution_text
-         FROM lessons l
-         LEFT JOIN lesson_content lc ON lc.lesson_id = l.id
-         LEFT JOIN lesson_solution ls ON ls.lesson_id = l.id
-         WHERE l.id = $1`,
-        [lessonId]
-      );
-
-      if (!result.rows.length) {
-        return res.status(404).json({ success: false, message: "الدرس غير موجود." });
-      }
-
-      const quizResult = await pool.query(
-        `SELECT id, title, description, passing_percentage, questions_per_page
-         FROM quizzes WHERE lesson_id = $1 ORDER BY id DESC LIMIT 1`,
-        [lessonId]
-      );
-
-      res.json({ success: true, lesson: result.rows[0], quiz: quizResult.rows[0] || null });
-    } catch (error) {
-      console.error("Admin get lesson error:", error);
-      res.status(500).json({ success: false, message: "تعذر تحميل بيانات الدرس." });
-    }
-  }
-);
-
-app.put(
-  "/api/admin/lessons/:lessonId",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const lessonId = Number(req.params.lessonId);
-      const name = String(req.body.name || "").trim();
-      const description = String(req.body.description || "").trim();
-      const lessonOrder = Number(req.body.lesson_order) || 0;
-
-      if (!Number.isInteger(lessonId) || !name) {
-        return res.status(400).json({ success: false, message: "معرف الدرس واسم الدرس مطلوبان." });
-      }
-
-      const result = await pool.query(
-        `UPDATE lessons
-         SET name = $1, description = $2, lesson_order = $3
-         WHERE id = $4
-         RETURNING *`,
-        [name, description || null, lessonOrder, lessonId]
-      );
-
-      if (!result.rows.length) {
-        return res.status(404).json({ success: false, message: "الدرس غير موجود." });
-      }
-
-      res.json({ success: true, message: "تم تعديل الدرس بنجاح.", lesson: result.rows[0] });
-    } catch (error) {
-      console.error("Admin update lesson error:", error);
-      res.status(500).json({ success: false, message: "تعذر تعديل الدرس." });
-    }
-  }
-);
-
-app.delete(
-  "/api/admin/lessons/:lessonId",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const lessonId = Number(req.params.lessonId);
-      if (!Number.isInteger(lessonId)) {
-        return res.status(400).json({ success: false, message: "معرف الدرس غير صحيح." });
-      }
-
-      const result = await pool.query("DELETE FROM lessons WHERE id = $1 RETURNING id", [lessonId]);
-      if (!result.rows.length) {
-        return res.status(404).json({ success: false, message: "الدرس غير موجود." });
-      }
-
-      res.json({ success: true, message: "تم حذف الدرس بنجاح." });
-    } catch (error) {
-      console.error("Admin delete lesson error:", error);
-      res.status(500).json({ success: false, message: "تعذر حذف الدرس. تأكد من قيود قاعدة البيانات." });
     }
   }
 );
