@@ -1536,7 +1536,66 @@
         display: none;
       }
     }
-  </style>
+  
+
+/* =========================================================
+   DrNotes - Wallet & Paid Units
+   ========================================================= */
+.dr-wallet-panel{
+  margin:18px 0;
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  box-shadow:var(--shadow-sm);
+}
+.dr-wallet-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.dr-wallet-title{
+  color:var(--primary);
+  font-size:17px;
+  font-weight:800;
+  margin-bottom:5px;
+}
+.dr-wallet-label{color:var(--text-light);font-size:12px}
+.dr-wallet-balance{font-size:28px;font-weight:800;color:var(--primary)}
+.dr-wallet-actions{display:flex;gap:8px;flex-wrap:wrap}
+.dr-wallet-btn{
+  border:0;border-radius:10px;padding:9px 13px;font-weight:700;cursor:pointer;
+}
+.dr-wallet-btn.primary{background:var(--primary);color:#fff}
+.dr-wallet-btn.soft{background:var(--bg-soft);color:var(--primary)}
+.dr-subscriptions-list{display:grid;gap:8px;margin-top:14px}
+.dr-subscription-item{
+  display:flex;justify-content:space-between;gap:10px;align-items:center;
+  background:var(--bg-soft);border:1px solid var(--border);
+  border-radius:10px;padding:10px;font-size:12px;
+}
+.dr-wallet-empty{color:var(--text-light);font-size:12px;padding:8px 0}
+.dr-unit-price{
+  display:inline-flex;align-items:center;gap:5px;margin-right:8px;
+  padding:4px 9px;border-radius:999px;background:var(--warning-bg);
+  color:var(--warning);font-size:11px;font-weight:800;
+}
+.dr-unit-free{background:var(--success-bg);color:var(--success)}
+.dr-unit-locked{opacity:.96}
+.dr-unit-buy{
+  margin-right:auto;border:0;border-radius:9px;padding:8px 12px;
+  background:var(--accent);color:#172b36;font-weight:800;cursor:pointer;
+}
+.dr-unit-buy:hover{transform:translateY(-1px)}
+.dr-unit-access{font-size:11px;font-weight:700;color:var(--success)}
+@media(max-width:700px){
+  .dr-wallet-balance{font-size:23px}
+  .dr-unit-buy{margin-right:0}
+  .dr-subscription-item{flex-direction:column;align-items:flex-start}
+}
+</style>
 </head>
 
 <body>
@@ -1937,6 +1996,36 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- =========================================================
+           WALLET - تحت لوحة الطالب مباشرة
+           ========================================================= -->
+      <div
+        id="dr-wallet-panel"
+        class="dr-wallet-panel"
+        style="display:none;"
+      >
+        <div class="dr-wallet-top">
+          <div>
+            <div class="dr-wallet-title">
+              <i class="fa-solid fa-wallet"></i> المحفظة
+            </div>
+            <div>
+              <span id="dr-wallet-balance" class="dr-wallet-balance">0.00</span>
+              <span class="dr-wallet-label">دينار ليبي</span>
+            </div>
+          </div>
+          <div class="dr-wallet-actions">
+            <button class="dr-wallet-btn soft" type="button" onclick="DrNotesWallet.refresh()">
+              <i class="fa-solid fa-rotate"></i> تحديث الرصيد
+            </button>
+            <button class="dr-wallet-btn primary" type="button" onclick="DrNotesWallet.showSubscriptions()">
+              <i class="fa-solid fa-graduation-cap"></i> اشتراكاتي
+            </button>
+          </div>
+        </div>
+        <div id="dr-wallet-subscriptions" class="dr-subscriptions-list" style="display:none"></div>
       </div>
 
     </div>
@@ -2468,7 +2557,6 @@ function initializeAuthentication() {
     try {
       currentUser = JSON.parse(savedUser);
       updateAuthUI(currentUser);
-      if (window.DrNotesWallet) DrNotesWallet.refresh();
       loadUserProgress();
       updateDashboard();
     } catch (error) {
@@ -2511,6 +2599,10 @@ function updateAuthUI(user) {
     if (welcome) {
       welcome.textContent =
         `مرحبًا ${displayName}، واصل رحلتك التعليمية.`;
+    }
+
+    if (window.DrNotesWallet) {
+      window.DrNotesWallet.refresh();
     }
 
   } else {
@@ -2701,8 +2793,6 @@ async function loginWithAPI(email, password) {
 
     updateAuthUI(currentUser);
 
-    if (window.DrNotesWallet) await DrNotesWallet.refresh();
-
     await loadUserProgress();
 
     updateDashboard();
@@ -2780,8 +2870,6 @@ async function registerWithAPI(
 
     updateAuthUI(currentUser);
 
-    if (window.DrNotesWallet) await DrNotesWallet.refresh();
-
     await loadUserProgress();
 
     updateDashboard();
@@ -2835,9 +2923,6 @@ function logout() {
   };
 
   updateAuthUI(null);
-
-  const walletPanel = document.getElementById("dr-wallet-panel");
-  if (walletPanel) walletPanel.remove();
 
   showHome();
 
@@ -4707,135 +4792,7 @@ function setAuthLoading(
   </script>
 <!-- =========================================================
      DrNotes - نظام الوضع الليلي والصباحي الكامل
-     ضع الكود مباشرة قبل 
-<style id="dr-wallet-styles">
-.dr-wallet-panel{margin:18px 0;background:var(--white);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow-sm)}
-.dr-wallet-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.dr-wallet-balance{font-size:28px;font-weight:800;color:var(--primary)}
-.dr-wallet-label{color:var(--text-light);font-size:12px}
-.dr-wallet-actions{display:flex;gap:8px;flex-wrap:wrap}
-.dr-wallet-btn{border:0;border-radius:10px;padding:9px 13px;font-weight:700;cursor:pointer}
-.dr-wallet-btn.primary{background:var(--primary);color:#fff}
-.dr-wallet-btn.soft{background:var(--bg-soft);color:var(--primary)}
-.dr-unit-price{display:inline-flex;align-items:center;gap:5px;margin-right:8px;padding:4px 9px;border-radius:999px;background:var(--warning-bg);color:var(--warning);font-size:11px;font-weight:800}
-.dr-unit-free{background:var(--success-bg);color:var(--success)}
-.dr-unit-locked{opacity:.9}
-.dr-unit-buy{margin-right:auto;border:0;border-radius:9px;padding:8px 12px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
-.dr-unit-buy:disabled{opacity:.6;cursor:not-allowed}
-.dr-unit-access{font-size:11px;font-weight:700;color:var(--success)}
-.dr-subscriptions-list{display:grid;gap:8px;margin-top:12px}
-.dr-subscription-item{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--bg-soft);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:12px}
-.dr-wallet-empty{color:var(--text-light);font-size:12px;padding:8px 0}
-@media(max-width:700px){.dr-wallet-balance{font-size:23px}.dr-unit-buy{margin-right:0}.dr-subscription-item{flex-direction:column;align-items:flex-start}}
-</style>
-
-
-<script id="dr-wallet-system">
-(function(){
-  "use strict";
-  let walletBalance=0;
-  let subscriptions=[];
-
-  function token(){ return localStorage.getItem("drnotes_token") || ""; }
-  function money(v){ const n=Number(v||0); return Number.isFinite(n)?n.toFixed(2):"0.00"; }
-  function esc(v){ return typeof escapeHtml === "function" ? escapeHtml(v) : String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])); }
-
-  function ensurePanel(){
-    const dash=document.getElementById("dashboard-section");
-    if(!dash || !currentUser) return;
-    let panel=document.getElementById("dr-wallet-panel");
-    if(panel) return;
-    const container=dash.querySelector(".container");
-    if(!container) return;
-    panel=document.createElement("div");
-    panel.id="dr-wallet-panel";
-    panel.className="dr-wallet-panel";
-    panel.innerHTML=`
-      <div class="dr-wallet-top">
-        <div>
-          <div class="dr-wallet-label"><i class="fa-solid fa-wallet"></i> رصيد محفظتك</div>
-          <div><span id="dr-wallet-balance" class="dr-wallet-balance">0.00</span> <span class="dr-wallet-label">دينار ليبي</span></div>
-        </div>
-        <div class="dr-wallet-actions">
-          <button class="dr-wallet-btn soft" type="button" onclick="DrNotesWallet.refresh()"><i class="fa-solid fa-rotate"></i> تحديث</button>
-          <button class="dr-wallet-btn primary" type="button" onclick="DrNotesWallet.showSubscriptions()"><i class="fa-solid fa-graduation-cap"></i> اشتراكاتي</button>
-        </div>
-      </div>
-      <div id="dr-wallet-subscriptions" class="dr-subscriptions-list" style="display:none"></div>
-    `;
-    container.insertBefore(panel, container.querySelector(".stats-grid"));
-  }
-
-  function setBalance(v){
-    walletBalance=Number(v||0);
-    const el=document.getElementById("dr-wallet-balance");
-    if(el) el.textContent=money(walletBalance);
-  }
-
-  async function refresh(){
-    if(!currentUser || !token()){
-      const panel=document.getElementById("dr-wallet-panel");
-      if(panel) panel.remove();
-      return;
-    }
-    ensurePanel();
-    try{
-      const data=await apiRequest("/wallet");
-      setBalance(data?.wallet?.balance ?? 0);
-      await loadSubscriptions(false);
-    }catch(e){ console.warn("Wallet refresh:",e.message); }
-  }
-
-  async function loadSubscriptions(show){
-    if(!currentUser || !token()) return;
-    try{
-      const data=await apiRequest("/subscriptions");
-      subscriptions=Array.isArray(data?.subscriptions)?data.subscriptions:[];
-      if(show) renderSubscriptions();
-    }catch(e){ console.warn("Subscriptions:",e.message); }
-  }
-
-  function renderSubscriptions(){
-    const box=document.getElementById("dr-wallet-subscriptions");
-    if(!box) return;
-    box.style.display="block";
-    if(!subscriptions.length){ box.innerHTML='<div class="dr-wallet-empty">لا توجد اشتراكات حتى الآن.</div>'; return; }
-    box.innerHTML=subscriptions.map(s=>`<div class="dr-subscription-item"><div><strong>${esc(s.subject_name||"")}</strong> — ${esc(s.unit_name||"")}</div><span>${money(s.price_paid)} دينار</span></div>`).join("");
-  }
-
-  async function showSubscriptions(){
-    ensurePanel();
-    await loadSubscriptions(true);
-  }
-
-  async function purchase(unitId){
-    if(!currentUser){ showToast("يجب تسجيل الدخول أولًا.","warning"); openAuth("login"); return; }
-    const unit=(typeof drUnits!=="undefined"?drUnits:[]).find(u=>Number(u.id)===Number(unitId));
-    if(!unit) return;
-    if(unit.has_access){ showToast("هذه الوحدة متاحة لك بالفعل.","success"); return; }
-    const price=Number(unit.price||0);
-    const confirmText=unit.is_free ? `هل تريد الاشتراك في الوحدة المجانية «${unit.name}»؟` : `سعر الوحدة «${unit.name}» هو ${money(price)} دينار.\nرصيدك الحالي: ${money(walletBalance)} دينار.\nهل تريد الشراء؟`;
-    if(!confirm(confirmText)) return;
-    try{
-      const data=await apiRequest(`/units/${unitId}/purchase`,{method:"POST"});
-      if(data?.balance!==null && data?.balance!==undefined) setBalance(data.balance);
-      unit.has_access=true;
-      showToast(data?.message||"تم شراء الوحدة بنجاح.","success");
-      await loadSubscriptions(false);
-      await drRenderUnits(drCurrentSubjectId);
-    }catch(e){
-      showToast(e.message||"تعذر شراء الوحدة.","error");
-    }
-  }
-
-  window.DrNotesWallet={refresh,showSubscriptions,purchase,getBalance:()=>walletBalance};
-  window.drPurchaseUnit=purchase;
-
-  document.addEventListener("DOMContentLoaded",()=>setTimeout(refresh,500));
-})();
-</script>
-
-</body>
+     ضع الكود مباشرة قبل </body>
 ========================================================= -->
 
 <style>
@@ -5826,9 +5783,14 @@ body * {
         const free = !!unit.is_free;
         const access = !!unit.has_access;
         const price = Number(unit.price || 0);
+
         return `
           <div class="dr-unit ${access ? "" : "dr-unit-locked"}">
-            <button class="dr-unit-header" type="button" onclick="drToggleUnit(${unit.id})">
+            <button
+              class="dr-unit-header"
+              type="button"
+              onclick="drToggleUnit(${unit.id})"
+            >
               <span class="dr-unit-title">
                 <i class="fa-solid ${access ? "fa-layer-group" : "fa-lock"}"></i>
                 ${escapeHtml(unit.name || `الوحدة ${index + 1}`)}
@@ -5838,14 +5800,31 @@ body * {
               </span>
               <i id="dr-unit-icon-${unit.id}" class="fa-solid fa-chevron-down"></i>
             </button>
-            <div id="dr-unit-lessons-${unit.id}" class="dr-unit-lessons hidden">
+
+            <div
+              id="dr-unit-lessons-${unit.id}"
+              class="dr-unit-lessons hidden"
+            >
               <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 5px 12px;">
                 <span class="dr-unit-access">
                   ${access ? "✓ متاحة لك" : "🔒 تحتاج شراء الوحدة"}
                 </span>
-                ${access ? "" : `<button type="button" class="dr-unit-buy" onclick="event.stopPropagation();drPurchaseUnit(${unit.id})"><i class="fa-solid fa-cart-shopping"></i> شراء الوحدة</button>`}
+                ${access ? "" : `
+                  <button
+                    type="button"
+                    class="dr-unit-buy"
+                    onclick="event.stopPropagation();drPurchaseUnit(${unit.id})"
+                  >
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    ${free ? "فتح الوحدة" : "شراء الوحدة"}
+                  </button>
+                `}
               </div>
-              ${access ? `<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>جاري تحميل الدروس...</p></div>` : `<div class="empty-state"><i class="fa-solid fa-lock"></i><p>اشترِ الوحدة لفتح دروسها ومحتواها.</p></div>`}
+
+              ${access
+                ? `<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>جاري تحميل الدروس...</p></div>`
+                : `<div class="empty-state"><i class="fa-solid fa-lock"></i><p>اشترِ الوحدة لفتح دروسها ومحتواها.</p></div>`
+              }
             </div>
           </div>
         `;
@@ -5859,57 +5838,105 @@ body * {
 
   window.drToggleUnit = async function (unitId) {
 
-    const unit = drUnits.find(u => Number(u.id) === Number(unitId));
+    const unit = drUnits.find(
+      item => Number(item.id) === Number(unitId)
+    );
+
     if (!unit) return;
 
-    const box = document.getElementById(`dr-unit-lessons-${unitId}`);
-    const icon = document.getElementById(`dr-unit-icon-${unitId}`);
-    if (!box) return;
-
     if (!unit.has_access) {
-      if (box.classList.contains("hidden")) {
-        box.classList.remove("hidden");
-        if (icon) icon.className = "fa-solid fa-chevron-up";
-      } else {
-        box.classList.add("hidden");
-        if (icon) icon.className = "fa-solid fa-chevron-down";
+      if (window.drPurchaseUnit) {
+        await window.drPurchaseUnit(unitId);
       }
       return;
     }
 
+    const box =
+      document.getElementById(
+        `dr-unit-lessons-${unitId}`
+      );
+
+    const icon =
+      document.getElementById(
+        `dr-unit-icon-${unitId}`
+      );
+
+    if (!box) return;
+
     if (!box.classList.contains("hidden")) {
+
       box.classList.add("hidden");
-      if (icon) icon.className = "fa-solid fa-chevron-down";
+
+      if (icon) {
+        icon.className =
+          "fa-solid fa-chevron-down";
+      }
+
       return;
     }
 
     box.classList.remove("hidden");
-    if (icon) icon.className = "fa-solid fa-chevron-up";
 
-    const lessons = await drLoadLessons(unitId);
+    if (icon) {
+      icon.className =
+        "fa-solid fa-chevron-up";
+    }
+
+    const lessons =
+      await drLoadLessons(unitId);
 
     if (!lessons.length) {
+
       box.innerHTML = `
         <div class="empty-state">
           <i class="fa-solid fa-book"></i>
           <p>لا توجد دروس في هذه الوحدة حاليًا.</p>
         </div>
       `;
+
       return;
     }
 
-    box.innerHTML = lessons.map((lesson, index) => `
-      <button type="button" class="dr-lesson-row" onclick="drOpenLesson(${lesson.id})">
-        <span class="dr-lesson-info">
-          <span class="dr-lesson-number">${index + 1}</span>
-          <span>
-            <span class="dr-lesson-name">${escapeHtml(lesson.name || `الدرس ${index + 1}`)}</span>
-            ${lesson.description ? `<span class="dr-lesson-description">${escapeHtml(lesson.description)}</span>` : ""}
+    box.innerHTML =
+      lessons.map((lesson, index) => `
+        <button
+          type="button"
+          class="dr-lesson-row"
+          onclick="drOpenLesson(${lesson.id})"
+        >
+
+          <span class="dr-lesson-info">
+
+            <span class="dr-lesson-number">
+              ${index + 1}
+            </span>
+
+            <span>
+              <span class="dr-lesson-name">
+                ${escapeHtml(lesson.name)}
+              </span>
+
+              ${
+                lesson.description
+                  ? `
+                    <span class="dr-lesson-description">
+                      ${escapeHtml(
+                        lesson.description
+                      )}
+                    </span>
+                  `
+                  : ""
+              }
+
+            </span>
+
           </span>
-        </span>
-        <i class="fa-solid fa-arrow-left dr-arrow"></i>
-      </button>
-    `).join("");
+
+          <i class="fa-solid fa-arrow-left dr-arrow"></i>
+
+        </button>
+      `).join("");
+
   };
 
   /* =========================================================
@@ -5958,9 +5985,6 @@ body * {
 
       drCurrentLessonId =
         lesson.id;
-
-      drCurrentUnitId =
-        Number(lesson.unit_id || drCurrentUnitId || 0);
 
       // تسجيل فتح الدرس على السيرفر حتى يستمر التقدم بعد تسجيل الخروج أو من جهاز آخر.
       try {
@@ -6111,10 +6135,14 @@ body * {
 
       content.innerHTML = `
         <div class="empty-state">
-          <i class="fa-solid ${error.status === 403 ? "fa-lock" : "fa-circle-exclamation"}"></i>
-          <h3>${error.status === 403 ? "الوحدة غير متاحة لك" : "تعذر تحميل الدرس"}</h3>
-          <p>${escapeHtml(error.message || "حدث خطأ غير متوقع.")}</p>
-          ${error.status === 403 && drCurrentUnitId ? `<button class="btn btn-primary" type="button" onclick="drPurchaseUnit(${drCurrentUnitId})"><i class="fa-solid fa-cart-shopping"></i> شراء الوحدة</button>` : ""}
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <h3>تعذر تحميل الدرس</h3>
+          <p>
+            ${escapeHtml(
+              error.message ||
+              "حدث خطأ غير متوقع."
+            )}
+          </p>
         </div>
       `;
 
@@ -7001,5 +7029,165 @@ body * {
 
 })();
   </script>
+
+
+<script id="dr-wallet-system">
+(function () {
+  "use strict";
+
+  let walletBalance = 0;
+  let subscriptions = [];
+
+  function token() {
+    return localStorage.getItem("drnotes_token") || "";
+  }
+
+  function money(value) {
+    const n = Number(value || 0);
+    return Number.isFinite(n) ? n.toFixed(2) : "0.00";
+  }
+
+  function setBalance(value) {
+    walletBalance = Number(value || 0);
+    const el = document.getElementById("dr-wallet-balance");
+    if (el) el.textContent = money(walletBalance);
+  }
+
+  async function refresh() {
+    const panel = document.getElementById("dr-wallet-panel");
+
+    if (!currentUser || !token()) {
+      if (panel) panel.style.display = "none";
+      return;
+    }
+
+    if (panel) panel.style.display = "block";
+
+    try {
+      const data = await apiRequest("/wallet");
+      setBalance(data?.wallet?.balance ?? 0);
+      await loadSubscriptions(false);
+    } catch (error) {
+      console.warn("DrNotes wallet:", error.message);
+    }
+  }
+
+  async function loadSubscriptions(show) {
+    if (!currentUser || !token()) return;
+
+    try {
+      const data = await apiRequest("/subscriptions");
+      subscriptions = Array.isArray(data?.subscriptions)
+        ? data.subscriptions
+        : [];
+
+      if (show) renderSubscriptions();
+    } catch (error) {
+      console.warn("DrNotes subscriptions:", error.message);
+    }
+  }
+
+  function renderSubscriptions() {
+    const box = document.getElementById("dr-wallet-subscriptions");
+    if (!box) return;
+
+    box.style.display = "block";
+
+    if (!subscriptions.length) {
+      box.innerHTML = '<div class="dr-wallet-empty">لا توجد اشتراكات حتى الآن.</div>';
+      return;
+    }
+
+    box.innerHTML = subscriptions.map(item => `
+      <div class="dr-subscription-item">
+        <div>
+          <strong>${escapeHtml(item.subject_name || "")}</strong>
+          — ${escapeHtml(item.unit_name || "")}
+        </div>
+        <span>${money(item.price_paid)} دينار</span>
+      </div>
+    `).join("");
+  }
+
+  async function showSubscriptions() {
+    await loadSubscriptions(true);
+  }
+
+  async function purchase(unitId) {
+    if (!currentUser) {
+      showToast("يجب تسجيل الدخول أولًا.", "warning");
+      openAuth("login");
+      return;
+    }
+
+    const unit = (typeof drUnits !== "undefined" ? drUnits : [])
+      .find(item => Number(item.id) === Number(unitId));
+
+    if (!unit) return;
+
+    if (unit.has_access) {
+      showToast("هذه الوحدة متاحة لك بالفعل.", "success");
+      return;
+    }
+
+    const price = Number(unit.price || 0);
+
+    if (!unit.is_free && walletBalance < price) {
+      showToast(
+        `رصيدك غير كافٍ. سعر الوحدة ${money(price)} دينار ورصيدك ${money(walletBalance)} دينار.`,
+        "warning"
+      );
+      return;
+    }
+
+    const question = unit.is_free
+      ? `هل تريد فتح الوحدة المجانية «${unit.name}»؟`
+      : `سعر الوحدة «${unit.name}» هو ${money(price)} دينار.\nرصيدك الحالي: ${money(walletBalance)} دينار.\nهل تريد الشراء؟`;
+
+    if (!window.confirm(question)) return;
+
+    try {
+      const data = await apiRequest(
+        `/units/${unitId}/purchase`,
+        { method: "POST" }
+      );
+
+      if (data?.balance !== null && data?.balance !== undefined) {
+        setBalance(data.balance);
+      }
+
+      unit.has_access = true;
+
+      showToast(
+        data?.message || "تم شراء الوحدة بنجاح.",
+        "success"
+      );
+
+      await loadSubscriptions(false);
+      await drRenderUnits(drCurrentSubjectId);
+
+    } catch (error) {
+      showToast(
+        error.message || "تعذر شراء الوحدة.",
+        "error"
+      );
+    }
+  }
+
+  window.DrNotesWallet = {
+    refresh,
+    showSubscriptions,
+    purchase,
+    getBalance: () => walletBalance
+  };
+
+  window.drPurchaseUnit = purchase;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(refresh, 600);
+  });
+
+})();
+</script>
 </body>
   </html>
