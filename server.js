@@ -1717,6 +1717,193 @@ app.get(
 );
 
 // =========================================================
+// GET LESSONS BY UNIT - STUDENT
+// =========================================================
+
+app.get(
+  "/api/units/:unitId/lessons",
+  requireUser,
+  async (req, res) => {
+    try {
+      const unitId = Number(req.params.unitId);
+
+      if (!Number.isInteger(unitId)) {
+        return res.status(400).json({
+          success: false,
+          message: "معرف الوحدة غير صحيح."
+        });
+      }
+
+      const unitResult = await pool.query(
+        `
+        SELECT
+          u.id,
+          u.name,
+          u.is_free,
+          u.price
+        FROM units u
+        WHERE u.id = $1
+        `,
+        [unitId]
+      );
+
+      if (unitResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "الوحدة غير موجودة."
+        });
+      }
+
+      const access = await checkUnitAccess(
+        req.user.id,
+        unitId
+      );
+
+      const hasAccess = Boolean(
+        access && access.has_access
+      );
+
+      const lessonsResult = await pool.query(
+        `
+        SELECT
+          l.id,
+          l.name,
+          l.description,
+          l.lesson_order,
+
+          lc.video_url,
+          lc.pdf_url,
+          lc.explanation,
+
+          ls.video_url AS solution_video_url,
+          ls.pdf_url AS solution_pdf_url,
+          ls.explanation AS solution_explanation,
+
+          q.id AS quiz_id,
+          q.title AS quiz_title,
+          q.description AS quiz_description,
+          q.passing_percentage,
+          q.questions_per_page
+
+        FROM lessons l
+
+        LEFT JOIN lesson_content lc
+          ON lc.lesson_id = l.id
+
+        LEFT JOIN lesson_solution ls
+          ON ls.lesson_id = l.id
+
+        LEFT JOIN quizzes q
+          ON q.lesson_id = l.id
+
+        WHERE l.unit_id = $1
+
+        ORDER BY
+          l.lesson_order ASC,
+          l.id ASC
+        `,
+        [unitId]
+      );
+
+      let lessons = lessonsResult.rows.map((lesson) => ({
+        id: lesson.id,
+        name: lesson.name,
+        title: lesson.name,
+        description: lesson.description || "",
+        lesson_order: lesson.lesson_order,
+
+        // لا نرسل المحتوى المدفوع للطالب قبل الاشتراك.
+        video: hasAccess ? (lesson.video_url || "") : "",
+        video_url: hasAccess ? (lesson.video_url || "") : "",
+        pdf_url: hasAccess ? (lesson.pdf_url || "") : "",
+        explanation: hasAccess ? (lesson.explanation || "") : "",
+
+        solution_video_url: hasAccess
+          ? (lesson.solution_video_url || "")
+          : "",
+        solution_pdf_url: hasAccess
+          ? (lesson.solution_pdf_url || "")
+          : "",
+        solution_explanation: hasAccess
+          ? (lesson.solution_explanation || "")
+          : "",
+
+        quiz: []
+      }));
+
+      // تحميل أسئلة الاختبارات فقط للطالب الذي لديه صلاحية.
+      if (hasAccess) {
+        const quizIds = lessons
+          .map((lesson, index) => ({
+            index,
+            quizId: lessonsResult.rows[index].quiz_id
+          }))
+          .filter((item) => item.quizId);
+
+        for (const item of quizIds) {
+          const questionsResult = await pool.query(
+            `
+            SELECT
+              question_text,
+              option_a,
+              option_b,
+              option_c,
+              option_d,
+              correct_answer,
+              explanation,
+              question_order
+            FROM quiz_questions
+            WHERE quiz_id = $1
+            ORDER BY
+              question_order ASC,
+              id ASC
+            `,
+            [item.quizId]
+          );
+
+          lessons[item.index].quiz =
+            questionsResult.rows.map((question) => ({
+              question: question.question_text,
+              options: [
+                question.option_a,
+                question.option_b,
+                question.option_c,
+                question.option_d
+              ],
+              answer: {
+                A: 0,
+                B: 1,
+                C: 2,
+                D: 3
+              }[String(question.correct_answer).toUpperCase()],
+              explanation: question.explanation || ""
+            }));
+        }
+      }
+
+      res.json({
+        success: true,
+        has_access: hasAccess,
+        requires_subscription: !hasAccess,
+        unit: unitResult.rows[0],
+        lessons
+      });
+
+    } catch (error) {
+      console.error(
+        "Get student lessons by unit error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message: "تعذر تحميل دروس الوحدة."
+      });
+    }
+  }
+);
+
+// =========================================================
 // GET LESSON
 // =========================================================
 
@@ -3069,183 +3256,6 @@ app.delete(
 
     } finally {
 
-      client.release();
-    }
-  }
-);
-
-// =========================================================
-// ADMIN - LESSON CRUD
-// =========================================================
-
-app.get(
-  "/api/admin/units/:unitId/lessons",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const unitId = Number(req.params.unitId);
-      if (!Number.isInteger(unitId)) return res.status(400).json({ success:false, message:"معرف الوحدة غير صحيح." });
-
-      const result = await pool.query(`
-        SELECT
-          l.id, l.unit_id, l.name, l.description, l.lesson_order, l.created_at,
-          lc.video_url AS explanation_video_url,
-          lc.pdf_url AS explanation_pdf_url,
-          lc.explanation AS explanation_text,
-          ls.video_url AS solution_video_url,
-          ls.pdf_url AS solution_pdf_url,
-          ls.explanation AS solution_text,
-          q.id AS quiz_id,
-          q.title AS quiz_title,
-          q.description AS quiz_description,
-          q.passing_percentage,
-          q.questions_per_page
-        FROM lessons l
-        LEFT JOIN lesson_content lc ON lc.lesson_id = l.id
-        LEFT JOIN lesson_solution ls ON ls.lesson_id = l.id
-        LEFT JOIN quizzes q ON q.lesson_id = l.id
-        WHERE l.unit_id = $1
-        ORDER BY l.lesson_order ASC, l.id ASC
-      `, [unitId]);
-
-      res.json({ success:true, lessons:result.rows });
-    } catch (error) {
-      console.error("Admin get lessons error:", error);
-      res.status(500).json({ success:false, message:"تعذر تحميل الدروس." });
-    }
-  }
-);
-
-app.post(
-  "/api/admin/lessons",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const unitId = Number(req.body.unit_id);
-      const name = String(req.body.name || "").trim();
-      const description = req.body.description || null;
-      const lessonOrder = Number(req.body.lesson_order) || 0;
-
-      if (!Number.isInteger(unitId) || !name) {
-        return res.status(400).json({ success:false, message:"معرف الوحدة واسم الدرس مطلوبان." });
-      }
-
-      const unit = await pool.query("SELECT id FROM units WHERE id=$1", [unitId]);
-      if (!unit.rows.length) return res.status(404).json({ success:false, message:"الوحدة غير موجودة." });
-
-      const result = await pool.query(`
-        INSERT INTO lessons (unit_id, name, description, lesson_order)
-        VALUES ($1,$2,$3,$4)
-        RETURNING *
-      `, [unitId, name, description, lessonOrder]);
-
-      res.status(201).json({ success:true, message:"تمت إضافة الدرس بنجاح.", lesson:result.rows[0] });
-    } catch (error) {
-      console.error("Admin create lesson error:", error);
-      res.status(500).json({ success:false, message:"تعذر إضافة الدرس." });
-    }
-  }
-);
-
-app.get(
-  "/api/admin/lessons/:lessonId",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const lessonId = Number(req.params.lessonId);
-      if (!Number.isInteger(lessonId)) return res.status(400).json({ success:false, message:"معرف الدرس غير صحيح." });
-
-      const result = await pool.query(`
-        SELECT
-          l.id, l.unit_id, l.name, l.description, l.lesson_order, l.created_at,
-          lc.video_url AS explanation_video_url,
-          lc.pdf_url AS explanation_pdf_url,
-          lc.explanation AS explanation_text,
-          ls.video_url AS solution_video_url,
-          ls.pdf_url AS solution_pdf_url,
-          ls.explanation AS solution_text,
-          q.id AS quiz_id,
-          q.title AS quiz_title,
-          q.description AS quiz_description,
-          q.passing_percentage,
-          q.questions_per_page
-        FROM lessons l
-        LEFT JOIN lesson_content lc ON lc.lesson_id=l.id
-        LEFT JOIN lesson_solution ls ON ls.lesson_id=l.id
-        LEFT JOIN quizzes q ON q.lesson_id=l.id
-        WHERE l.id=$1
-      `, [lessonId]);
-
-      if (!result.rows.length) return res.status(404).json({ success:false, message:"الدرس غير موجود." });
-      res.json({ success:true, lesson:result.rows[0] });
-    } catch (error) {
-      console.error("Admin get lesson error:", error);
-      res.status(500).json({ success:false, message:"تعذر تحميل بيانات الدرس." });
-    }
-  }
-);
-
-app.put(
-  "/api/admin/lessons/:lessonId",
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const lessonId = Number(req.params.lessonId);
-      const name = String(req.body.name || "").trim();
-      const description = req.body.description || null;
-      const lessonOrder = Number(req.body.lesson_order) || 0;
-
-      if (!Number.isInteger(lessonId) || !name) return res.status(400).json({ success:false, message:"بيانات الدرس غير مكتملة." });
-
-      const result = await pool.query(`
-        UPDATE lessons
-        SET name=$1, description=$2, lesson_order=$3
-        WHERE id=$4
-        RETURNING *
-      `, [name, description, lessonOrder, lessonId]);
-
-      if (!result.rows.length) return res.status(404).json({ success:false, message:"الدرس غير موجود." });
-      res.json({ success:true, message:"تم تعديل الدرس بنجاح.", lesson:result.rows[0] });
-    } catch (error) {
-      console.error("Admin update lesson error:", error);
-      res.status(500).json({ success:false, message:"تعذر تعديل الدرس." });
-    }
-  }
-);
-
-app.delete(
-  "/api/admin/lessons/:lessonId",
-  requireAdmin,
-  async (req, res) => {
-    const client = await pool.connect();
-    try {
-      const lessonId = Number(req.params.lessonId);
-      if (!Number.isInteger(lessonId)) return res.status(400).json({ success:false, message:"معرف الدرس غير صحيح." });
-
-      await client.query("BEGIN");
-      const exists = await client.query("SELECT id FROM lessons WHERE id=$1", [lessonId]);
-      if (!exists.rows.length) {
-        await client.query("ROLLBACK");
-        return res.status(404).json({ success:false, message:"الدرس غير موجود." });
-      }
-
-      await client.query(`DELETE FROM quiz_answers WHERE attempt_id IN (SELECT id FROM quiz_attempts WHERE quiz_id IN (SELECT id FROM quizzes WHERE lesson_id=$1))`, [lessonId]);
-      await client.query(`DELETE FROM quiz_attempts WHERE quiz_id IN (SELECT id FROM quizzes WHERE lesson_id=$1)`, [lessonId]);
-      await client.query(`DELETE FROM quiz_questions WHERE quiz_id IN (SELECT id FROM quizzes WHERE lesson_id=$1)`, [lessonId]);
-      await client.query(`DELETE FROM quizzes WHERE lesson_id=$1`, [lessonId]);
-      await client.query(`DELETE FROM lesson_content WHERE lesson_id=$1`, [lessonId]);
-      await client.query(`DELETE FROM lesson_solution WHERE lesson_id=$1`, [lessonId]);
-      await client.query(`DELETE FROM lesson_progress WHERE lesson_id=$1`, [lessonId]);
-      await client.query(`DELETE FROM favorites WHERE lesson_id=$1`, [lessonId]);
-      await client.query(`DELETE FROM lessons WHERE id=$1`, [lessonId]);
-
-      await client.query("COMMIT");
-      res.json({ success:true, message:"تم حذف الدرس وبياناته المرتبطة بنجاح." });
-    } catch (error) {
-      try { await client.query("ROLLBACK"); } catch (_) {}
-      console.error("Admin delete lesson error:", error);
-      res.status(500).json({ success:false, message:"تعذر حذف الدرس." });
-    } finally {
       client.release();
     }
   }
