@@ -7150,147 +7150,60 @@ body * {
     if (!currentUser) {
       showToast("يجب تسجيل الدخول أولًا.", "warning");
       openAuth("login");
-      return false;
+      return;
     }
 
-    let targetUnit = (typeof drUnits !== "undefined" ? drUnits : [])
+    const unit = (typeof drUnits !== "undefined" ? drUnits : [])
       .find(item => Number(item.id) === Number(unitId));
 
-    // إذا لم تكن الوحدة محملة في الذاكرة، اجلبها من السيرفر.
-    if (!targetUnit && drCurrentSubjectId) {
-      try {
-        await drLoadUnits(drCurrentSubjectId);
-        targetUnit = (typeof drUnits !== "undefined" ? drUnits : [])
-          .find(item => Number(item.id) === Number(unitId));
-      } catch (_) {}
+    if (!unit) return;
+
+    if (unit.has_access) {
+      showToast("هذه الوحدة متاحة لك بالفعل.", "success");
+      return;
     }
 
-    if (!targetUnit) {
-      showToast("تعذر العثور على بيانات الوحدة. أعد تحميل الصفحة.", "error");
-      return false;
+    const price = Number(unit.price || 0);
+
+    if (!unit.is_free && walletBalance < price) {
+      showToast(
+        `رصيدك غير كافٍ. سعر الوحدة ${money(price)} دينار ورصيدك ${money(walletBalance)} دينار.`,
+        "warning"
+      );
+      return;
     }
 
-    if (targetUnit.has_access) {
-      showToast("أنت مشترك بالفعل في هذه الوحدة.", "success");
-      return true;
-    }
+    const question = unit.is_free
+      ? `هل تريد فتح الوحدة المجانية «${unit.name}»؟`
+      : `سعر الوحدة «${unit.name}» هو ${money(price)} دينار.\nرصيدك الحالي: ${money(walletBalance)} دينار.\nهل تريد الشراء؟`;
 
-    const price = Number(targetUnit.price || 0);
-    const free = !!targetUnit.is_free;
-
-    const question = free
-      ? `هل تريد الاشتراك في الوحدة المجانية «${targetUnit.name}»؟`
-      : `سعر الوحدة «${targetUnit.name}» هو ${money(price)} دينار.\nهل تريد الاشتراك؟`;
-
-    if (!window.confirm(question)) return false;
-
-    // لا نعتمد على walletBalance المحلي؛ السيرفر هو المصدر الحقيقي للرصيد.
-    const buttons = document.querySelectorAll(
-      `[onclick*="drPurchaseUnit(${Number(unitId)})"]`
-    );
-    buttons.forEach(btn => {
-      btn.disabled = true;
-      btn.dataset.oldText = btn.innerHTML;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الاشتراك...';
-    });
+    if (!window.confirm(question)) return;
 
     try {
       const data = await apiRequest(
-        `/units/${encodeURIComponent(Number(unitId))}/purchase`,
-        {
-          method: "POST",
-          headers: { "Accept": "application/json" }
-        }
+        `/units/${unitId}/purchase`,
+        { method: "POST" }
       );
 
       if (data?.balance !== null && data?.balance !== undefined) {
         setBalance(data.balance);
-      } else {
-        // تحديث الرصيد حتى في الوحدات المجانية/الاستجابات التي لا تعيد balance.
-        try { await refresh(); } catch (_) {}
       }
 
-      targetUnit.has_access = true;
-      targetUnit.is_subscribed = true;
+      unit.has_access = true;
 
       showToast(
-        data?.message || "تم الاشتراك في الوحدة بنجاح.",
+        data?.message || "تم شراء الوحدة بنجاح.",
         "success"
       );
 
       await loadSubscriptions(false);
-
-      // افتح الوحدة الحالية وأعد تحميل قائمة الدروس فورًا.
-      drCurrentUnitId = Number(unitId);
-      const box = document.getElementById(`dr-unit-lessons-${unitId}`);
-      const icon = document.getElementById(`dr-unit-icon-${unitId}`);
-
-      if (box) {
-        box.classList.remove("hidden");
-        if (icon) icon.className = "fa-solid fa-chevron-up";
-        box.innerHTML = `
-          <div style="padding:10px;text-align:center;color:var(--text-light);">
-            <i class="fa-solid fa-spinner fa-spin"></i>
-            جاري فتح محتوى الوحدة...
-          </div>`;
-
-        const lessons = await drLoadLessons(unitId);
-        if (lessons.length) {
-          box.innerHTML = lessons.map((lesson, index) => `
-            <button type="button" class="dr-lesson-row"
-              onclick="drOpenLesson(${Number(lesson.id)}, true)">
-              <span class="dr-lesson-info">
-                <span class="dr-lesson-number">${index + 1}</span>
-                <span>
-                  <span class="dr-lesson-name">${escapeHtml(lesson.name || `الدرس ${index + 1}`)}</span>
-                  ${lesson.description ? `<span class="dr-lesson-description">${escapeHtml(lesson.description)}</span>` : ""}
-                  <span class="dr-lesson-description" style="margin-top:5px;">
-                    ${lesson.has_video ? "🎥 فيديو شرح" : ""}
-                    ${lesson.has_pdf ? " · 📄 PDF" : ""}
-                    ${lesson.has_quiz ? " · 📝 اختبار" : ""}
-                  </span>
-                </span>
-              </span>
-              <i class="fa-solid fa-arrow-left dr-arrow"></i>
-            </button>
-          `).join("");
-        } else {
-          box.innerHTML = `<div class="empty-state"><i class="fa-solid fa-book"></i><p>لا توجد دروس في هذه الوحدة حاليًا.</p></div>`;
-        }
-      }
-
-      // إعادة تحديث بيانات الوحدات في الخلفية، مع الحفاظ على الوحدة مفتوحة.
-      try {
-        const fresh = await drLoadUnits(drCurrentSubjectId);
-        const freshUnit = fresh.find(u => Number(u.id) === Number(unitId));
-        if (freshUnit) Object.assign(targetUnit, freshUnit, { has_access: true });
-      } catch (_) {}
-
-      return true;
+      await drRenderUnits(drCurrentSubjectId);
 
     } catch (error) {
-      console.error("DrNotes purchase error:", error);
-
-      // لو كان الاشتراك موجودًا بالفعل، اعتبر العملية ناجحة وحدث الحالة.
-      if (error.status === 409) {
-        targetUnit.has_access = true;
-        targetUnit.is_subscribed = true;
-        showToast("أنت مشترك بالفعل في هذه الوحدة.", "success");
-        try { await drRenderUnits(drCurrentSubjectId); } catch (_) {}
-        return true;
-      }
-
       showToast(
-        error.message || "تعذر إتمام الاشتراك. حاول مرة أخرى.",
+        error.message || "تعذر شراء الوحدة.",
         "error"
       );
-      return false;
-
-    } finally {
-      buttons.forEach(btn => {
-        btn.disabled = false;
-        if (btn.dataset.oldText) btn.innerHTML = btn.dataset.oldText;
-      });
     }
   }
 
