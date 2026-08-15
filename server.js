@@ -2791,7 +2791,95 @@ app.put(
     }
   }
 );
+// =========================================================
+// ADMIN - GET LESSONS BY UNIT
+// =========================================================
 
+app.get(
+  "/api/admin/units/:unitId/lessons",
+  requireAdmin,
+  async (req, res) => {
+
+    try {
+
+      const unitId =
+        Number(
+          req.params.unitId
+        );
+
+      if (
+        !Number.isInteger(unitId)
+      ) {
+
+        return res.status(400).json({
+          success: false,
+          message:
+            "معرف الوحدة غير صحيح."
+        });
+      }
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            l.id,
+            l.unit_id,
+            l.name,
+            l.description,
+            l.lesson_order,
+            l.created_at,
+
+            lc.video_url,
+            lc.pdf_url,
+            lc.explanation,
+
+            ls.video_url
+              AS solution_video_url,
+
+            ls.pdf_url
+              AS solution_pdf_url,
+
+            ls.explanation
+              AS solution_explanation
+
+          FROM lessons l
+
+          LEFT JOIN lesson_content lc
+            ON lc.lesson_id = l.id
+
+          LEFT JOIN lesson_solution ls
+            ON ls.lesson_id = l.id
+
+          WHERE l.unit_id = $1
+
+          ORDER BY
+            l.lesson_order ASC,
+            l.id ASC
+          `,
+          [unitId]
+        );
+
+      res.json({
+        success: true,
+        lessons:
+          result.rows
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Get lessons by unit error:",
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        message:
+          "تعذر تحميل الدروس."
+      });
+    }
+  }
+);
 // =========================================================
 // ADMIN - DELETE UNIT
 // =========================================================
