@@ -5694,6 +5694,7 @@ body * {
       );
 
       drUnits = data.units || [];
+      window.drUnits = drUnits;
 
       return drUnits;
 
@@ -5816,7 +5817,7 @@ body * {
                     onclick="event.stopPropagation();drPurchaseUnit(${unit.id})"
                   >
                     <i class="fa-solid fa-cart-shopping"></i>
-                    ${free ? "فتح الوحدة" : "اشتراك"}
+                    ${free ? "فتح الوحدة" : "شراء الوحدة"}
                   </button>
                 `}
               </div>
@@ -5843,6 +5844,13 @@ body * {
     );
 
     if (!unit) return;
+
+    if (!unit.has_access) {
+      if (window.drPurchaseUnit) {
+        await window.drPurchaseUnit(unitId);
+      }
+      return;
+    }
 
     const box =
       document.getElementById(
@@ -5890,48 +5898,46 @@ body * {
       return;
     }
 
-    box.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 5px 12px;">
-        <span class="dr-unit-access">
-          ${unit.has_access ? "✓ مشترك في هذه الوحدة" : "🔒 محتوى الوحدة متاح بعد الاشتراك"}
-        </span>
-        ${!unit.has_access ? `
-          <button type="button" class="dr-unit-buy" onclick="event.stopPropagation();drPurchaseUnit(${unit.id})">
-            <i class="fa-solid fa-cart-shopping"></i>
-            اشتراك
-          </button>
-        ` : ""}
-      </div>
-      <div>
-      ${lessons.map((lesson, index) => `
+    box.innerHTML =
+      lessons.map((lesson, index) => `
         <button
           type="button"
           class="dr-lesson-row"
-          onclick="${unit.has_access ? `drOpenLesson(${lesson.id})` : `drLockedLesson(${unit.id})` }"
+          onclick="drOpenLesson(${lesson.id})"
         >
+
           <span class="dr-lesson-info">
-            <span class="dr-lesson-number">${index + 1}</span>
-            <span>
-              <span class="dr-lesson-name">${escapeHtml(lesson.name)}</span>
-              ${lesson.description ? `<span class="dr-lesson-description">${escapeHtml(lesson.description)}</span>` : ""}
+
+            <span class="dr-lesson-number">
+              ${index + 1}
             </span>
+
+            <span>
+              <span class="dr-lesson-name">
+                ${escapeHtml(lesson.name)}
+              </span>
+
+              ${
+                lesson.description
+                  ? `
+                    <span class="dr-lesson-description">
+                      ${escapeHtml(
+                        lesson.description
+                      )}
+                    </span>
+                  `
+                  : ""
+              }
+
+            </span>
+
           </span>
-          <i class="fa-solid ${unit.has_access ? "fa-arrow-left" : "fa-lock"} dr-arrow"></i>
+
+          <i class="fa-solid fa-arrow-left dr-arrow"></i>
+
         </button>
-      `).join("")}
-      </div>
-    `;
+      `).join("");
 
-  };
-
-
-  window.drLockedLesson = function (unitId) {
-    const unit = drUnits.find(item => Number(item.id) === Number(unitId));
-    if (!unit) return;
-    showToast(
-      `هذه الوحدة مدفوعة. اشترك أولًا مقابل ${money(unit.price)} دينار لفتح فيديوهات ودروس الوحدة.`,
-      "warning"
-    );
   };
 
   /* =========================================================
@@ -7115,13 +7121,10 @@ body * {
       return;
     }
 
-    const unit = (typeof drUnits !== "undefined" ? drUnits : [])
+    const unit = (window.drUnits || [])
       .find(item => Number(item.id) === Number(unitId));
 
-    if (!unit) {
-      showToast("تعذر العثور على بيانات الوحدة. أعد تحميل الصفحة.", "error");
-      return;
-    }
+    if (!unit) return;
 
     if (unit.has_access) {
       showToast("هذه الوحدة متاحة لك بالفعل.", "success");
@@ -7179,16 +7182,7 @@ body * {
     getBalance: () => walletBalance
   };
 
-  // Expose the action globally for the unit buttons.
-  // Also provide a stable alias used by older parts of the page.
-  window.drPurchaseUnit = async function (unitId) {
-    try {
-      await purchase(unitId);
-    } catch (error) {
-      console.error("DrNotes purchase button error:", error);
-      showToast(error?.message || "تعذر تنفيذ الاشتراك.", "error");
-    }
-  };
+  window.drPurchaseUnit = purchase;
 
   document.addEventListener("DOMContentLoaded", function () {
     setTimeout(refresh, 600);
