@@ -1856,180 +1856,109 @@
   ===================================================== */
 
   function showAddLessonForm() {
-
-    const container =
-      document.getElementById(
-        "addLessonFormContainer"
-      );
-
+    const container = document.getElementById("addLessonFormContainer");
     container.classList.remove("hidden");
-
     container.innerHTML = `
-
       <div class="content-section">
-
-        <h3>
-          إضافة درس جديد
-        </h3>
-
+        <h3>➕ إضافة درس جديد</h3>
         <div class="form-row">
-
-          <div class="form-group">
-
-            <label>
-              اسم الدرس
-            </label>
-
-            <input
-              id="newLessonName"
-              class="form-control"
-              placeholder="مثال: الدرس الأول"
-            >
-
-          </div>
-
-          <div class="form-group">
-
-            <label>
-              ترتيب الدرس
-            </label>
-
-            <input
-              id="newLessonOrder"
-              class="form-control"
-              type="number"
-              value="0"
-            >
-
-          </div>
-
+          <div class="form-group"><label>اسم الدرس</label><input id="newLessonName" class="form-control" placeholder="مثال: الدرس الأول"></div>
+          <div class="form-group"><label>ترتيب الدرس</label><input id="newLessonOrder" class="form-control" type="number" value="0"></div>
         </div>
-
-        <div class="form-group">
-
-          <label>
-            وصف الدرس
-          </label>
-
-          <textarea
-            id="newLessonDescription"
-            class="form-control"
-            placeholder="وصف الدرس"
-          ></textarea>
-
+        <div class="form-group"><label>وصف الدرس</label><textarea id="newLessonDescription" class="form-control" placeholder="وصف مختصر للدرس"></textarea></div>
+        <div class="divider"></div>
+        <h4>📚 شرح الدرس</h4>
+        <div class="form-group"><label>رابط فيديو الشرح - YouTube</label><input id="newExplanationVideo" class="form-control" type="url" placeholder="https://www.youtube.com/watch?v=..."></div>
+        <div class="form-group"><label>رابط PDF الشرح</label><input id="newExplanationPdf" class="form-control" type="url" placeholder="https://..."></div>
+        <div class="form-group"><label>نص شرح الدرس</label><textarea id="newExplanationText" class="form-control" placeholder="اكتب شرح الدرس هنا..."></textarea></div>
+        <div class="divider"></div>
+        <h4>📝 حل الدرس</h4>
+        <div class="form-group"><label>رابط فيديو الحل - YouTube</label><input id="newSolutionVideo" class="form-control" type="url" placeholder="https://www.youtube.com/watch?v=..."></div>
+        <div class="form-group"><label>رابط PDF الحل</label><input id="newSolutionPdf" class="form-control" type="url" placeholder="https://..."></div>
+        <div class="form-group"><label>نص الحل</label><textarea id="newSolutionText" class="form-control" placeholder="اكتب حل الدرس هنا..."></textarea></div>
+        <div class="divider"></div>
+        <h4>🧠 اختبار الدرس</h4>
+        <div class="form-row">
+          <div class="form-group"><label>اسم الاختبار</label><input id="newQuizTitle" class="form-control" placeholder="اختبار الدرس"></div>
+          <div class="form-group"><label>نسبة النجاح %</label><input id="newQuizPassing" class="form-control" type="number" min="0" max="100" value="50"></div>
         </div>
-
+        <div class="form-row">
+          <div class="form-group"><label>عدد الأسئلة في الصفحة</label><input id="newQuizQuestionsPerPage" class="form-control" type="number" min="1" value="10"></div>
+          <div class="form-group"><label>وصف الاختبار</label><input id="newQuizDescription" class="form-control" placeholder="وصف الاختبار"></div>
+        </div>
         <div class="button-row">
-
-          <button
-            class="btn btn-success"
-            onclick="addLesson()"
-          >
-            حفظ الدرس
-          </button>
-
-          <button
-            class="btn btn-light"
-            onclick="hideAddLessonForm()"
-          >
-            إلغاء
-          </button>
-
+          <button class="btn btn-success" onclick="addLesson()">💾 حفظ الدرس والمحتوى</button>
+          <button class="btn btn-light" onclick="hideAddLessonForm()">إلغاء</button>
         </div>
-
-      </div>
-
-    `;
-
+      </div>`;
   }
-
 
   function hideAddLessonForm() {
-
-    const container =
-      document.getElementById(
-        "addLessonFormContainer"
-      );
-
-    if (container) {
-      container.classList.add("hidden");
-    }
-
+    const container = document.getElementById("addLessonFormContainer");
+    if (container) container.classList.add("hidden");
   }
-
 
   /* =====================================================
      ADD LESSON
   ===================================================== */
 
   async function addLesson() {
-
-    const name =
-      document
-        .getElementById("newLessonName")
-        .value
-        .trim();
-
-    const description =
-      document
-        .getElementById("newLessonDescription")
-        .value
-        .trim();
-
-    const lessonOrder =
-      Number(
-        document
-          .getElementById("newLessonOrder")
-          .value
-      ) || 0;
+    const name = document.getElementById("newLessonName").value.trim();
+    const description = document.getElementById("newLessonDescription").value.trim();
+    const lessonOrder = Number(document.getElementById("newLessonOrder").value) || 0;
+    const explanationVideo = document.getElementById("newExplanationVideo").value.trim();
+    const explanationPdf = document.getElementById("newExplanationPdf").value.trim();
+    const explanationText = document.getElementById("newExplanationText").value;
+    const solutionVideo = document.getElementById("newSolutionVideo").value.trim();
+    const solutionPdf = document.getElementById("newSolutionPdf").value.trim();
+    const solutionText = document.getElementById("newSolutionText").value;
+    const quizTitle = document.getElementById("newQuizTitle").value.trim();
+    const quizPassing = Number(document.getElementById("newQuizPassing").value) || 50;
+    const quizQuestionsPerPage = Number(document.getElementById("newQuizQuestionsPerPage").value) || 10;
+    const quizDescription = document.getElementById("newQuizDescription").value.trim();
 
     if (!name) {
-
-      showError(
-        "اكتب اسم الدرس أولًا."
-      );
-
+      showError("اكتب اسم الدرس أولًا.");
       return;
-
     }
 
     try {
+      const lessonData = await api("/api/admin/lessons", {
+        method: "POST",
+        body: JSON.stringify({ unit_id: currentUnit.id, name, description, lesson_order: lessonOrder })
+      });
+      const lesson = lessonData.lesson;
 
-      await api(
-        "/api/admin/lessons",
-        {
+      await api(`/api/admin/lessons/${lesson.id}/content`, {
+        method: "POST",
+        body: JSON.stringify({ video_url: explanationVideo || null, pdf_url: explanationPdf || null, explanation: explanationText || null })
+      });
+
+      await api(`/api/admin/lessons/${lesson.id}/solution`, {
+        method: "POST",
+        body: JSON.stringify({ video_url: solutionVideo || null, pdf_url: solutionPdf || null, explanation: solutionText || null })
+      });
+
+      if (quizTitle) {
+        await api("/api/admin/quizzes", {
           method: "POST",
+          body: JSON.stringify({
+            lesson_id: lesson.id,
+            title: quizTitle,
+            description: quizDescription || null,
+            passing_percentage: quizPassing,
+            questions_per_page: quizQuestionsPerPage
+          })
+        });
+      }
 
-          body:
-            JSON.stringify({
-              unit_id:
-                currentUnit.id,
-              name,
-              description,
-              lesson_order:
-                lessonOrder
-            })
-        }
-      );
-
-      showSuccess(
-        "تمت إضافة الدرس بنجاح."
-      );
-
-      await loadLessons(
-        currentUnit.id
-      );
-
+      showSuccess("تمت إضافة الدرس ومحتواه بنجاح.");
+      await openLesson(lesson.id);
     } catch (error) {
-
-      showError(
-        error.message
-      );
-
+      console.error("Add lesson error:", error);
+      showError(error.message);
     }
-
   }
-
 
   /* =====================================================
      EDIT LESSON
