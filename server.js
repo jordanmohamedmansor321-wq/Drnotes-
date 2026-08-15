@@ -1717,86 +1717,31 @@ app.get(
 );
 
 // =========================================================
-// GET LESSONS BY UNIT
+// STUDENT - GET LESSONS BY UNIT
 // =========================================================
-
+// Public endpoint used by the student page. Keep the existing admin
+// endpoint separate so fixing the student side cannot break Admin.
 app.get(
   "/api/units/:unitId/lessons",
-  requireUser,
   async (req, res) => {
     try {
       const unitId = Number(req.params.unitId);
-
       if (!Number.isInteger(unitId)) {
-        return res.status(400).json({
-          success: false,
-          message: "معرف الوحدة غير صحيح."
-        });
+        return res.status(400).json({ success: false, message: "معرف الوحدة غير صحيح." });
       }
 
-      const unitResult = await pool.query(
-        `
-        SELECT
-          u.id,
-          u.name,
-          u.is_free,
-          u.price
-        FROM units u
-        WHERE u.id = $1
-        `,
+      const result = await pool.query(
+        `SELECT id, unit_id, name, description, lesson_order, created_at
+         FROM lessons
+         WHERE unit_id = $1
+         ORDER BY lesson_order ASC, id ASC`,
         [unitId]
       );
 
-      if (unitResult.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "الوحدة غير موجودة."
-        });
-      }
-
-      const unit = unitResult.rows[0];
-
-      const lessonsResult = await pool.query(
-        `
-        SELECT
-          l.id,
-          l.unit_id,
-          l.name,
-          l.description,
-          l.lesson_order,
-          l.created_at,
-          CASE WHEN lc.lesson_id IS NOT NULL AND lc.video_url IS NOT NULL AND TRIM(lc.video_url) <> '' THEN true ELSE false END AS has_video,
-          CASE WHEN lc.lesson_id IS NOT NULL AND lc.pdf_url IS NOT NULL AND TRIM(lc.pdf_url) <> '' THEN true ELSE false END AS has_pdf,
-          CASE WHEN lc.lesson_id IS NOT NULL AND lc.explanation IS NOT NULL AND TRIM(lc.explanation) <> '' THEN true ELSE false END AS has_explanation,
-          CASE WHEN q.lesson_id IS NOT NULL THEN true ELSE false END AS has_quiz
-        FROM lessons l
-        LEFT JOIN lesson_content lc ON lc.lesson_id = l.id
-        LEFT JOIN quizzes q ON q.lesson_id = l.id
-        WHERE l.unit_id = $1
-        GROUP BY l.id, lc.lesson_id, lc.video_url, lc.pdf_url, lc.explanation, q.lesson_id
-        ORDER BY
-          l.lesson_order ASC,
-          l.id ASC
-        `,
-        [unitId]
-      );
-
-      res.json({
-        success: true,
-        unit,
-        lessons: lessonsResult.rows
-      });
-
+      return res.json({ success: true, lessons: result.rows });
     } catch (error) {
-      console.error(
-        "Get lessons by unit error:",
-        error
-      );
-
-      res.status(500).json({
-        success: false,
-        message: "تعذر تحميل دروس الوحدة."
-      });
+      console.error("Student get lessons by unit error:", error);
+      return res.status(500).json({ success: false, message: "تعذر تحميل الدروس." });
     }
   }
 );
@@ -3155,6 +3100,354 @@ app.delete(
     } finally {
 
       client.release();
+    }
+  }
+);
+
+// =========================================================
+// ADMIN - LESSON CRUD + FULL DETAIL
+// =========================================================
+
+app.get(
+  "/api/admin/units/:unitId/lessons",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const unitId = Number(req.params.unitId);
+
+      if (!Number.isInteger(unitId)) {
+        return res.status(400).json({
+          success: false,
+          message: "معرف الوحدة غير صحيح."
+        });
+      }
+
+      const unitCheck = await pool.query(
+        `SELECT id FROM units WHERE id = $1`,
+        [unitId]
+      );
+
+      if (unitCheck.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "الوحدة غير موجودة."
+        });
+      }
+
+      const result = await pool.query(
+        `
+        SELECT
+          id,
+          unit_id,
+          name,
+          description,
+          lesson_order,
+          created_at
+        FROM lessons
+        WHERE unit_id = $1
+        ORDER BY lesson_order ASC, id ASC
+        `,
+        [unitId]
+      );
+
+      res.json({
+        success: true,
+        lessons: result.rows
+      });
+    } catch (error) {
+      console.error("Admin get lessons error:", error);
+      res.status(500).json({
+        success: false,
+        message: "تعذر تحميل دروس الوحدة."
+      });
+    }
+  }
+);
+
+app.post(
+  "/api/admin/lessons",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const {
+        unit_id,
+        name,
+        description,
+        lesson_order
+      } = req.body;
+
+      const unitId = Number(unit_id);
+      const order = Number(lesson_order);
+
+      if (!Number.isInteger(unitId) || !name || !String(name).trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "الوحدة واسم الدرس مطلوبان."
+        });
+      }
+
+      const unitCheck = await pool.query(
+        `SELECT id FROM units WHERE id = $1`,
+        [unitId]
+      );
+
+      if (unitCheck.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "الوحدة غير موجودة."
+        });
+      }
+
+      const result = await pool.query(
+        `
+        INSERT INTO lessons
+          (unit_id, name, description, lesson_order)
+        VALUES
+          ($1, $2, $3, $4)
+        RETURNING *
+        `,
+        [
+          unitId,
+          String(name).trim(),
+          description ? String(description).trim() : null,
+          Number.isFinite(order) ? order : 0
+        ]
+      );
+
+      res.status(201).json({
+        success: true,
+        message: "تمت إضافة الدرس بنجاح.",
+        lesson: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Admin create lesson error:", error);
+      res.status(500).json({
+        success: false,
+        message: "تعذر إضافة الدرس."
+      });
+    }
+  }
+);
+
+app.get(
+  "/api/admin/lessons/:lessonId",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const lessonId = Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+        return res.status(400).json({
+          success: false,
+          message: "معرف الدرس غير صحيح."
+        });
+      }
+
+      const result = await pool.query(
+        `
+        SELECT
+          l.id,
+          l.unit_id,
+          l.name,
+          l.description,
+          l.lesson_order,
+          u.name AS unit_name,
+          s.id AS subject_id,
+          s.name AS subject_name,
+
+          lc.video_url AS explanation_video_url,
+          lc.pdf_url AS explanation_pdf_url,
+          lc.explanation AS explanation_text,
+
+          ls.video_url AS solution_video_url,
+          ls.pdf_url AS solution_pdf_url,
+          ls.explanation AS solution_text,
+
+          q.id AS quiz_id,
+          q.title AS quiz_title,
+          q.description AS quiz_description,
+          q.passing_percentage AS quiz_passing_percentage,
+          q.questions_per_page AS quiz_questions_per_page
+        FROM lessons l
+        JOIN units u ON u.id = l.unit_id
+        JOIN subjects s ON s.id = u.subject_id
+        LEFT JOIN lesson_content lc ON lc.lesson_id = l.id
+        LEFT JOIN lesson_solution ls ON ls.lesson_id = l.id
+        LEFT JOIN quizzes q ON q.lesson_id = l.id
+        WHERE l.id = $1
+        `,
+        [lessonId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "الدرس غير موجود."
+        });
+      }
+
+      const row = result.rows[0];
+      const lesson = {
+        id: row.id,
+        unit_id: row.unit_id,
+        name: row.name,
+        description: row.description,
+        lesson_order: row.lesson_order,
+        unit_name: row.unit_name,
+        subject_id: row.subject_id,
+        subject_name: row.subject_name,
+        explanation_video_url: row.explanation_video_url,
+        explanation_pdf_url: row.explanation_pdf_url,
+        explanation_text: row.explanation_text,
+        solution_video_url: row.solution_video_url,
+        solution_pdf_url: row.solution_pdf_url,
+        solution_text: row.solution_text
+      };
+
+      const quiz = row.quiz_id
+        ? {
+            id: row.quiz_id,
+            lesson_id: row.id,
+            title: row.quiz_title,
+            description: row.quiz_description,
+            passing_percentage: row.quiz_passing_percentage,
+            questions_per_page: row.quiz_questions_per_page
+          }
+        : null;
+
+      res.json({
+        success: true,
+        lesson,
+        quiz
+      });
+    } catch (error) {
+      console.error("Admin get lesson error:", error);
+      res.status(500).json({
+        success: false,
+        message: "تعذر تحميل بيانات الدرس."
+      });
+    }
+  }
+);
+
+app.put(
+  "/api/admin/lessons/:lessonId",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const lessonId = Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+        return res.status(400).json({
+          success: false,
+          message: "معرف الدرس غير صحيح."
+        });
+      }
+
+      const current = await pool.query(
+        `SELECT * FROM lessons WHERE id = $1`,
+        [lessonId]
+      );
+
+      if (current.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "الدرس غير موجود."
+        });
+      }
+
+      const old = current.rows[0];
+      const name = req.body.name === undefined
+        ? old.name
+        : String(req.body.name).trim();
+
+      if (!name) {
+        return res.status(400).json({
+          success: false,
+          message: "اسم الدرس مطلوب."
+        });
+      }
+
+      const description = req.body.description === undefined
+        ? old.description
+        : (req.body.description ? String(req.body.description).trim() : null);
+
+      const order = req.body.lesson_order === undefined
+        ? old.lesson_order
+        : Number(req.body.lesson_order);
+
+      const result = await pool.query(
+        `
+        UPDATE lessons
+        SET name = $1,
+            description = $2,
+            lesson_order = $3
+        WHERE id = $4
+        RETURNING *
+        `,
+        [
+          name,
+          description,
+          Number.isFinite(order) ? order : 0,
+          lessonId
+        ]
+      );
+
+      res.json({
+        success: true,
+        message: "تم تعديل الدرس بنجاح.",
+        lesson: result.rows[0]
+      });
+    } catch (error) {
+      console.error("Admin update lesson error:", error);
+      res.status(500).json({
+        success: false,
+        message: "تعذر تعديل الدرس."
+      });
+    }
+  }
+);
+
+app.delete(
+  "/api/admin/lessons/:lessonId",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const lessonId = Number(req.params.lessonId);
+
+      if (!Number.isInteger(lessonId)) {
+        return res.status(400).json({
+          success: false,
+          message: "معرف الدرس غير صحيح."
+        });
+      }
+
+      const result = await pool.query(
+        `
+        DELETE FROM lessons
+        WHERE id = $1
+        RETURNING id
+        `,
+        [lessonId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "الدرس غير موجود."
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "تم حذف الدرس وجميع بياناته المرتبطة بنجاح."
+      });
+    } catch (error) {
+      console.error("Admin delete lesson error:", error);
+      res.status(500).json({
+        success: false,
+        message: "تعذر حذف الدرس."
+      });
     }
   }
 );
