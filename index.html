@@ -5816,7 +5816,7 @@ body * {
                     onclick="event.stopPropagation();drPurchaseUnit(${unit.id})"
                   >
                     <i class="fa-solid fa-cart-shopping"></i>
-                    ${free ? "فتح الوحدة" : "شراء الوحدة"}
+                    ${free ? "فتح الوحدة" : "اشتراك"}
                   </button>
                 `}
               </div>
@@ -5843,13 +5843,6 @@ body * {
     );
 
     if (!unit) return;
-
-    if (!unit.has_access) {
-      if (window.drPurchaseUnit) {
-        await window.drPurchaseUnit(unitId);
-      }
-      return;
-    }
 
     const box =
       document.getElementById(
@@ -5897,46 +5890,48 @@ body * {
       return;
     }
 
-    box.innerHTML =
-      lessons.map((lesson, index) => `
+    box.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 5px 12px;">
+        <span class="dr-unit-access">
+          ${unit.has_access ? "✓ مشترك في هذه الوحدة" : "🔒 محتوى الوحدة متاح بعد الاشتراك"}
+        </span>
+        ${!unit.has_access ? `
+          <button type="button" class="dr-unit-buy" onclick="event.stopPropagation();drPurchaseUnit(${unit.id})">
+            <i class="fa-solid fa-cart-shopping"></i>
+            اشتراك
+          </button>
+        ` : ""}
+      </div>
+      <div>
+      ${lessons.map((lesson, index) => `
         <button
           type="button"
           class="dr-lesson-row"
-          onclick="drOpenLesson(${lesson.id})"
+          onclick="${unit.has_access ? `drOpenLesson(${lesson.id})` : `drLockedLesson(${unit.id})` }"
         >
-
           <span class="dr-lesson-info">
-
-            <span class="dr-lesson-number">
-              ${index + 1}
-            </span>
-
+            <span class="dr-lesson-number">${index + 1}</span>
             <span>
-              <span class="dr-lesson-name">
-                ${escapeHtml(lesson.name)}
-              </span>
-
-              ${
-                lesson.description
-                  ? `
-                    <span class="dr-lesson-description">
-                      ${escapeHtml(
-                        lesson.description
-                      )}
-                    </span>
-                  `
-                  : ""
-              }
-
+              <span class="dr-lesson-name">${escapeHtml(lesson.name)}</span>
+              ${lesson.description ? `<span class="dr-lesson-description">${escapeHtml(lesson.description)}</span>` : ""}
             </span>
-
           </span>
-
-          <i class="fa-solid fa-arrow-left dr-arrow"></i>
-
+          <i class="fa-solid ${unit.has_access ? "fa-arrow-left" : "fa-lock"} dr-arrow"></i>
         </button>
-      `).join("");
+      `).join("")}
+      </div>
+    `;
 
+  };
+
+
+  window.drLockedLesson = function (unitId) {
+    const unit = drUnits.find(item => Number(item.id) === Number(unitId));
+    if (!unit) return;
+    showToast(
+      `هذه الوحدة مدفوعة. اشترك أولًا مقابل ${money(unit.price)} دينار لفتح فيديوهات ودروس الوحدة.`,
+      "warning"
+    );
   };
 
   /* =========================================================
@@ -5971,12 +5966,6 @@ body * {
 
       const lesson =
         data.lesson;
-
-      const lessonContent =
-        data.content || {};
-
-      const lessonSolution =
-        data.solution || {};
 
       const quiz =
         data.quiz;
@@ -6059,9 +6048,9 @@ body * {
           </div>
 
           ${
-            lessonContent.video_url
+            lesson.explanation_video_url
               ? drRenderVideo(
-                  lessonContent.video_url
+                  lesson.explanation_video_url
                 )
               : `
                 <div class="empty-state">
@@ -6072,7 +6061,7 @@ body * {
           }
 
           ${
-            lessonContent.pdf_url
+            lesson.explanation_pdf_url
               ? `
                 <div class="dr-pdf-box">
 
@@ -6086,7 +6075,7 @@ body * {
                   <a
                     class="btn btn-primary"
                     href="${escapeAttribute(
-                      lessonContent.pdf_url
+                      lesson.explanation_pdf_url
                     )}"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -6101,7 +6090,7 @@ body * {
           }
 
           ${
-            lessonContent.explanation
+            lesson.explanation_text
               ? `
                 <div class="dr-explanation">
 
@@ -6113,7 +6102,7 @@ body * {
                   <br><br>
 
                   ${escapeHtml(
-                    lessonContent.explanation
+                    lesson.explanation_text
                   )}
 
                 </div>
